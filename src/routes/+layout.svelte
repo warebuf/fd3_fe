@@ -63,7 +63,7 @@
 		overflow-wrap: anywhere;   /* modern, safest, break long strings */
 		word-break: break-word;    /* older fallback */
 
-		background: #333;
+		background: #222;
 	}
 
 	.chatbox {
