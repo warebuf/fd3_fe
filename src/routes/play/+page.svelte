@@ -1,82 +1,70 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-  
-    let canvasEl: HTMLCanvasElement;
-    let ctx: CanvasRenderingContext2D;
-    let dpr: number;
-  
-    onMount(() => {
-        ctx = canvasEl.getContext("2d")!;
+  import { onMount } from "svelte";
 
-        dpr = window.devicePixelRatio || 1;
-        const rect = canvasEl.getBoundingClientRect();
-        console.log(rect)
+  let canvasEl: HTMLCanvasElement;
+  let ctx: CanvasRenderingContext2D;
+  let dpr: number;
 
-        // Set the drawing buffer to (CSS size × DPR)
-        canvasEl.width  = Math.round(rect.width  * dpr);
-        canvasEl.height = Math.round(rect.height * dpr);
+  function resizeCanvas() {
+    dpr = window.devicePixelRatio || 1;
+    const { width, height } = canvasEl.getBoundingClientRect();
+    canvasEl.width  = Math.max(1, Math.round(width  * dpr));
+    canvasEl.height = Math.max(1, Math.round(height * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  }
 
-        // Make 1 unit == 1 CSS pixel
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  function draw() {
+    const w = canvasEl.clientWidth;
+    const h = canvasEl.clientHeight;
+    ctx.clearRect(0, 0, w, h);
 
-        // test square
-        ctx.fillStyle = "green";
-        ctx.fillRect(100, 100, 1/dpr, 50/dpr);
+    // centered square
+    let size = 120;                 
+    let x = (w - size) / 2;
+    let y = (h - size) / 2;
+    ctx.fillStyle = "red";
+    ctx.fillRect(x, y, size, size);
 
-        ctx.fillStyle = "blue";
-        ctx.fillRect(200, 100, 50/dpr, 1/dpr);
+    // optional: 1 device-pixel border
+    size = 60;                 
+    x = (w - size) / 2;
+    y = (h - size) / 2;
+    ctx.lineWidth = 1 / dpr;
+    ctx.strokeStyle = "white";
+    ctx.strokeRect(
+      x + 0.5 / dpr,
+      y + 0.5 / dpr,
+      size - 1 / dpr,
+      size - 1 / dpr
+    );
+  }
 
-        ctx.fillStyle = "red";
-        ctx.fillRect(25, 25, 50/dpr, 50/dpr);
+  onMount(() => {
+    ctx = canvasEl.getContext("2d")!;
+    resizeCanvas();                       
+    window.addEventListener("resize", resizeCanvas);
+    return () => window.removeEventListener("resize", resizeCanvas);
+  });
 
-    });
-  </script>
+</script>
   
-  <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-    }
-  
-    .page {
-      display: flex;
-      flex-direction: column;      /* topbar on top, main below */
-      min-height: 100vh;
-    }
-  
-    .topbar {
-      height: 60px;
-      background: #333;
-      color: white;
-      display: flex;
-      align-items: center;
-      padding: 0 1rem;
-    }
-  
-    .main {
-      flex: 1;
-      display: flex;            
-    }
-  
-    canvas {
-      flex: 1;                     
-      display: block;
-      background: #111;
-    }
-  
-    .sidebar {
-      width: 200px;
-      background: #222;
-      color: white;
-      padding: 1rem;  
-    }
-  </style>
-  
-  <div class="page">
-    <div class="topbar">Top Bar</div>
-    <div class="main">
-        <div class="sidebar">Sidebar</div>
-        <canvas bind:this={canvasEl}></canvas>
-    </div>
-  </div>
-  
+<style>  
+
+  .wrap {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+  }
+
+  canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: #222;
+  }
+</style>
+
+<div class="wrap">
+  <canvas bind:this={canvasEl}></canvas>
+</div>
