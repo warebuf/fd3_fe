@@ -47,7 +47,6 @@
 	  	text-decoration: underline;
 	}
 
-
 	.main {
 		flex: 1;
 		min-height: 0;               /* allow children to shrink so we can scroll u/d */
