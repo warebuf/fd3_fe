@@ -7,6 +7,7 @@
   let canvasEl: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
   let animationID: number; // saved for easy cleanup
+  let ws: WebSocket;
 
   function resizeCanvas() {
     const dpr = window.devicePixelRatio || 1;
@@ -28,12 +29,37 @@
   }
 
   onMount(() => {
+
+    // canvas element setup
     ctx = canvasEl.getContext("2d")!;
     resizeCanvas();                       
     window.addEventListener("resize", resizeCanvas);
 
+    // websocket setup
+    ws = new WebSocket("ws://localhost:3000/ws");
+
+    ws.addEventListener("open", () => {
+      console.log("✅ Connected to server");
+      ws.send("Hello server!");
+    });
+
+    ws.addEventListener("message", (event) => {
+      console.log("📩 Message from server:", event.data);
+      
+    });
+
+    ws.addEventListener("close", () => {
+      console.log("❌ Connection closed");
+    });
+
+    ws.addEventListener("error", (err) => {
+      console.error("⚠️ WebSocket error", err);
+    });
+
+    // game loop
     loop();
 
+    // cleanup
     return () => {
       cancelAnimationFrame(animationID);
       window.removeEventListener("resize", resizeCanvas);
