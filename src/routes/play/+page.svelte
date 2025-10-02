@@ -1,13 +1,15 @@
 <script lang="ts">
+
   import { onMount } from "svelte";
+
+  import { drawRandomSquare } from "$lib/engine/drawTime";
 
   let canvasEl: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
-  let dpr: number; // device pixel ratio
   let animationID: number; // saved for easy cleanup
 
   function resizeCanvas() {
-    dpr = window.devicePixelRatio || 1;
+    const dpr = window.devicePixelRatio || 1;
     const { width, height } = canvasEl.getBoundingClientRect();
     canvasEl.width  = Math.max(1, Math.round(width  * dpr));
     canvasEl.height = Math.max(1, Math.round(height * dpr));
@@ -19,13 +21,7 @@
     const h = canvasEl.clientHeight;
     ctx.clearRect(0, 0, w, h);
 
-    // pick random square size [50–200]
-    const size = 50 + Math.random() * 150;
-    const x = (w - size) / 2;
-    const y = (h - size) / 2;
-
-    ctx.fillStyle = "red";
-    ctx.fillRect(x, y, size, size);
+    drawRandomSquare(ctx, w, h);
 
     // schedule next frame
     animationID = requestAnimationFrame(loop);
@@ -37,7 +33,6 @@
     window.addEventListener("resize", resizeCanvas);
 
     loop();
-
 
     return () => {
       cancelAnimationFrame(animationID);
