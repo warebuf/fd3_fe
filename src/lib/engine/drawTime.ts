@@ -1,12 +1,14 @@
 
 
-export function drawRandomSquare(ctx: CanvasRenderingContext2D, width: number, height: number) {
 
-    const size = 50 + Math.random() * 150;
-    const x = (width - size) / 2;
-    const y = (height - size) / 2;
+export function drawTime(ctx: CanvasRenderingContext2D, width: number, height: number) {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString(); // e.g. "11:32:10 PM"
 
-    ctx.fillStyle = "green";
-    ctx.fillRect(x, y, size, size);
+    ctx.fillStyle = "white";
+    ctx.font = "16px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
 
+    ctx.fillText(timeString, width / 2, height / 10);
 }

@@ -2,7 +2,7 @@
 
   import { onMount } from "svelte";
 
-  import { drawRandomSquare } from "$lib/engine/drawTime";
+  import { drawTime } from "$lib/engine/drawTime";
 
   let canvasEl: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
@@ -17,11 +17,11 @@
   }
 
   function loop() {
-    const w = canvasEl.clientWidth;
-    const h = canvasEl.clientHeight;
-    ctx.clearRect(0, 0, w, h);
+    const width = canvasEl.clientWidth;
+    const height = canvasEl.clientHeight;
+    ctx.clearRect(0, 0, width, height);
 
-    drawRandomSquare(ctx, w, h);
+    drawTime(ctx, width, height);
 
     // schedule next frame
     animationID = requestAnimationFrame(loop);
