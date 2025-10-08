@@ -3,11 +3,14 @@
   import { onMount } from "svelte";
 
   import { drawTime } from "$lib/engine/drawTime";
+  import { createBitmap } from "$lib/sprites/createBitmap";
 
   let canvasEl: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
   let animationID: number; // saved for easy cleanup
   let ws: WebSocket;
+
+  let bitmap: ImageBitmap | null = null;
 
   function resizeCanvas() {
     const dpr = window.devicePixelRatio || 1;
@@ -23,6 +26,11 @@
     ctx.clearRect(0, 0, width, height);
 
     drawTime(ctx, width, height);
+
+    if(bitmap) {
+      ctx.drawImage(bitmap, (width - bitmap.width) / 2, (height - bitmap.height) / 2);
+    }
+
 
     // schedule next frame
     animationID = requestAnimationFrame(loop);
@@ -56,11 +64,21 @@
       console.error("⚠️ WebSocket error", err);
     });
 
-    // game loop
-    loop();
+    let cancelled = false; 
+    (async () => { 
+      // sprite setup (awaits are safe here) 
+      const atlasBlob = await fetch("/sprites/bulbasaur/Attack-Anim.png").then(r => r.blob()); 
+      bitmap = await createImageBitmap(atlasBlob);
+
+      if (cancelled) return; // guard against requestAnimationFrame 
+
+      loop(); // start the game loop once everything loads
+
+    })();
 
     // cleanup
     return () => {
+      cancelled = true;
       cancelAnimationFrame(animationID);
       window.removeEventListener("resize", resizeCanvas);
     };
