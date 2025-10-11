@@ -6,7 +6,7 @@
   
   import type { Sprite } from "$lib/sprites/sprites";
   import { createBitmaps, drawSprites } from "$lib/sprites/sprites";
-  
+
 
 
   let canvasEl: HTMLCanvasElement;
@@ -69,6 +69,22 @@
     (async () => { 
 
       // 
+      const characters = ['bulbasaur', 'missingno', 'pidgey', 'sandshrew', 'sandslash', ]
+
+      // server call, get list of sheet paths for a character
+      // NOTE: instead of a server call, this could just be a JSON
+      const spriteSheetsRequest = await fetch('/api/sprites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ characters: characters })
+      });
+
+      const spriteSheetsJSON = await spriteSheetsRequest.json();
+
+      console.log("spriteSheetsJSON", spriteSheetsJSON)
+
+
+
       const spritePaths = [
         "/sprites/bulbasaur/Attack-Anim.png",
         "/sprites/missingno/Attack-Anim.png"

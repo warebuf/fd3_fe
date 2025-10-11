@@ -7,9 +7,12 @@ export type Sprite = {
   
 };
 
+
+
+
 export async function createBitmaps(paths: string[]): Promise<Sprite[]> {
   
-    // creates all sprites concurrently
+    // creates all sprites asynchronously
     const sprites = await Promise.all(
         
         paths.map(async (path) => {
