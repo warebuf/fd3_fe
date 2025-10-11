@@ -1,0 +1,8 @@
+
+
+
+type Sprite = {
+  
+    image: ImageBitmap;
+  
+};

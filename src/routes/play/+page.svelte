@@ -66,17 +66,27 @@
 
     let cancelled = false; 
     (async () => { 
-      // sprite setup (awaits are safe here) 
+
+      // 
+      const spritePaths = [
+        "/sprites/beedrill/walk.png",
+        "/sprites/bulbasaur/attack.png",
+        "/sprites/charmander/run.png"
+      ];
+
+      // sprite setup 
       const atlasBlob = await fetch("/sprites/bulbasaur/Attack-Anim.png").then(r => r.blob()); 
       bitmap = await createImageBitmap(atlasBlob);
 
-      if (cancelled) return; // guard against requestAnimationFrame 
+      // guard against requestAnimationFrame
+      if (cancelled) return;
 
-      loop(); // start the game loop once everything loads
+      // start the game loop once everything loads
+      loop(); 
 
     })();
 
-    // cleanup
+    // cleanup on unmount
     return () => {
       cancelled = true;
       cancelAnimationFrame(animationID);
