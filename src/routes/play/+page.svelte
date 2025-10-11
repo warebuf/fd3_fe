@@ -3,14 +3,18 @@
   import { onMount } from "svelte";
 
   import { drawTime } from "$lib/engine/drawTime";
-  import { createBitmap } from "$lib/sprites/createBitmap";
+  
+  import type { Sprite } from "$lib/sprites/sprites";
+  import { createBitmaps, drawSprites } from "$lib/sprites/sprites";
+  
+
 
   let canvasEl: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
   let animationID: number; // saved for easy cleanup
   let ws: WebSocket;
 
-  let bitmap: ImageBitmap | null = null;
+  let sprites: Sprite[];
 
   function resizeCanvas() {
     const dpr = window.devicePixelRatio || 1;
@@ -27,10 +31,7 @@
 
     drawTime(ctx, width, height);
 
-    if(bitmap) {
-      ctx.drawImage(bitmap, (width - bitmap.width) / 2, (height - bitmap.height) / 2);
-    }
-
+    drawSprites(ctx, sprites, width, height);
 
     // schedule next frame
     animationID = requestAnimationFrame(loop);
@@ -69,14 +70,12 @@
 
       // 
       const spritePaths = [
-        "/sprites/beedrill/walk.png",
-        "/sprites/bulbasaur/attack.png",
-        "/sprites/charmander/run.png"
+        "/sprites/bulbasaur/Attack-Anim.png",
+        "/sprites/missingno/Attack-Anim.png"
       ];
 
       // sprite setup 
-      const atlasBlob = await fetch("/sprites/bulbasaur/Attack-Anim.png").then(r => r.blob()); 
-      bitmap = await createImageBitmap(atlasBlob);
+      sprites = await createBitmaps(spritePaths);
 
       // guard against requestAnimationFrame
       if (cancelled) return;

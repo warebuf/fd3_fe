@@ -1,8 +1,0 @@
-
-
-
-type Sprite = {
-  
-    image: ImageBitmap;
-  
-};
