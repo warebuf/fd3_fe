@@ -2,8 +2,10 @@
 
   import { onMount } from "svelte";
 
-  import { drawTime } from "$lib/engine/drawTime";
+  import { drawTime } from "./engine/drawTime";
   
+  import { increment, decrement } from "./keys/arrows";
+
   import type { Sprite } from "$lib/sprites/sprites";
   import { createBitmaps, drawSprites } from "$lib/sprites/sprites";
 
@@ -15,6 +17,7 @@
   let ws: WebSocket;
 
   let sprites: Sprite[];
+  let activeSprite: {idx: number, imgIdx: number}
 
   function resizeCanvas() {
     const dpr = window.devicePixelRatio || 1;
@@ -31,10 +34,33 @@
 
     drawTime(ctx, width, height);
 
-    drawSprites(ctx, sprites, width, height);
+    drawSprites(ctx, sprites, activeSprite, width, height);
 
     // schedule next frame
     animationID = requestAnimationFrame(loop);
+  }
+
+  function onKey(e: KeyboardEvent) {
+    switch (e.key) {
+      case 'ArrowLeft':
+      case 'a':
+      case 'A':
+        e.preventDefault();
+        console.log('left');
+        activeSprite = decrement(sprites, activeSprite);
+        break;
+
+      case 'ArrowRight':
+      case 'd':
+      case 'D':
+        e.preventDefault();
+        console.log('right');
+        activeSprite = increment(sprites, activeSprite);
+        break;
+
+      default:
+        break;
+    }
   }
 
   onMount(() => {
@@ -43,6 +69,9 @@
     ctx = canvasEl.getContext("2d")!;
     resizeCanvas();                       
     window.addEventListener("resize", resizeCanvas);
+
+    // keys setup
+    window.addEventListener('keydown', onKey);
 
     // websocket setup
     ws = new WebSocket("ws://localhost:3000/ws");
@@ -83,15 +112,9 @@
 
       console.log("spriteSheetsJSON", spriteSheetsJSON)
 
-
-
-      const spritePaths = [
-        "/sprites/bulbasaur/Attack-Anim.png",
-        "/sprites/missingno/Attack-Anim.png"
-      ];
-
       // sprite setup 
-      sprites = await createBitmaps(spritePaths);
+      sprites = await createBitmaps(spriteSheetsJSON.files);
+      activeSprite = {idx: 0, imgIdx: 0}
 
       // guard against requestAnimationFrame
       if (cancelled) return;

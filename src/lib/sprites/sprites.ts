@@ -2,50 +2,47 @@
 
 
 export type Sprite = {
-  
-    image: ImageBitmap;
-  
+    name: string
+    images: ImageBitmap[];
 };
 
-
-
-
-export async function createBitmaps(paths: string[]): Promise<Sprite[]> {
-  
-    // creates all sprites asynchronously
+export async function createBitmaps(files: Record<string, string[]>): Promise<Sprite[]> {
+    
     const sprites = await Promise.all(
-        
-        paths.map(async (path) => {
-
-            // fetch file
-            const res = await fetch(path);
-            if (!res.ok) throw new Error(`Failed to load image: ${path}`);
-            
-            // convert to blob
+      Object.entries(files).map(async ([charName, paths]) => {
+        // Load this character's images in parallel
+        const bitmaps = await Promise.all(
+          paths.map(async (fileName) => {
+            // Build the full image path
+            const filePath = `/sprites/${charName}/${fileName}`;
+  
+            const res = await fetch(filePath);
+            if (!res.ok) throw new Error(`Failed to load image: ${filePath}`);
+  
             const blob = await res.blob();
-
-            // create bitmap
-            const imageBM =  await createImageBitmap(blob);
-
-            // create sprite
-            const sprite: Sprite = {
-                image: imageBM
-            }
-
-            return sprite;
-
-        })
-
+            return await createImageBitmap(blob);
+          })
+        );
+  
+        // Return sprite object for this character
+        return {
+          name: charName,
+          images: bitmaps,
+        } satisfies Sprite;
+      })
     );
-
-  return sprites;
-
+  
+    return sprites;
 }
 
-export function drawSprites(ctx: CanvasRenderingContext2D, sprites: Sprite[], width: number, height: number) {
+export function drawSprites(
+    ctx: CanvasRenderingContext2D, 
+    sprites: Sprite[], 
+    active: { idx: number, imgIdx: number},
+    width: number, 
+    height: number
+) {
 
-    for(let i = 0; i < sprites.length; i++) {
-      ctx.drawImage(sprites[i].image, (width - sprites[i].image.width) / 2, (height - sprites[i].image.height) / 2);
-    }
+    ctx.drawImage(sprites[active.idx].images[active.imgIdx], (width - sprites[active.idx].images[active.imgIdx].width) / 2, (height - sprites[active.idx].images[active.imgIdx].height) / 2);
 
 }

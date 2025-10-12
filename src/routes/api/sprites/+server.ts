@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 
 
+// get list of .png files for each character
 export const POST: RequestHandler = async ({ request }) => {
   
     const { characters } = await request.json();
@@ -20,10 +21,10 @@ export const POST: RequestHandler = async ({ request }) => {
         const charDir = path.join(baseDir, char);
 
         try {
-
-            const files = fs.readdirSync(charDir);
-
-            console.log("files", files)
+;
+            const allowedExt = ['.png'];
+            const files = fs.readdirSync(charDir).filter((file) => allowedExt.includes(path.extname(file).toLowerCase()));
+            result[char] = files;
 
         } catch (err) {
 
@@ -33,6 +34,6 @@ export const POST: RequestHandler = async ({ request }) => {
 
     }
 
-    return json({ success: true });
+    return json({ files: result });
 
 };
