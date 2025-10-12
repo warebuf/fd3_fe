@@ -10,7 +10,8 @@ export function increment(
     
     let newCharacter = false;
     let newImgIdx = active.imgIdx + 1;
-    if(newImgIdx >= sprites[active.idx].images.length) {
+    const keys = Object.keys(sprites[active.idx].images);
+    if(newImgIdx >= keys.length) {
         newImgIdx = 0;
         newCharacter = true;
     }
@@ -48,7 +49,9 @@ export function decrement(
       if (newIdx < 0) {
         newIdx = sprites.length - 1; // wrap to last character
       }
-      newImgIdx = sprites[newIdx].images.length - 1; // jump to last frame of previous sprite
+
+      const keys = Object.keys(sprites[newIdx].images);
+      newImgIdx = keys.length - 1; // jump to last frame of previous sprite
     }
   
     return { idx: newIdx, imgIdx: newImgIdx };

@@ -7,11 +7,11 @@
   import { increment, decrement } from "./keys/arrows";
 
   import type { Sprite } from "$lib/sprites/sprites";
-  import { createBitmaps, drawSprites } from "$lib/sprites/sprites";
+  import { createSprites, drawSprites } from "$lib/sprites/sprites";
 
 
 
-  let canvasEl: HTMLCanvasElement;
+  let canvasEl: HTMLCanvasElement; // saved for reshapes
   let ctx: CanvasRenderingContext2D;
   let animationID: number; // saved for easy cleanup
   let ws: WebSocket;
@@ -83,7 +83,6 @@
 
     ws.addEventListener("message", (event) => {
       console.log("📩 Message from server:", event.data);
-      
     });
 
     ws.addEventListener("close", () => {
@@ -102,18 +101,18 @@
 
       // server call, get list of sheet paths for a character
       // NOTE: instead of a server call, this could just be a JSON
-      const spriteSheetsRequest = await fetch('/api/sprites', {
+      const spriteActionsRequest = await fetch('/api/sprites', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ characters: characters })
       });
 
-      const spriteSheetsJSON = await spriteSheetsRequest.json();
+      const spriteActionsJSON = await spriteActionsRequest.json();
 
-      console.log("spriteSheetsJSON", spriteSheetsJSON)
+      console.log("spriteActionsJSON", spriteActionsJSON)
 
       // sprite setup 
-      sprites = await createBitmaps(spriteSheetsJSON.files);
+      sprites = await createSprites(spriteActionsJSON);
       activeSprite = {idx: 0, imgIdx: 0}
 
       // guard against requestAnimationFrame

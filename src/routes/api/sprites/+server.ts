@@ -21,10 +21,25 @@ export const POST: RequestHandler = async ({ request }) => {
         const charDir = path.join(baseDir, char);
 
         try {
-;
-            const allowedExt = ['.png'];
-            const files = fs.readdirSync(charDir).filter((file) => allowedExt.includes(path.extname(file).toLowerCase()));
-            result[char] = files;
+            
+            // get all files in a directory for a character
+            const files = fs.readdirSync(charDir);
+            
+            // get all base names
+            const nameMap = new Map<string, true>();
+            for (let i = 0; i < files.length; i++) {
+
+                // only process .png files
+                if (!files[i].toLowerCase().endsWith('.png')) continue;
+
+                // split by '-' and take first part
+                const baseName = files[i].split('-')[0];
+
+                // store in map to deduplicate
+                nameMap.set(baseName, true);
+            }
+            
+            result[char] = Array.from(nameMap.keys());
 
         } catch (err) {
 
@@ -34,6 +49,6 @@ export const POST: RequestHandler = async ({ request }) => {
 
     }
 
-    return json({ files: result });
+    return json(result);
 
 };
