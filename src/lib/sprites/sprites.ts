@@ -57,13 +57,14 @@ export function drawSprites(
     
     const keys = Object.keys(sprites[active.idx].images);
 
+
+    const bm2 = sprites[active.idx].images[keys[active.imgIdx]][2];
+    ctx.drawImage(bm2, (width - bm2.width) / 2, (height - bm2.height) / 2);
+
     const bm0 = sprites[active.idx].images[keys[active.imgIdx]][0];
     ctx.drawImage(bm0, (width - bm0.width) / 2, (height - bm0.height) / 2);
 
     const bm1 = sprites[active.idx].images[keys[active.imgIdx]][1];
     ctx.drawImage(bm1, (width - bm1.width) / 2, (height - bm1.height) / 2);
-
-    const bm2 = sprites[active.idx].images[keys[active.imgIdx]][2];
-    ctx.drawImage(bm2, (width - bm2.width) / 2, (height - bm2.height) / 2);
 
 }
