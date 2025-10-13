@@ -1,10 +1,15 @@
 
 
 
+export type Instruction = {
+    data: Record<string, number>
+    duration: number[]
+}
+
 export type Sprite = {
     name: string
     images: Record<string, ImageBitmap>;
-    instructions: string
+    instructions: Record<string, Instruction>
 };
 
 export async function createSprites(files: Record<string, string[]>): Promise<Sprite[]> {
@@ -26,48 +31,66 @@ export async function createSprites(files: Record<string, string[]>): Promise<Sp
                     const root = xmlDoc.getElementsByTagName("AnimData")[0];
                     const anims = root.getElementsByTagName("Anims")[0];
 
+                    const instructions: Record<string, Instruction> = {};
+
                     const animEls = Array.from(anims.getElementsByTagName("Anim"));
                     for (const animEl of animEls) {
-                        console.log(charName, "animEl", animEl);
+                        const children = Array.from(animEl.children);
 
-                        console.log("animEl.children", animEl.children)
+                        const instruction: Instruction = { data: {}, duration: [] };
+                        let animName = "";
 
+                        for (const child of children) {
+                            const tag = child.tagName;                         // e.g. "Name", "Index", "Durations"
+                            const textVal = child.textContent?.trim() ?? "";
 
+                            if (tag === "Durations") {
+                                const durNodes = Array.from(child.getElementsByTagName("Duration"));
+                                instruction.duration = durNodes.length > 0 ? durNodes.map(d => Number(d.textContent)) : textVal.split(/\s+/).filter(Boolean).map(Number);
+                            } else if (tag === "Name") {
+                                animName = textVal;
+                            } else if (tag === "CopyOf") {
+                            } else {
+                                const n = Number(textVal);
+                                instruction.data[tag] = Number.isFinite(n) ? n : 0;
+                            }
+                        }
+
+                        if (animName && instruction.duration.length > 0) {
+                            instructions[animName] = instruction;
+                        }
                     }
-                    
 
-                    return text;
+                    return instructions;
                 } catch (err) {
                     console.warn(`⚠️ No AnimData.xml found for ${charName}:`, err);
-                    return "";
+                    return {} as Record<string, Instruction>;
                 }
             })();
 
             // Start all image fetches in parallel
             const imagePromises = bases.map(async (baseName) => {
-                const url = `/sprites/${charName}/${baseName}-Anim.png`;
-                const res = await fetch(url);
-                if (!res.ok) throw new Error(`Failed to load image: ${url}`);
-
-                const blob = await res.blob();
-                const bitmap = await createImageBitmap(blob);
-                images[baseName] = bitmap;
+            const url = `/sprites/${charName}/${baseName}-Anim.png`;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`Failed to load image: ${url}`);
+            const blob = await res.blob();
+            const bitmap = await createImageBitmap(blob);
+            images[baseName] = bitmap;
             });
 
             // Wait for both (images + XML)
-            const [_, animDataText] = await Promise.all([
-                Promise.all(imagePromises),
-                xmlPromise
+            const [_, instructions] = await Promise.all([
+            Promise.all(imagePromises),
+            xmlPromise,
             ]);
 
             return {
-                name: charName,
-                images,
-                instructions: animDataText,
+            name: charName,
+            images,
+            instructions, 
             } satisfies Sprite;
-
         })
-  );
+    );
 
   const end = performance.now();
   const duration = (end - start).toFixed(2);

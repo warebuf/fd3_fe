@@ -112,6 +112,7 @@
 
       // character setup 
       sprites = await createSprites(spriteActionsJSON);
+      console.log(sprites)
       activeSprite = {idx: 0, imgIdx: 0}
 
       // guard against requestAnimationFrame
