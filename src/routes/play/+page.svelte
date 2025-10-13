@@ -107,11 +107,10 @@
         body: JSON.stringify({ characters: characters })
       });
 
+      // get list of sprite sheets
       const spriteActionsJSON = await spriteActionsRequest.json();
 
-      console.log("spriteActionsJSON", spriteActionsJSON)
-
-      // sprite setup 
+      // character setup 
       sprites = await createSprites(spriteActionsJSON);
       activeSprite = {idx: 0, imgIdx: 0}
 
