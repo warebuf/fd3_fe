@@ -49,7 +49,7 @@ export async function createSprites(files: Record<string, string[]>): Promise<Sp
                                 instruction.duration = durNodes.length > 0 ? durNodes.map(d => Number(d.textContent)) : textVal.split(/\s+/).filter(Boolean).map(Number);
                             } else if (tag === "Name") {
                                 animName = textVal;
-                            } else if (tag === "CopyOf") {
+                            } else if (tag === "CopyOf" || tag === "Index") {
                             } else {
                                 const n = Number(textVal);
                                 instruction.data[tag] = Number.isFinite(n) ? n : 0;

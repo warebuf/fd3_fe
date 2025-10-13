@@ -48,6 +48,11 @@
         e.preventDefault();
         console.log('left');
         activeSprite = decrement(sprites, activeSprite);
+        const k1 = Object.keys(sprites[activeSprite.idx].images);
+        console.log(k1[activeSprite.imgIdx])
+        console.log("data", sprites[activeSprite.idx].instructions[k1[activeSprite.imgIdx]].data)
+        console.log("duration", sprites[activeSprite.idx].instructions[k1[activeSprite.imgIdx]].duration)
+        console.log("\n")
         break;
 
       case 'ArrowRight':
@@ -56,6 +61,11 @@
         e.preventDefault();
         console.log('right');
         activeSprite = increment(sprites, activeSprite);
+        const k2 = Object.keys(sprites[activeSprite.idx].images);
+        console.log(k2[activeSprite.imgIdx])
+        console.log("data", sprites[activeSprite.idx].instructions[k2[activeSprite.imgIdx]].data)
+        console.log("duration", sprites[activeSprite.idx].instructions[k2[activeSprite.imgIdx]].duration)
+        console.log("\n")
         break;
 
       default:
@@ -112,7 +122,6 @@
 
       // character setup 
       sprites = await createSprites(spriteActionsJSON);
-      console.log(sprites)
       activeSprite = {idx: 0, imgIdx: 0}
 
       // guard against requestAnimationFrame
@@ -128,6 +137,7 @@
       cancelled = true;
       cancelAnimationFrame(animationID);
       window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener('keydown', onKey);
     };
 
   });
