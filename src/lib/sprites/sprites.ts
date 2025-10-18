@@ -6,16 +6,24 @@ export type Instruction = {
     duration: number[]
 }
 
-export type Sprite = {
+export type Atlas = {
     name: string
     images: Record<string, ImageBitmap>;
     instructions: Record<string, Instruction>
 };
 
-export async function createSprites(files: Record<string, string[]>): Promise<Sprite[]> {
+export type Sprite = {
+    atlasIdx: number // which atlas to draw
+    imgIdx: number // index of image in the atlas
+    durationIdx: number // duration index
+    frameTime: number // how many ms we are into the frame
+    direction: number // 0: down, 1: dr, 2: right, 3: ur, 4: up, 5: ul, 6: left, 7: dl
+}
+
+export async function createAtlases(files: Record<string, string[]>): Promise<Atlas[]> {
     const start = performance.now();
 
-    const sprites = await Promise.all(
+    const atlases = await Promise.all(
         Object.entries(files).map(async ([charName, bases]) => {
             const images: Record<string, ImageBitmap> = {};
 
@@ -88,39 +96,64 @@ export async function createSprites(files: Record<string, string[]>): Promise<Sp
             name: charName,
             images,
             instructions, 
-            } satisfies Sprite;
+            } satisfies Atlas;
         })
     );
 
   const end = performance.now();
   const duration = (end - start).toFixed(2);
-  console.log(`🏁 Finished createSprites in ${duration} ms`);
+  console.log(`🏁 Finished createAtlases in ${duration} ms`);
 
-  return sprites;
+  return atlases;
 }
 
-export function drawSprites(
-  ctx: CanvasRenderingContext2D,
-  sprites: Sprite[],
-  active: { idx: number; imgIdx: number },
-  width: number,
-  height: number
+export function drawSprites( 
+    ctx: CanvasRenderingContext2D, 
+    atlases: Atlas[], 
+    sprite: Sprite, 
+    width: number, height: number,
+    dt: number
 ) {
-  const keys = Object.keys(sprites[active.idx].images);
-  const bm0 = sprites[active.idx].images[keys[active.imgIdx]];
+    
+    const keys = Object.keys(atlases[sprite.atlasIdx].images);
+    const bitmap = atlases[sprite.atlasIdx].images[keys[sprite.imgIdx]];
 
-  // Compute centered image position
-  const x = (width - bm0.width) / 2;
-  const y = (height - bm0.height) / 2;
+    // get frame dimensions
+    const frameWidth = atlases[sprite.atlasIdx].instructions[keys[sprite.imgIdx]].data["FrameWidth"];
+    const frameHeight = atlases[sprite.atlasIdx].instructions[keys[sprite.imgIdx]].data["FrameHeight"];
 
-  // Draw the sprite
-  ctx.drawImage(bm0, x, y);
+    // compute top left corner
+    const startX = sprite.durationIdx * frameWidth;
+    const startY = sprite.direction * frameHeight;
 
-  // Draw the label "test" below the image
-  ctx.font = "15px sans-serif";
-  ctx.fillStyle = "white";
-  ctx.textAlign = "center";
+    // compute center
+    const destX = (width - frameWidth) / 2;
+    const destY = (height - frameHeight) / 2;
 
-  const textY = y + bm0.height + 50; // 24px below the image
-  ctx.fillText(keys[active.imgIdx], width / 2, textY);
+    // Draw the sprite
+    ctx.drawImage(
+        bitmap, 
+        startX, startY, // top left corner of frame
+        frameWidth, frameHeight, // frame dimensions
+        destX, destY, // destination coordinates
+        frameWidth, frameHeight, // destination dimensions
+    );
+
+    // Draw the label "test" below the image
+    ctx.font = "15px sans-serif";
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    const textY = destY + frameHeight + 10; // 24px below the image
+    ctx.fillText(keys[sprite.imgIdx], width / 2, textY);
+
+    // increment the frame
+    
+    sprite.frameTime = sprite.frameTime + dt;
+
+    const durations = atlases[sprite.atlasIdx].instructions[keys[sprite.imgIdx]].duration;
+    while (sprite.frameTime >= durations[sprite.durationIdx] * 1000 / 30) {
+        sprite.frameTime -= durations[sprite.durationIdx] * 1000 / 30;
+        sprite.durationIdx = (sprite.durationIdx + 1) % durations.length;
+    }
+
 }

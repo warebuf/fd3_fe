@@ -1,58 +1,63 @@
 
-import type { Sprite } from "$lib/sprites/sprites";
+import type { Atlas, Sprite } from "$lib/sprites/sprites";
 
 export function increment(
 
-    sprites: Sprite[],
-    active: { idx: number, imgIdx: number},
+    atlas: Atlas[],
+    sprite: Sprite,
 
 ) {
     
     let newCharacter = false;
-    let newImgIdx = active.imgIdx + 1;
-    const keys = Object.keys(sprites[active.idx].images);
+    let newImgIdx = sprite.imgIdx + 1;
+    const keys = Object.keys(atlas[sprite.atlasIdx].images);
     if(newImgIdx >= keys.length) {
         newImgIdx = 0;
         newCharacter = true;
     }
 
-    let newIdx = active.idx;
+    let newIdx = sprite.atlasIdx;
     if(newCharacter) {
         newIdx = newIdx + 1;
-        if(newIdx >= sprites.length) {
+        if(newIdx >= atlas.length) {
             newIdx = 0;
         }
     }
 
-    return {idx: newIdx, imgIdx: newImgIdx}
+    sprite.atlasIdx = newIdx;
+    sprite.imgIdx = newImgIdx;
+    sprite.durationIdx = 0;
+    sprite.frameTime = 0;
 
 }
 
-export function decrement(
-    sprites: Sprite[],
-    active: { idx: number; imgIdx: number }
-  ): { idx: number; imgIdx: number } {
-    if (!sprites?.length) return active;
+export function decrement( atlas: Atlas[], sprite: Sprite ) {
+
+    if (!atlas?.length) return;
   
     let newCharacter = false;
-    let newImgIdx = active.imgIdx - 1;
+    let newImgIdx = sprite.imgIdx - 1;
   
     // If we go before frame 0, move to previous character
     if (newImgIdx < 0) {
       newCharacter = true;
     }
   
-    let newIdx = active.idx;
+    let newIdx = sprite.atlasIdx;
   
     if (newCharacter) {
       newIdx = newIdx - 1;
       if (newIdx < 0) {
-        newIdx = sprites.length - 1; // wrap to last character
+        newIdx = atlas.length - 1; // wrap to last character
       }
 
-      const keys = Object.keys(sprites[newIdx].images);
+      const keys = Object.keys(atlas[newIdx].images);
       newImgIdx = keys.length - 1; // jump to last frame of previous sprite
     }
   
-    return { idx: newIdx, imgIdx: newImgIdx };
+    sprite.atlasIdx = newIdx;
+    sprite.imgIdx = newImgIdx;
+    sprite.durationIdx = 0;
+    sprite.frameTime = 0;
+    
   }

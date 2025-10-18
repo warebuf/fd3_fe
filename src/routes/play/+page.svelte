@@ -6,8 +6,8 @@
   
   import { increment, decrement } from "./keys/arrows";
 
-  import type { Sprite } from "$lib/sprites/sprites";
-  import { createSprites, drawSprites } from "$lib/sprites/sprites";
+  import type { Atlas, Sprite } from "$lib/sprites/sprites";
+  import { createAtlases, drawSprites } from "$lib/sprites/sprites";
 
 
 
@@ -15,9 +15,12 @@
   let ctx: CanvasRenderingContext2D;
   let animationID: number; // saved for easy cleanup
   let ws: WebSocket;
+  let lastTime = performance.now(); // tracks frame time
 
-  let sprites: Sprite[];
-  let activeSprite: {idx: number, imgIdx: number}
+  let atlases: Atlas[];
+  let activeSprite: Sprite;
+
+
 
   function resizeCanvas() {
     const dpr = window.devicePixelRatio || 1;
@@ -27,14 +30,18 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  function loop() {
+  function loop(now: number) {
+
+    const dt = now - lastTime; // ms since last frame
+    lastTime = now;
+
     const width = canvasEl.clientWidth;
     const height = canvasEl.clientHeight;
     ctx.clearRect(0, 0, width, height);
 
     drawTime(ctx, width, height);
 
-    drawSprites(ctx, sprites, activeSprite, width, height);
+    drawSprites(ctx, atlases, activeSprite, width, height, dt);
 
     // schedule next frame
     animationID = requestAnimationFrame(loop);
@@ -42,30 +49,26 @@
 
   function onKey(e: KeyboardEvent) {
     switch (e.key) {
-      case 'ArrowLeft':
-      case 'a':
-      case 'A':
+      case ',':
         e.preventDefault();
-        console.log('left');
-        activeSprite = decrement(sprites, activeSprite);
-        const k1 = Object.keys(sprites[activeSprite.idx].images);
-        console.log(k1[activeSprite.imgIdx])
-        console.log("data", sprites[activeSprite.idx].instructions[k1[activeSprite.imgIdx]].data)
-        console.log("duration", sprites[activeSprite.idx].instructions[k1[activeSprite.imgIdx]].duration)
-        console.log("\n")
+        decrement(atlases, activeSprite);
         break;
 
-      case 'ArrowRight':
-      case 'd':
-      case 'D':
+      case '.':
         e.preventDefault();
-        console.log('right');
-        activeSprite = increment(sprites, activeSprite);
-        const k2 = Object.keys(sprites[activeSprite.idx].images);
-        console.log(k2[activeSprite.imgIdx])
-        console.log("data", sprites[activeSprite.idx].instructions[k2[activeSprite.imgIdx]].data)
-        console.log("duration", sprites[activeSprite.idx].instructions[k2[activeSprite.imgIdx]].duration)
-        console.log("\n")
+        increment(atlases, activeSprite);
+        break;
+
+      case 'ArrowLeft':
+        e.preventDefault();
+        activeSprite.direction -= 1;
+        if(activeSprite.direction < 0) {activeSprite.direction = 7;}
+        break;
+      
+      case 'ArrowRight':
+        e.preventDefault();
+        activeSprite.direction += 1;
+        if(activeSprite.direction > 7) {activeSprite.direction = 0;}
         break;
 
       default:
@@ -107,7 +110,7 @@
     (async () => { 
 
       // 
-      const characters = ['bulbasaur', 'missingno', 'pidgey', 'sandshrew', 'sandslash', ]
+      const characters = [ 'bulbasaur', 'missingno' ]
 
       // server call, get list of sheet paths for a character
       // NOTE: instead of a server call, this could just be a JSON
@@ -121,14 +124,14 @@
       const spriteActionsJSON = await spriteActionsRequest.json();
 
       // character setup 
-      sprites = await createSprites(spriteActionsJSON);
-      activeSprite = {idx: 0, imgIdx: 0}
+      atlases = await createAtlases(spriteActionsJSON);
+      activeSprite = {atlasIdx: 0, imgIdx: 0, durationIdx: 0, frameTime: 0, direction: 0}
 
       // guard against requestAnimationFrame
       if (cancelled) return;
 
       // start the game loop once everything loads
-      loop(); 
+      animationID = requestAnimationFrame(loop);
 
     })();
 
