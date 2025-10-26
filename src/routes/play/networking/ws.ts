@@ -1,6 +1,6 @@
 
 
-import { sendPing, stopPing } from "./ping";
+import { sendPing, stopPing, calculateOffset } from "./ping";
 
 
 export function connectWS() {
@@ -13,7 +13,15 @@ export function connectWS() {
     });
 
     ws.addEventListener("message", (event) => {
-      console.log("📩 Message from server:", event.data);
+      
+      const clientReceive = Date.now(); 
+      const msg = JSON.parse(event.data);
+      switch (msg.type) {
+        case "p":
+          calculateOffset(msg.t1, msg.t2, clientReceive)
+          break;
+      }
+
     });
 
     ws.addEventListener("close", () => {

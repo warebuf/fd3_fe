@@ -2,7 +2,6 @@
 
 let pingID = 0;
 let intervalID = -1;
-let t1 = 0;
 
 export function sendPing( ws: WebSocket ) {
 
@@ -16,8 +15,7 @@ export function sendPing( ws: WebSocket ) {
         }
 
         try { 
-            t1 = Date.now();
-            ws.send(JSON.stringify( { type: "p", id: pingID, t1: t1 } )); 
+            ws.send(JSON.stringify( { type: "p", id: pingID, t1: Date.now() } )); 
             pingID += 1;
         } catch {
             return;
@@ -34,3 +32,10 @@ export function stopPing( ) {
     }
 }
 
+export function calculateOffset(clientSend: number, serverReceive: number, clientReceive: number) {
+
+    const rtt = clientReceive - clientSend;
+    const oneWay = rtt / 2;
+    const offset = serverReceive - (clientSend + oneWay);
+    console.log(`ping: ${rtt} ms, offset: ${offset} ms`);
+}
