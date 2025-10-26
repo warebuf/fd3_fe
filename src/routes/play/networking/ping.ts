@@ -21,7 +21,7 @@ export function sendPing( ws: WebSocket ) {
             return;
         }
         
-    }, 3000);
+    }, 5000);
 
 }
 
