@@ -2,14 +2,17 @@
 
   import { onMount } from "svelte";
 
+  import { connectWS } from "./networking/ws";
+  import { stopPing } from "./networking/ping";
+
   import { drawTime } from "./engine/drawTime";
   
   import { increment, decrement } from "./keys/arrows";
 
   import type { Atlas, Sprite } from "$lib/sprites/sprites";
   import { createAtlases, drawSprites } from "$lib/sprites/sprites";
-
-
+  
+  
 
   let canvasEl: HTMLCanvasElement; // saved for reshapes
   let ctx: CanvasRenderingContext2D;
@@ -45,6 +48,7 @@
 
     // schedule next frame
     animationID = requestAnimationFrame(loop);
+    
   }
 
   function onKey(e: KeyboardEvent) {
@@ -87,24 +91,7 @@
     window.addEventListener('keydown', onKey);
 
     // websocket setup
-    ws = new WebSocket("ws://localhost:3000/ws");
-
-    ws.addEventListener("open", () => {
-      console.log("✅ Connected to server");
-      ws.send("Hello server!");
-    });
-
-    ws.addEventListener("message", (event) => {
-      console.log("📩 Message from server:", event.data);
-    });
-
-    ws.addEventListener("close", () => {
-      console.log("❌ Connection closed");
-    });
-
-    ws.addEventListener("error", (err) => {
-      console.error("⚠️ WebSocket error", err);
-    });
+    ws = connectWS();
 
     let cancelled = false; 
     (async () => { 
@@ -138,9 +125,13 @@
     // cleanup on unmount
     return () => {
       cancelled = true;
-      cancelAnimationFrame(animationID);
-      window.removeEventListener("resize", resizeCanvas);
-      window.removeEventListener('keydown', onKey);
+
+      cancelAnimationFrame(animationID); // cancel animation loop
+      stopPing(); // stop networking ping
+      
+      window.removeEventListener("resize", resizeCanvas); // stop listeners
+      window.removeEventListener('keydown', onKey); // stop listeners
+      
     };
 
   });
@@ -161,6 +152,7 @@
     display: block;
     background: #222;
   }
+
 </style>
 
 <div class="wrap">
