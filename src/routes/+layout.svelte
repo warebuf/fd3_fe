@@ -1,10 +1,13 @@
 <script>
 	import '/src/app.css';
+
 </script>
   
 <div class="shell">
 	<header class="topbar">
-		<p class="logo">Fighting Demons № 1</p>
+		
+		<p class="logo">Fighting Demons</p>
+		
 		<nav>
 			<a href="/play">Play</a>
 		</nav>
@@ -40,6 +43,9 @@
 		font-size: 12px;
 		margin: 0;
 		margin-left: 6px;
+		display: flex;
+		align-items: center;
+		gap: 2px;
 	}
 	
 	nav {   
