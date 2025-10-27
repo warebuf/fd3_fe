@@ -4,10 +4,10 @@
   
 <div class="shell">
 	<header class="topbar">
-	  <nav>
-		<a href="/">Home</a>
-		<a href="/play">Play</a>
-	  </nav>
+		<p class="logo">Fighting Demons № 1</p>
+		<nav>
+			<a href="/play">Play</a>
+		</nav>
 	</header>
   
 	<div class="main">
@@ -28,17 +28,26 @@
 		display: flex;
 		flex-direction: column;
 	}
+
+	.topbar {
+		background-color: black;
+		display: grid; 
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+	}
+
+	.logo {
+		font-size: 12px;
+		margin: 0;
+		margin-left: 6px;
+	}
 	
-	/* navbar styling */
-	nav {
-	  	background-color: black;   
-	  	padding: 1px;
+	nav {   
 		text-align: center;
 	}
 
 	nav a {
 	  	color: white;              
-	  	margin-right: 1rem;
 	  	text-decoration: none;
 	  	font-size: 12px;
 	}

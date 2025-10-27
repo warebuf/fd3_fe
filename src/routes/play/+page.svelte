@@ -118,7 +118,7 @@
 
       // character setup 
       atlases = await createAtlases(spriteActionsJSON);
-      activeSprite = {atlasIdx: 0, imgIdx: 0, durationIdx: 0, frameTime: 0, direction: 0}
+      activeSprite = {atlasIdx: 0, imgIdx: 0, durationIdx: 0, frameTime: 0, direction: 0};
 
       // guard against requestAnimationFrame
       if (cancelled) return;
