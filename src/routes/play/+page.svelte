@@ -90,11 +90,17 @@
     // keys setup
     window.addEventListener('keydown', onKey);
 
-    // websocket setup
-    ws = connectWS();
-
     let cancelled = false; 
     (async () => { 
+
+      // if guest, getGuestID
+      await fetch("/backend/getGuestID", {
+        method: "GET",
+        credentials: "include",
+      });
+    
+      // websocket setup
+      ws = connectWS();
 
       // 
       const characters = [ 'bulbasaur', 'missingno' ]

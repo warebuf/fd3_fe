@@ -38,4 +38,5 @@ export function calculateOffset(clientSend: number, serverReceive: number, clien
     const oneWay = rtt / 2;
     const offset = serverReceive - (clientSend + oneWay);
     console.log(`ping: ${rtt} ms, offset: ${offset} ms`);
+    
 }
