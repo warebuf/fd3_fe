@@ -1,5 +1,5 @@
 <div class="center">
-	<button class="rainbow">Find Match</button>
+	<button class="rainbow" on:click={findMatch}>Find Match</button>
 </div>
 
 <style>
@@ -77,3 +77,17 @@
   }
 
 </style>
+
+<script lang="ts">
+  let es: EventSource;
+
+  export function findMatch() {
+
+    console.log("called findMatch")
+
+    es = new EventSource("backend/matchmakingSSE");
+
+  }
+
+</script>
+
