@@ -47,10 +47,6 @@
 		align-items: center;
 		gap: 2px;
 	}
-	
-	nav {   
-		text-align: center;
-	}
 
 	nav a {
 	  	color: white;              
