@@ -79,7 +79,8 @@
 
 	.chatbox {
 		flex: 0 0 320px;            /* fixed right sidebar */
-		background: #1b1b1b; color: #fff;
+		background: #1b1b1b; 
+		color: #fff;
 		overflow: auto;             /* chat list can scroll independently */
 		overflow-wrap: anywhere;   /* modern, safest */
 		word-break: break-word;    /* older fallback */
