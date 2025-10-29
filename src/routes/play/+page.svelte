@@ -13,7 +13,7 @@
   import { createAtlases, drawSprites } from "$lib/sprites/sprites";
   
   
-
+  
   let canvasEl: HTMLCanvasElement; // saved for reshapes
   let ctx: CanvasRenderingContext2D;
   let animationID: number; // saved for easy cleanup
@@ -92,12 +92,6 @@
 
     let cancelled = false; 
     (async () => { 
-
-      // if guest, getGuestID
-      await fetch("/backend/getGuestID", {
-        method: "GET",
-        credentials: "include",
-      });
     
       // websocket setup
       ws = connectWS();

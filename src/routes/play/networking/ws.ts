@@ -5,9 +5,7 @@ import { sendPing, stopPing, calculateOffset } from "./ping";
 
 export function connectWS() {
     
-    const ws = new WebSocket(
-      window.location.origin.replace(/^http/, "ws") + "/ws"
-    );
+    const ws = new WebSocket( window.location.origin.replace(/^http/, "ws") + "/ws" );
   
     ws.addEventListener("open", () => {
       console.log("✅ Connected to server");

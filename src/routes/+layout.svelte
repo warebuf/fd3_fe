@@ -6,10 +6,12 @@
 <div class="shell">
 	<header class="topbar">
 		
-		<p class="logo">Fighting Demons</p>
+		<div class="logo">
+			<a class="navLink" href="/">Fighting Demons</a>
+		</div>
 		
 		<nav>
-			<a href="/play">Play</a>
+			<a  class="navLink" href="/play">Play</a>
 		</nav>
 	</header>
   
@@ -40,21 +42,17 @@
 	}
 
 	.logo {
-		font-size: 12px;
-		margin: 0;
 		margin-left: 6px;
 		display: flex;
-		align-items: center;
-		gap: 2px;
 	}
 
-	nav a {
+	.navLink {
 	  	color: white;              
 	  	text-decoration: none;
 	  	font-size: 12px;
 	}
 
-	nav a:hover {
+	.navLink:hover {
 	  	text-decoration: underline;
 	}
 

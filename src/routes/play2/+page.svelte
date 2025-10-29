@@ -1,3 +1,39 @@
+
+
+
+<script lang="ts">
+
+  let es: EventSource;
+
+  export async function findMatch() {
+    console.log("called findMatch");
+
+    // create guest cookie
+    const res = await fetch("/backend/getGuestID", {
+      method: "GET",
+      credentials: "include",
+    });
+    if (!res.ok && res.status !== 204) {
+      throw new Error("failed to get guestID");
+    }
+
+    es = new EventSource("/backend/matchmakingSSE", { withCredentials: true });
+    es.onmessage = (e) => {
+    if (e.data === "ping") { // ignore
+      return;
+    }
+    if (e.data === "match") {
+      console.log("MATCH!");
+      es.close(); // one-shot after match
+    } else {
+      console.log("msg:", e.data);
+    }
+
+  };
+  }
+
+</script>
+
 <div class="center">
 	<button class="rainbow" on:click={findMatch}>Find Match</button>
 </div>
@@ -16,7 +52,7 @@
     width: 90px;
     height: 30px;
     border-radius: 12px;
-    z-index: 0;
+    z-index: 1;
     position: relative;
     overflow: hidden;
     cursor:pointer;
@@ -50,18 +86,24 @@
   }
 
   .rainbow::after {
+    content: "Find Match";
 
+    /* center text */
     display: flex;
     align-items: center;
     justify-content: center;
-
-    content: "Find Match";
     color: white;
+
+    /* center cover */
     position: absolute;
-    background-color: black;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     z-index: 3;
+    background-color: black;
+    
     width: 98%;
-    height: 95%;
+    height: 94%;
     border-radius: 12px;
     border-width: 0;
   }
@@ -77,17 +119,4 @@
   }
 
 </style>
-
-<script lang="ts">
-  let es: EventSource;
-
-  export function findMatch() {
-
-    console.log("called findMatch")
-
-    es = new EventSource("backend/matchmakingSSE");
-
-  }
-
-</script>
 
