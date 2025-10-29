@@ -19,17 +19,17 @@
 
     es = new EventSource("/backend/matchmakingSSE", { withCredentials: true });
     es.onmessage = (e) => {
-    if (e.data === "ping") { // ignore
-      return;
-    }
-    if (e.data === "match") {
-      console.log("MATCH!");
-      es.close(); // one-shot after match
-    } else {
-      console.log("msg:", e.data);
-    }
+      if (e.data === "ping") { // ignore
+        return;
+      }
+      if (e.data === "match") {
+        console.log("MATCH!");
+        es.close(); // one-shot after match
+      } else {
+        console.log("msg:", e.data);
+      }
 
-  };
+    };
   }
 
 </script>
