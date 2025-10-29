@@ -3,41 +3,73 @@
 
 <script lang="ts">
 
-  // TODO: add the toggle
-
-  let es: EventSource;
+  let es: EventSource | null;
+  let finding = false;
 
   export async function findMatch() {
-    console.log("called findMatch");
+    
+    finding = true;
 
-    // create guest cookie
-    const res = await fetch("/backend/getGuestID", {
-      method: "GET",
-      credentials: "include",
-    });
-    if (!res.ok && res.status !== 204) {
-      throw new Error("failed to get guestID");
+    try {
+      // create guest cookie
+      const res = await fetch("/backend/getGuestID", {
+        method: "GET",
+        credentials: "include",
+      });
+      if (!res.ok && res.status !== 204) {
+        throw new Error("failed to get guestID");
+      }
+
+      es = new EventSource("/backend/matchmakingSSE", { withCredentials: true });
+      es.onmessage = (e) => {
+        if (e.data === "ping") { // ignore
+          return;
+        }
+        if (e.data === "match") {
+          console.log("MATCH!");
+          es?.close(); // one-shot after match
+          es = null;
+          finding = false;
+        } else {
+          console.log("msg:", e.data);
+        }
+      };
+
+      es.onerror = (e) => {
+        console.log("error", e)
+        es?.close()
+        es = null;
+        finding = false;
+      }
+
+    } catch (e) {
+      console.log("error2", e)
+      finding = false;
     }
+    
+  }
 
-    es = new EventSource("/backend/matchmakingSSE", { withCredentials: true });
-    es.onmessage = (e) => {
-      if (e.data === "ping") { // ignore
-        return;
-      }
-      if (e.data === "match") {
-        console.log("MATCH!");
-        es.close(); // one-shot after match
-      } else {
-        console.log("msg:", e.data);
-      }
-
-    };
+  export async function toggleFindMatch() {
+    if(finding) {
+      es?.close();
+      es = null;
+      finding = false;
+      //await fetch("/backend/leaveQueue", { method: "POST", credentials: "include" });
+      return;
+    }
+    await findMatch();
   }
 
 </script>
 
 <div class="center">
-	<button class="rainbow" on:click={findMatch}>Find Match</button>
+  <button
+    class="rainbow"
+    data-label={finding ? "Searching" : "Find Match"}
+    on:click={toggleFindMatch}
+    aria-pressed={finding}
+    aria-label={finding ? "Cancel matchmaking" : "Find match"}
+  > </button>
 </div>
 
 <style>
@@ -88,7 +120,7 @@
   }
 
   .rainbow::after {
-    content: "Find Match";
+    content: attr(data-label);
 
     /* center text */
     display: flex;
