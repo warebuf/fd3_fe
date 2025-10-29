@@ -3,6 +3,8 @@
 
 <script lang="ts">
 
+  // TODO: add the toggle
+
   let es: EventSource;
 
   export async function findMatch() {
