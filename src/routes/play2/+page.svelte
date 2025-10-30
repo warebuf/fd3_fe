@@ -147,6 +147,10 @@
     animation-play-state: paused;
   }
 
+  .rainbow:hover::before{
+    animation: spin 1.5s infinite linear;
+  }
+
   @keyframes spin {
     to{
       transform: rotate(360deg);
