@@ -82,15 +82,15 @@
 	}
 
   .rainbow {
-    background-color: red;
+    background-color: transparent;
     width: 90px;
     height: 30px;
     border-radius: 12px;
+    border-width: 0;
     z-index: 1;
     position: relative;
     overflow: hidden;
-    cursor:pointer;
-    border-width: 0;
+    cursor: pointer;
 
     display: flex;
     align-items: center;
@@ -117,6 +117,7 @@
     background: var(--gradient);
     z-index: 2;
 
+    animation: spin 1.5s infinite linear;
   }
 
   .rainbow::after {
@@ -142,8 +143,8 @@
     border-width: 0;
   }
 
-  .rainbow:hover::before{
-    animation: spin 1.5s infinite linear;
+  .rainbow[data-label="Find Match"]::before {
+    animation-play-state: paused;
   }
 
   @keyframes spin {
