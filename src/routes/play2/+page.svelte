@@ -54,7 +54,6 @@
       es?.close();
       es = null;
       finding = false;
-      //await fetch("/backend/leaveQueue", { method: "POST", credentials: "include" });
       return;
     }
     await findMatch();
