@@ -1,160 +1,160 @@
+
+
+
 <script lang="ts">
 
-  import { onMount } from "svelte";
+  let es: EventSource | null;
+  let finding = false;
 
-  import { connectWS } from "./networking/ws";
-  import { stopPing } from "./networking/ping";
-
-  import { drawTime } from "./engine/drawTime";
-  
-  import { increment, decrement } from "./keys/arrows";
-
-  import type { Atlas, Sprite } from "$lib/sprites/sprites";
-  import { createAtlases, drawSprites } from "$lib/sprites/sprites";
-  
-  
-  
-  let canvasEl: HTMLCanvasElement; // saved for reshapes
-  let ctx: CanvasRenderingContext2D;
-  let animationID: number; // saved for easy cleanup
-  let ws: WebSocket;
-  let lastTime = performance.now(); // tracks frame time
-
-  let atlases: Atlas[];
-  let activeSprite: Sprite;
-
-
-
-  function resizeCanvas() {
-    const dpr = window.devicePixelRatio || 1;
-    const { width, height } = canvasEl.getBoundingClientRect();
-    canvasEl.width  = Math.max(1, Math.round(width  * dpr));
-    canvasEl.height = Math.max(1, Math.round(height * dpr));
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-
-  function loop(now: number) {
-
-    const dt = now - lastTime; // ms since last frame
-    lastTime = now;
-
-    const width = canvasEl.clientWidth;
-    const height = canvasEl.clientHeight;
-    ctx.clearRect(0, 0, width, height);
-
-    drawTime(ctx, width, height);
-
-    drawSprites(ctx, atlases, activeSprite, width, height, dt);
-
-    // schedule next frame
-    animationID = requestAnimationFrame(loop);
+  export async function findMatch() {
     
-  }
+    finding = true;
 
-  function onKey(e: KeyboardEvent) {
-    switch (e.key) {
-      case ',':
-        e.preventDefault();
-        decrement(atlases, activeSprite);
-        break;
-
-      case '.':
-        e.preventDefault();
-        increment(atlases, activeSprite);
-        break;
-
-      case 'ArrowLeft':
-        e.preventDefault();
-        activeSprite.direction -= 1;
-        if(activeSprite.direction < 0) {activeSprite.direction = 7;}
-        break;
-      
-      case 'ArrowRight':
-        e.preventDefault();
-        activeSprite.direction += 1;
-        if(activeSprite.direction > 7) {activeSprite.direction = 0;}
-        break;
-
-      default:
-        break;
-    }
-  }
-
-  onMount(() => {
-
-    // canvas element setup
-    ctx = canvasEl.getContext("2d")!;
-    resizeCanvas();                       
-    window.addEventListener("resize", resizeCanvas);
-
-    // keys setup
-    window.addEventListener('keydown', onKey);
-
-    let cancelled = false; 
-    (async () => { 
-    
-      // websocket setup
-      ws = connectWS();
-
-      // 
-      const characters = [ 'bulbasaur', 'missingno' ]
-
-      // server call, get list of sheet paths for a character
-      // NOTE: instead of a server call, this could just be a JSON
-      const spriteActionsRequest = await fetch('/api/sprites', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ characters: characters })
+    try {
+      // create guest cookie
+      const res = await fetch("/backend/getGuestID", {
+        method: "GET",
+        credentials: "include",
       });
+      if (!res.ok && res.status !== 204) {
+        throw new Error("failed to get guestID");
+      }
 
-      // get list of sprite sheets
-      const spriteActionsJSON = await spriteActionsRequest.json();
+      es = new EventSource("/backend/matchmakingSSE", { withCredentials: true });
+      es.onmessage = (e) => {
+        if (e.data === "ping") { // ignore
+          return;
+        }
+        if (e.data === "match") {
+          console.log("MATCH!");
+          es?.close(); // one-shot after match
+          es = null;
+          finding = false;
+        } else {
+          console.log("msg:", e.data);
+        }
+      };
 
-      // character setup 
-      atlases = await createAtlases(spriteActionsJSON);
-      activeSprite = {atlasIdx: 0, imgIdx: 0, durationIdx: 0, frameTime: 0, direction: 0};
+      es.onerror = (e) => {
+        console.log("error", e)
+        es?.close()
+        es = null;
+        finding = false;
+      }
 
-      // guard against requestAnimationFrame
-      if (cancelled) return;
+    } catch (e) {
+      console.log("error2", e)
+      finding = false;
+    }
+    
+  }
 
-      // start the game loop once everything loads
-      animationID = requestAnimationFrame(loop);
-
-    })();
-
-    // cleanup on unmount
-    return () => {
-      cancelled = true;
-
-      cancelAnimationFrame(animationID); // cancel animation loop
-      stopPing(); // stop networking ping
-      
-      window.removeEventListener("resize", resizeCanvas); // stop listeners
-      window.removeEventListener('keydown', onKey); // stop listeners
-      
-    };
-
-  });
+  export async function toggleFindMatch() {
+    if(finding) {
+      es?.close();
+      es = null;
+      finding = false;
+      return;
+    }
+    await findMatch();
+  }
 
 </script>
-  
-<style>  
 
-  .wrap {
-    flex: 1;
-    min-height: 0;
+<div class="center">
+  <button
+    class="rainbow"
+    data-label={finding ? "Searching" : "Find Match"}
+    on:click={toggleFindMatch}
+    aria-pressed={finding}
+    aria-label={finding ? "Cancel matchmaking" : "Find match"}
+  > </button>
+</div>
+
+<style>
+
+	.center {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100%; /* inherits available height from parent */
+	}
+
+  .rainbow {
+    background-color: transparent;
+    width: 90px;
+    height: 30px;
+    border-radius: 12px;
+    border-width: 0;
+    z-index: 1;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+
     display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* gradient */
+    --gradient: conic-gradient(
+      #FF2E2E,
+      #FF831E,
+      #FCFF51,
+      #58FF57,
+      #575FFF,
+      #D257FF,
+      #FF57E5,
+      #FF1556
+    )
   }
 
-  canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-    background: #222;
+  .rainbow::before {
+    content: '';
+    position: absolute;
+    width: 110%;
+    height: 350%;
+    background: var(--gradient);
+    z-index: 2;
+
+    animation: spin 1.5s infinite linear;
+  }
+
+  .rainbow::after {
+    content: attr(data-label);
+
+    /* center text */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+
+    /* center cover */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    background-color: black;
+    
+    width: 98%;
+    height: 94%;
+    border-radius: 12px;
+    border-width: 0;
+  }
+
+  .rainbow[data-label="Find Match"]::before {
+    animation-play-state: paused;
+  }
+
+  .rainbow:hover::before{
+    animation: spin 1.5s infinite linear;
+  }
+
+  @keyframes spin {
+    to{
+      transform: rotate(360deg);
+    }
   }
 
 </style>
 
-<div class="wrap">
-  <canvas bind:this={canvasEl}></canvas>
-</div>
