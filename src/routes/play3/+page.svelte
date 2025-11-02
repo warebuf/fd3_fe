@@ -131,7 +131,6 @@
       
       window.removeEventListener("resize", resizeCanvas); // stop listeners
       window.removeEventListener('keydown', onKey); // stop listeners
-      
     };
 
   });
