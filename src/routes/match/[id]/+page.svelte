@@ -12,9 +12,9 @@
     onMount(() => {
         
         (async () => { 
-    
+
             // websocket setup
-            ws = connectWS();
+            ws = connectWS(matchID);
 
         })();
 

@@ -1,6 +1,7 @@
 <script lang="ts">
 
   import { goto } from '$app/navigation';
+  import { onMount } from 'svelte';
 
   let es: EventSource | null;
   let finding = false;
@@ -65,6 +66,18 @@
     }
     await findMatch();
   }
+
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.code === "Space") {
+      e.preventDefault(); // prevent default page scroll
+      toggleFindMatch();
+    }
+  }
+
+  onMount(() => {
+    window.addEventListener("keydown", handleKeydown);
+    return () => window.removeEventListener("keydown", handleKeydown);
+  });
 
 </script>
 

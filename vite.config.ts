@@ -2,6 +2,7 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
+// configures vite dev server, forwards requests to /backend to localhost:3000
 export default defineConfig({
   plugins: [sveltekit()],
   server: {
@@ -13,16 +14,10 @@ export default defineConfig({
       '^/backend($|/)': {
         target: 'http://localhost:3000',  
         changeOrigin: true,
-        secure: false,
-		rewrite: (p) => p.replace(/^\/backend/, ''),                    
+        ws: true,
+		    rewrite: (p) => p.replace(/^\/backend/, ''),                    
       },
 
-      '^/ws($|/)': {
-        target: 'ws://localhost:3000',
-        ws: true,
-        changeOrigin: true,
-        secure: false
-      }
     }
   }
 });
