@@ -1,7 +1,6 @@
-
-
-
 <script lang="ts">
+
+  import { goto } from '$app/navigation';
 
   let es: EventSource | null;
   let finding = false;
@@ -25,25 +24,33 @@
         if (e.data === "ping") { // ignore
           return;
         }
-        if (e.data === "match") {
-          console.log("MATCH!");
-          es?.close(); // one-shot after match
+        if (e.data.startsWith("match")) {
+
+          const matchID = e.data.slice(6); // remove "match "
+
+          es?.close();
           es = null;
           finding = false;
+
+          goto(`/match/${matchID}`);
+
         } else {
           console.log("msg:", e.data);
         }
       };
 
       es.onerror = (e) => {
-        console.log("error", e)
+        if ( es && es.readyState === EventSource.CLOSED ) {
+        } else {
+          console.log("error", e)
+        }
         es?.close()
         es = null;
         finding = false;
       }
 
     } catch (e) {
-      console.log("error2", e)
+      console.log("error", e)
       finding = false;
     }
     
