@@ -1,5 +1,7 @@
 
 
+// TODO: if you navigate away, you should cancel the ping intervals
+
 let pingID = 0;
 let intervalID = -1;
 
