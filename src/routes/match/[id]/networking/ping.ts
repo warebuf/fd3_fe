@@ -5,6 +5,8 @@
 let pingID = 0;
 let intervalID = -1;
 
+import { ping } from "./pingStore";
+
 export function sendPing( ws: WebSocket ) {
 
     stopPing(); // ensure only 1 interval loop running
@@ -35,10 +37,9 @@ export function stopPing( ) {
 }
 
 export function calculateOffset(clientSend: number, serverReceive: number, clientReceive: number) {
-
     const rtt = clientReceive - clientSend;
     const oneWay = rtt / 2;
     const offset = serverReceive - (clientSend + oneWay);
     console.log(`ping: ${rtt} ms, offset: ${offset} ms`);
-    
+    ping.set(rtt);
 }
