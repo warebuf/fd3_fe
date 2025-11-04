@@ -18,7 +18,7 @@ export function connectWS() {
       const msg = JSON.parse(event.data);
       switch (msg.type) {
         case "p":
-          calculateOffset(msg.t1, msg.t2, clientReceive)
+          calculateOffset(msg.t1, msg.t2, clientReceive);
           break;
       }
 
