@@ -4,8 +4,9 @@
     import { onMount } from 'svelte';
     import { connectWS } from "./networking/ws";
     import { ping } from "./networking/pingStore";
-  
     import { stopPing } from "./networking/ping";
+
+    import { drawBench } from "./ui/bench"
 
     import { increment, decrement } from "./keys/arrows";
 
@@ -35,7 +36,6 @@
     }
 
     function loop(now: number) {
-
         const dt = now - lastTime; // ms since last frame
         lastTime = now;
 
@@ -43,11 +43,12 @@
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
 
+        drawBench(ctx, width, height, 3);
+
         drawSprites(ctx, atlases, activeSprite, width, height, dt);
 
         // schedule next frame
         animationID = requestAnimationFrame(loop);
-        
     }
 
     function onKey(e: KeyboardEvent) {
@@ -82,7 +83,7 @@
 
     onMount(() => {
             
-        // canvas element setup
+        // canvas setup
         ctx = canvasEl.getContext("2d")!;
         resizeCanvas();                       
         window.addEventListener("resize", resizeCanvas);
@@ -91,7 +92,6 @@
         window.addEventListener('keydown', onKey);
 
         let cancelled = false;
-
         (async () => { 
 
             // websocket setup
@@ -125,13 +125,13 @@
 
         // cleanup on unmount
         return () => {
-        cancelled = true;
+            cancelled = true;
 
-        cancelAnimationFrame(animationID); // cancel animation loop
-        stopPing(); // stop networking ping
-        
-        window.removeEventListener("resize", resizeCanvas); // stop listeners
-        window.removeEventListener('keydown', onKey); // stop listeners
+            cancelAnimationFrame(animationID); // cancel animation loop
+            stopPing(); // stop networking ping
+            
+            window.removeEventListener("resize", resizeCanvas); // stop listeners
+            window.removeEventListener('keydown', onKey); // stop listeners
         };
 
     });
@@ -146,16 +146,16 @@
 
 <style>
     .ping {
-      position: fixed;
-      top: 20px;
-      right: 12px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(6px);
-      color: #fff;
-      font: 600 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      pointer-events: none; /* don't block clicks underneath */
+        position: fixed;
+        top: 20px;
+        right: 12px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(6px);
+        color: #fff;
+        font: 600 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        pointer-events: none; /* don't block clicks underneath */
     }
 
     .wrap {
@@ -168,6 +168,6 @@
         width: 100%;
         height: 100%;
         display: block;
-        background: #222;
+        background: #1a1a1a;
     }
-  </style>
+</style>
