@@ -14,7 +14,6 @@ export type Atlas = {
 
 export type Sprite = {
     atlasIdx: number // which atlas to draw
-    imgIdx: number // index of image in the atlas
     durationIdx: number // duration index
     frameTime: number // how many ms we are into the frame
     direction: number // 0: down, 1: dr, 2: right, 3: ur, 4: up, 5: ul, 6: left, 7: dl
@@ -107,53 +106,3 @@ export async function createAtlases(files: Record<string, string[]>): Promise<At
   return atlases;
 }
 
-export function drawSprites( 
-    ctx: CanvasRenderingContext2D, 
-    atlases: Atlas[], 
-    sprite: Sprite, 
-    width: number, height: number,
-    dt: number
-) {
-    
-    const keys = Object.keys(atlases[sprite.atlasIdx].images);
-    const bitmap = atlases[sprite.atlasIdx].images[keys[sprite.imgIdx]];
-
-    // get frame dimensions
-    const frameWidth = atlases[sprite.atlasIdx].instructions[keys[sprite.imgIdx]].data["FrameWidth"];
-    const frameHeight = atlases[sprite.atlasIdx].instructions[keys[sprite.imgIdx]].data["FrameHeight"];
-
-    // compute top left corner
-    const startX = sprite.durationIdx * frameWidth;
-    const startY = sprite.direction * frameHeight;
-
-    // compute center
-    const destX = (width - frameWidth) / 2;
-    const destY = (height - frameHeight) / 2;
-
-    // Draw the sprite
-    ctx.drawImage(
-        bitmap, 
-        startX, startY, // top left corner of frame
-        frameWidth, frameHeight, // frame dimensions
-        destX, destY, // destination coordinates
-        frameWidth, frameHeight, // destination dimensions
-    );
-
-    // Draw the label "test" below the image
-    ctx.font = "15px sans-serif";
-    ctx.fillStyle = "white";
-    ctx.textAlign = "center";
-    const textY = destY + frameHeight + 10; // 24px below the image
-    ctx.fillText(keys[sprite.imgIdx], width / 2, textY);
-
-    // increment the frame
-    
-    sprite.frameTime = sprite.frameTime + dt;
-
-    const durations = atlases[sprite.atlasIdx].instructions[keys[sprite.imgIdx]].duration;
-    while (sprite.frameTime >= durations[sprite.durationIdx] * 1000 / 30) {
-        sprite.frameTime -= durations[sprite.durationIdx] * 1000 / 30;
-        sprite.durationIdx = (sprite.durationIdx + 1) % durations.length;
-    }
-
-}

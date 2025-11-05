@@ -1,3 +1,5 @@
+
+
 export function drawBench(
   ctx: CanvasRenderingContext2D,
   canvasWidth: number,

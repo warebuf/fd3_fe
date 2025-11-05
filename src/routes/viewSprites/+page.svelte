@@ -2,10 +2,9 @@
 
     import { onMount } from 'svelte';
 
-    import { increment, decrement } from "./keys/arrows";
-
-    import type { Atlas, Sprite } from "$lib/sprites/sprites";
-    import { createAtlases, drawSprites } from "$lib/sprites/sprites";
+    import type { Atlas } from "$lib/sprites/sprites";
+    import { createAtlases } from "$lib/sprites/sprites";
+    import { drawAllSprites, incrementAtlas, decrementAtlas, incrementDirection, decrementDirection } from "$lib/sprites/drawAllSprites";
 
 
     let canvasEl: HTMLCanvasElement; // saved for reshapes
@@ -14,7 +13,6 @@
     let lastTime = performance.now(); // tracks frame time
 
     let atlases: Atlas[];
-    let activeSprite: Sprite;
   
     function resizeCanvas() {
         const dpr = window.devicePixelRatio || 1;
@@ -32,7 +30,7 @@
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
 
-        drawSprites(ctx, atlases, activeSprite, width, height, dt);
+        drawAllSprites(ctx, atlases, width, height, dt);
 
         // schedule next frame
         animationID = requestAnimationFrame(loop);
@@ -42,24 +40,26 @@
         switch (e.key) {
         case ',':
             e.preventDefault();
-            decrement(atlases, activeSprite);
+            decrementDirection();
             break;
 
         case '.':
             e.preventDefault();
-            increment(atlases, activeSprite);
+            incrementDirection();
             break;
 
+        case 'a':
+        case 'A':
         case 'ArrowLeft':
             e.preventDefault();
-            activeSprite.direction -= 1;
-            if(activeSprite.direction < 0) {activeSprite.direction = 7;}
+            decrementAtlas(atlases);
             break;
         
+        case 'd':
+        case 'D':
         case 'ArrowRight':
             e.preventDefault();
-            activeSprite.direction += 1;
-            if(activeSprite.direction > 7) {activeSprite.direction = 0;}
+            incrementAtlas(atlases);
             break;
 
         default:
@@ -97,7 +97,6 @@
 
             // character setup 
             atlases = await createAtlases(spriteActionsJSON);
-            activeSprite = {atlasIdx: 0, imgIdx: 0, durationIdx: 0, frameTime: 0, direction: 0};
 
             // guard against requestAnimationFrame
             if (cancelled) return;

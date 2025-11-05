@@ -8,10 +8,9 @@
 
     import { drawBench } from "./ui/bench"
 
-    import { increment, decrement } from "./keys/arrows";
-
     import type { Atlas, Sprite } from "$lib/sprites/sprites";
-    import { createAtlases, drawSprites } from "$lib/sprites/sprites";
+    import { createAtlases } from "$lib/sprites/sprites";
+    import { drawIdles } from "$lib/sprites/drawIdles";
 
 
     let canvasEl: HTMLCanvasElement; // saved for reshapes
@@ -20,7 +19,7 @@
     let lastTime = performance.now(); // tracks frame time
 
     let atlases: Atlas[];
-    let activeSprite: Sprite;
+    let benchAnimation: string[] = [];
 
     let matchID: string;
     $: matchID = $page.params.id!;
@@ -44,42 +43,11 @@
         ctx.clearRect(0, 0, width, height);
 
         drawBench(ctx, width, height, 3);
-
-        drawSprites(ctx, atlases, activeSprite, width, height, dt);
+        drawIdles(ctx, atlases, benchAnimation, width, height, dt);
 
         // schedule next frame
         animationID = requestAnimationFrame(loop);
     }
-
-    function onKey(e: KeyboardEvent) {
-        switch (e.key) {
-        case ',':
-            e.preventDefault();
-            decrement(atlases, activeSprite);
-            break;
-
-        case '.':
-            e.preventDefault();
-            increment(atlases, activeSprite);
-            break;
-
-        case 'ArrowLeft':
-            e.preventDefault();
-            activeSprite.direction -= 1;
-            if(activeSprite.direction < 0) {activeSprite.direction = 7;}
-            break;
-        
-        case 'ArrowRight':
-            e.preventDefault();
-            activeSprite.direction += 1;
-            if(activeSprite.direction > 7) {activeSprite.direction = 0;}
-            break;
-
-        default:
-            break;
-        }
-    }
-
 
     onMount(() => {
             
@@ -88,17 +56,15 @@
         resizeCanvas();                       
         window.addEventListener("resize", resizeCanvas);
 
-        // keys setup
-        window.addEventListener('keydown', onKey);
-
         let cancelled = false;
         (async () => { 
 
             // websocket setup
             ws = await connectWS(matchID);
 
-            // 
+            // init sprites
             const characters = [ 'bulbasaur', 'missingno' ]
+            benchAnimation = ["Shake", "Hurt"]
 
             // server call, get list of sheet paths for a character
             // NOTE: instead of a server call, this could just be a JSON
@@ -113,7 +79,6 @@
 
             // character setup 
             atlases = await createAtlases(spriteActionsJSON);
-            activeSprite = {atlasIdx: 0, imgIdx: 0, durationIdx: 0, frameTime: 0, direction: 0};
 
             // guard against requestAnimationFrame
             if (cancelled) return;
@@ -131,7 +96,6 @@
             stopPing(); // stop networking ping
             
             window.removeEventListener("resize", resizeCanvas); // stop listeners
-            window.removeEventListener('keydown', onKey); // stop listeners
         };
 
     });
