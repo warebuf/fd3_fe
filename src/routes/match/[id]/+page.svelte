@@ -8,7 +8,7 @@
 
     import { drawBench } from "./ui/bench"
 
-    import type { Atlas, Sprite } from "$lib/sprites/sprites";
+    import type { Atlas } from "$lib/sprites/sprites";
     import { createAtlases } from "$lib/sprites/sprites";
     import { drawIdles } from "$lib/sprites/drawIdles";
 
@@ -42,7 +42,7 @@
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
 
-        drawBench(ctx, width, height, 3);
+        drawBench(ctx, width, height, 2);
         drawIdles(ctx, atlases, benchAnimation, width, height, dt);
 
         // schedule next frame

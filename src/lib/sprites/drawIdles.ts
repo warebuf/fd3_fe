@@ -30,21 +30,21 @@ export function drawIdles(
 
         // calculate position on screen
         const x = startX + i * (size + gap);
-        const y = height - (frameHeight / 2) - 5;
+        const y = height - size - 10;
+
+        // shift the x, y so the sprite is centered
+        const shiftX = x + (size / 2) - (frameWidth /2);
+        const shiftY = y + (size / 2) - (frameHeight /2);
 
         // compute top left corner of sprite in spritesheet
         const sX = spriteList[i].durationIdx * frameWidth;
         const sY = spriteList[i].direction * frameHeight;
 
-        // compute center
-        const destX = x - (frameWidth / 2);
-        const destY = y - (frameHeight / 2);
-
         ctx.drawImage(
             atlases[spriteList[i].atlasIdx].images[benchAnimation[i]], 
             sX, sY, // top left corner of frame
             frameWidth, frameHeight, // frame dimensions
-            destX, destY, // destination coordinates
+            shiftX, shiftY + 3, // destination coordinates
             frameWidth, frameHeight, // destination dimensions
         );
 
