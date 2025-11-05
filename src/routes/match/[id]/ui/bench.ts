@@ -1,17 +1,17 @@
 
 
-export function drawBench(
-  ctx: CanvasRenderingContext2D,
-  canvasWidth: number,
-  canvasHeight: number,
-  count: number // number of boxes
-): void {
-  const size = 36;       // box size
-  const radius = 10;     // corner radius
-  const gap = 1;         // spacing between boxes
+export const BENCH = { size: 36, radius: 10, gap: 2, bottomPad: 10 };
+
+export function drawBench( ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, count: number, hoverIdx: number): void {
+
+  const size = BENCH.size;       // box size
+  const radius = BENCH.radius;     // corner radius
+  const gap = BENCH.gap;         // spacing between boxes
+  const bottomPad = BENCH.bottomPad;
+
   const totalWidth = count * size + (count - 1) * gap;
   const startX = (canvasWidth - totalWidth) / 2;
-  const y = canvasHeight - size - 10;
+  const y = canvasHeight - size - bottomPad;
 
   for (let i = 0; i < count; i++) {
     const x = startX + i * (size + gap);
@@ -31,8 +31,27 @@ export function drawBench(
     ctx.fillStyle = 'black';
     ctx.fill();
 
-    ctx.strokeStyle = '#404040'; // try 404040, 595959, or 666666 to test tone
+    if(hoverIdx === i) { ctx.strokeStyle = '#C5C6D0'; }
+    else { ctx.strokeStyle = '#404040'; } // try 404040, 595959, or 666666 to test tone
+    
     ctx.lineWidth = 2;
     ctx.stroke();
   }
 }
+
+
+export function benchHitTest(px: number, py: number, width: number, height: number, count: number): number {
+  
+  const { size, gap, bottomPad } = BENCH;
+  
+  const totalWidth = count * size + (count - 1) * gap;
+  const startX = (width - totalWidth) / 2;
+  const y = height - size - bottomPad;
+
+  for (let i = 0; i < count; i++) {
+    const x = startX + i * (size + gap);
+    if (px >= x && px <= x + size && py >= y && py <= y + size) return i;
+  }
+  return -1;
+}
+

@@ -9,7 +9,6 @@ export async function connectWS(matchID: string) {
     credentials: "include"
   });
   if (!res.ok) {
-    console.log("failed preflight");
     window.location.href = "/misc/unauthorized";
     return;
   }

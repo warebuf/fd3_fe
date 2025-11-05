@@ -6,7 +6,7 @@
     import { ping } from "./networking/pingStore";
     import { stopPing } from "./networking/ping";
 
-    import { drawBench } from "./ui/bench"
+    import { drawBench, benchHitTest } from "./ui/bench"
 
     import type { Atlas } from "$lib/sprites/sprites";
     import { createAtlases } from "$lib/sprites/sprites";
@@ -20,6 +20,8 @@
 
     let atlases: Atlas[];
     let benchAnimation: string[] = [];
+
+    let hoverIdx: number = -1;
 
     let matchID: string;
     $: matchID = $page.params.id!;
@@ -42,7 +44,7 @@
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
 
-        drawBench(ctx, width, height, 2);
+        drawBench(ctx, width, height, 2, hoverIdx);
         drawIdles(ctx, atlases, benchAnimation, width, height, dt);
 
         // schedule next frame
@@ -55,6 +57,34 @@
         ctx = canvasEl.getContext("2d")!;
         resizeCanvas();                       
         window.addEventListener("resize", resizeCanvas);
+
+        const onMove = (e: MouseEvent) => {
+            const r = canvasEl.getBoundingClientRect();
+            const x = e.clientX - r.left;
+            const y = e.clientY - r.top;
+
+            const idx = benchHitTest(x, y, canvasEl.clientWidth, canvasEl.clientHeight, benchAnimation.length || 2);
+            hoverIdx = idx;
+            canvasEl.style.cursor = idx >= 0 ? 'pointer' : 'default';
+        };
+
+        const onLeave = () => {
+            hoverIdx = -1;
+            canvasEl.style.cursor = 'default';
+        };
+
+        const onClick = (e: MouseEvent) => {
+            const r = canvasEl.getBoundingClientRect();
+            const x = e.clientX - r.left;
+            const y = e.clientY - r.top;
+
+            const idx = benchHitTest(x, y, canvasEl.clientWidth, canvasEl.clientHeight, benchAnimation.length || 2);
+            console.log("clicked", idx)
+        };
+
+        canvasEl.addEventListener('mousemove', onMove);
+        canvasEl.addEventListener('mouseleave', onLeave);
+        canvasEl.addEventListener('click', onClick);
 
         let cancelled = false;
         (async () => { 
@@ -96,6 +126,10 @@
             stopPing(); // stop networking ping
             
             window.removeEventListener("resize", resizeCanvas); // stop listeners
+
+            canvasEl.removeEventListener('mousemove', onMove);
+            canvasEl.removeEventListener('mouseleave', onLeave);
+            canvasEl.removeEventListener('click', onClick);
         };
 
     });

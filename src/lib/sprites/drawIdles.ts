@@ -18,7 +18,7 @@ export function drawIdles(
     }
 
     const size = 36;       // box size
-    const gap = 1;         // spacing between boxes
+    const gap = 2;         // spacing between boxes
     const totalWidth = spriteList.length * size + (spriteList.length - 1) * gap;
     const startX = (width - totalWidth) / 2;
 
