@@ -34,7 +34,7 @@ export function drawBench( ctx: CanvasRenderingContext2D, canvasWidth: number, c
     if(hoverIdx === i) { ctx.strokeStyle = '#C5C6D0'; }
     else { ctx.strokeStyle = '#404040'; } // try 404040, 595959, or 666666 to test tone
     
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1;
     ctx.stroke();
   }
 }
