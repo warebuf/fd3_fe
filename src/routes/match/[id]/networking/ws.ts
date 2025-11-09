@@ -29,9 +29,6 @@ export async function connectWS(matchID: string) {
       case "p":
         calculateOffset(msg.t1, msg.t2, clientReceive)
         break;
-      case "tick":
-        console.log(msg);
-        break;
     }
 
   });
