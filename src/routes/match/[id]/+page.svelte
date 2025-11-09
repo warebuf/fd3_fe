@@ -5,6 +5,8 @@
     import { connectWS } from "./networking/ws";
     import { ping } from "./networking/pingStore";
     import { stopPing } from "./networking/ping";
+    import { sendBenchMove } from "./networking/eventTypes";
+
 
     import { drawBench, benchHitTest } from "./ui/bench"
 
@@ -79,7 +81,7 @@
             const y = e.clientY - r.top;
 
             const idx = benchHitTest(x, y, canvasEl.clientWidth, canvasEl.clientHeight, benchAnimation.length || 2);
-            console.log("clicked", idx)
+            if (idx >= 0 && ws) { sendBenchMove(ws, idx) };
         };
 
         canvasEl.addEventListener('mousemove', onMove);
@@ -125,8 +127,8 @@
             cancelAnimationFrame(animationID); // cancel animation loop
             stopPing(); // stop networking ping
             
-            window.removeEventListener("resize", resizeCanvas); // stop listeners
-
+            // stop listeners
+            window.removeEventListener("resize", resizeCanvas); 
             canvasEl.removeEventListener('mousemove', onMove);
             canvasEl.removeEventListener('mouseleave', onLeave);
             canvasEl.removeEventListener('click', onClick);
