@@ -70,39 +70,36 @@ export async function createAtlases(files: Record<string, string[]>): Promise<At
 
                     return instructions;
                 } catch (err) {
-                    console.warn(`⚠️ No AnimData.xml found for ${charName}:`, err);
+                    console.warn(`No AnimData.xml found for ${charName}:`, err);
                     return {} as Record<string, Instruction>;
                 }
             })();
 
             // Start all image fetches in parallel
             const imagePromises = bases.map(async (baseName) => {
-            const url = `/sprites/${charName}/${baseName}-Anim.png`;
-            const res = await fetch(url);
-            if (!res.ok) throw new Error(`Failed to load image: ${url}`);
-            const blob = await res.blob();
-            const bitmap = await createImageBitmap(blob);
-            images[baseName] = bitmap;
+                const url = `/sprites/${charName}/${baseName}-Anim.png`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`Failed to load image: ${url}`);
+                const blob = await res.blob();
+                const bitmap = await createImageBitmap(blob);
+                images[baseName] = bitmap;
             });
 
             // Wait for both (images + XML)
-            const [_, instructions] = await Promise.all([
-            Promise.all(imagePromises),
-            xmlPromise,
-            ]);
+            const [_, instructions] = await Promise.all( [Promise.all(imagePromises), xmlPromise] );
 
             return {
-            name: charName,
-            images,
-            instructions, 
+                name: charName,
+                images,
+                instructions, 
             } satisfies Atlas;
         })
     );
 
-  const end = performance.now();
-  const duration = (end - start).toFixed(2);
-  console.log(`🏁 Finished createAtlases in ${duration} ms`);
+    const end = performance.now();
+    const duration = (end - start).toFixed(2);
+    console.log(`Finished createAtlases in ${duration} ms`);
 
-  return atlases;
+    return atlases;
 }
 
