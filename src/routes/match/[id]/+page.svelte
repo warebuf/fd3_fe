@@ -117,7 +117,8 @@
             if (cancelled) return;
 
             // get the game state
-            getFullState(ws);
+            if(ws) {getFullState(ws)}
+            
 
             // start the game loop once everything loads
             animationID = requestAnimationFrame(loop);
