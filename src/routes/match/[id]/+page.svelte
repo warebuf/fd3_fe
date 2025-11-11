@@ -5,8 +5,9 @@
     import { connectWS } from "./networking/ws";
     import { ping } from "./networking/pingStore";
     import { stopPing } from "./networking/ping";
-    import { sendBenchMove } from "./networking/eventTypes";
 
+    import { sendBenchMove } from "./networking/eventTypes";
+    import { getFullState } from "./networking/getState";
 
     import { drawBench, benchHitTest } from "./ui/bench"
 
@@ -114,6 +115,9 @@
 
             // guard against requestAnimationFrame
             if (cancelled) return;
+
+            // get the game state
+            getFullState(ws);
 
             // start the game loop once everything loads
             animationID = requestAnimationFrame(loop);
