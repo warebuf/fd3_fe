@@ -3,8 +3,7 @@
     import { page } from '$app/stores';
     import { onMount } from 'svelte';
     import { connectWS } from "./networking/ws";
-    import { ping } from "./networking/pingStore";
-    import { stopPing } from "./networking/ping";
+    import { ping, stopPing } from "./networking/ping";
 
     import { sendBenchMove } from "./networking/eventTypes";
     import { getFullState } from "./networking/getState";
