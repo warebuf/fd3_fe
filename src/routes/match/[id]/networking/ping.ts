@@ -1,11 +1,18 @@
 
 
+import { writable } from "svelte/store";
+
+// an updatable value that can be imported into other components
+export const ping = writable<number>(0);
+
+// TODO: implement rolling average for offsets
+
 // TODO: if you navigate away, you should cancel the ping intervals
 
 let pingID = 0;
 let intervalID = -1;
 
-import { ping } from "./pingStore";
+
 
 export function sendPing( ws: WebSocket ) {
 
