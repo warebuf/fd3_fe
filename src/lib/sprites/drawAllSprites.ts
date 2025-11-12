@@ -26,7 +26,7 @@ export function incrementDirection() {
 
 export function decrementDirection() {
     direction--;
-    if( direction < 8 ) { direction = 7; }
+    if( direction < 0 ) { direction = 7; }
     for (const action in spriteList) {
         spriteList[action].direction = direction;
     }
