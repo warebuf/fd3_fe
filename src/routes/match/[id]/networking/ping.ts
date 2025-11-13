@@ -6,8 +6,6 @@ import { writable } from "svelte/store";
 export const ping = writable<number>(0);
 export const serverClockOffset = writable<number>(0);
 
-// TODO: implement rolling average for offsets
-
 // TODO: if you navigate away, you should cancel the ping intervals
 
 let pingID = 0;
