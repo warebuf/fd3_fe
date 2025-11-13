@@ -9,12 +9,14 @@
     import { getFullState } from "./networking/getState";
     import { StateManager } from "./engine/stateManager"
 
-    import { drawBench, benchHitTest } from "./ui/bench"
+    import { drawBench, benchHitTest } from "./ui/drawBench"
+    import { drawField } from "./ui/drawField"
 
     import type { Atlas } from "$lib/sprites/sprites";
     import { createAtlases } from "$lib/sprites/sprites";
     import { drawIdles } from "$lib/sprites/drawIdles";
 
+    import { currentState } from "./engine/stateManager";
 
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
     let ctx: CanvasRenderingContext2D;
@@ -31,6 +33,8 @@
 
     let ws: WebSocket | undefined;
     let stateManager: StateManager = new StateManager();
+
+    $: gameState = $currentState;
   
     function resizeCanvas() {
         const dpr = window.devicePixelRatio || 1;
@@ -50,7 +54,8 @@
 
         drawBench(ctx, width, height, 2, hoverIdx);
         drawIdles(ctx, atlases, benchAnimation, width, height, dt);
-
+        if(gameState && gameState.FieldUnits) { drawField(ctx, width, height, gameState.FieldUnits); }
+        
         // schedule next frame
         animationID = requestAnimationFrame(loop);
     }

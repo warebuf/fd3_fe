@@ -20,7 +20,6 @@ export class StateManager {
     private timer: number | null = null; // setTimeout id
 
     private applyScheduled() {
-        console.log("called applyScheduled", Date.now())
         for(;this.scheduled.size > 0;) {
             const nextEvent = this.scheduled.peek();
             const eventTime = nextEvent.Timestamp - get(serverClockOffset); // normalize with clock offset

@@ -3,9 +3,9 @@ export interface Timestamp {
     Timestamp: number;   
 }
 
-export type GameState = Timestamp & { // extends the interface
+export type GameState = Timestamp & {
   
-    //
+    // extends the interface
     Timestamp: number; // just reminding myself, harmless but redundant
     
     //
