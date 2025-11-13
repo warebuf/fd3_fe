@@ -118,7 +118,6 @@
             // get the game state
             if(ws) {getFullState(ws)}
             
-
             // start the game loop once everything loads
             animationID = requestAnimationFrame(loop);
 

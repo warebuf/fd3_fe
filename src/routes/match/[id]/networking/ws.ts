@@ -35,7 +35,6 @@ export async function connectWS(matchID: string) {
       default:
         console.log("unhandled msg", msg)
     }
-
   });
 
   ws.addEventListener("close", (event) => {
