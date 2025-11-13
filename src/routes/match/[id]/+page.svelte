@@ -7,6 +7,7 @@
 
     import { sendBenchMove } from "./networking/eventTypes";
     import { getFullState } from "./networking/getState";
+    import { StateManager } from "./engine/stateManager"
 
     import { drawBench, benchHitTest } from "./ui/bench"
 
@@ -15,7 +16,7 @@
     import { drawIdles } from "$lib/sprites/drawIdles";
 
 
-    let canvasEl: HTMLCanvasElement; // saved for reshapes
+    let canvasEl: HTMLCanvasElement; // saved for window reshapes
     let ctx: CanvasRenderingContext2D;
     let animationID: number; // saved for easy cleanup
     let lastTime = performance.now(); // tracks frame time
@@ -29,6 +30,7 @@
     $: matchID = $page.params.id!;
 
     let ws: WebSocket | undefined;
+    let stateManager: StateManager = new StateManager();
   
     function resizeCanvas() {
         const dpr = window.devicePixelRatio || 1;
@@ -92,7 +94,7 @@
         (async () => { 
 
             // websocket setup
-            ws = await connectWS(matchID);
+            ws = await connectWS(matchID, stateManager);
 
             // init sprites
             const characters = [ 'bulbasaur', 'missingno' ]

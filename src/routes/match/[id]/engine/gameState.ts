@@ -1,33 +1,36 @@
 
-import { writable } from "svelte/store";
+export interface Timestamp {
+    Timestamp: number;   
+}
 
-export type GameState = {
-  // time the state is set for
-  GameStateID: number;
-  Timestamp: Date;   // ISO timestamp from Go's time.Time
+export type GameState = Timestamp & { // extends the interface
+  
+    //
+    Timestamp: number; // just reminding myself, harmless but redundant
+    
+    //
+    GameStateID: number;
+  
+    // state sets: array of unitIDs
+    BenchUnits: number[];
+    FieldUnits: number[];
+    DeadUnits: number[];
 
-  // state sets: array of unitIDs
-  BenchUnits: number[];
-  FieldUnits: number[];
-  DeadUnits: number[];
+    // team sets: index (unitID) -> team index
+    Team: number[];
 
-  // team sets: index (unitID) -> team index
-  Team: number[];
+    // model set
+    ModelNo: number[];
 
-  // model set
-  ModelNo: number[];
+    // core unit stats
+    HP: number[];
 
-  // core unit stats
-  HP: number[];
+    // telemetry (index by unitID)
+    TimesAttacked: number[];
+    TimesDefended: number[];
+    DamageDealt: number[];
+    DamageReceived: number[];
 
-  // telemetry (index by unitID)
-  TimesAttacked: number[];
-  TimesDefended: number[];
-  DamageDealt: number[];
-  DamageReceived: number[];
-
-  // counter
-  NextUnitID: number;
+    // counter
+    NextUnitID: number;
 };
-
-export const game = writable<GameState | null>(null);

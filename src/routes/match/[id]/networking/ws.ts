@@ -1,9 +1,11 @@
 
 
 import { sendPing, calculateOffset } from "./ping";
+import { StateManager } from "../engine/stateManager";
+import type { GameState } from "../engine/gameState";
 
 
-export async function connectWS(matchID: string) {
+export async function connectWS(matchID: string, stateManager: StateManager) {
 
   const res = await fetch(`/backend/ws/check?matchID=${encodeURIComponent(matchID)}`, {
     credentials: "include"
@@ -27,10 +29,14 @@ export async function connectWS(matchID: string) {
     const msg = JSON.parse(event.data);
     switch (msg.type) {
       case "p":
-        calculateOffset(msg.t1, msg.t2, clientReceive)
+        calculateOffset(msg.t1, msg.t2, clientReceive);
         break;
       case "fullState":
-        console.log("fullState", msg.data);
+        const newState: GameState = {
+          ...msg.data,
+          Timestamp: new Date(msg.data.Timestamp).getTime()
+        }
+        stateManager.handleFullState(newState);
         break;
       default:
         console.log("unhandled msg", msg)

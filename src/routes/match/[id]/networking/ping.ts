@@ -61,8 +61,7 @@ export function calculateOffset(clientSend: number, serverReceive: number, clien
         offsetSum += rollingWindowOffset[i];
     }
 
-    console.log(`ping: ${rtt} ms, offset: ${offset} ms, rwoffset: ${offsetSum/rollingWindowOffset.length} ms`);
-    console.log("rollingWindowOffset", rollingWindowOffset)
+    //console.log(`ping: ${rtt} ms, offset: ${offset} ms, rwoffset: ${offsetSum/rollingWindowOffset.length} ms`);
     serverClockOffset.set(offsetSum/rollingWindowOffset.length)
     ping.set(rtt);
 }
