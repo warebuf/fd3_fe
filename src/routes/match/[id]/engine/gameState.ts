@@ -1,14 +1,13 @@
 
 export interface Timestamp {
     Timestamp: number;   
+    GameStateID: number;
 }
 
 export type GameState = Timestamp & {
   
-    // extends the interface
-    Timestamp: number; // just reminding myself, harmless but redundant
-    
-    //
+    // extends the interface, just reminding myself, harmless but redundant
+    Timestamp: number; 
     GameStateID: number;
   
     // state sets: array of unitIDs
