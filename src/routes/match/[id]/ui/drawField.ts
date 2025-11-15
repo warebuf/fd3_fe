@@ -5,7 +5,8 @@ export function drawField(
   ctx: CanvasRenderingContext2D,
   canvasWidth: number,
   canvasHeight: number,
-  currentState: GameState
+  currentState: GameState,
+  teamIdx: number,
 ): void {
 
   const centerX = canvasWidth / 2;
@@ -22,7 +23,11 @@ export function drawField(
   const startY = centerY - totalHeight / 2;
 
   for(let i = 0; i < currentState.FieldUnits.length; i++) {
-    ctx.fillText(String(i), centerX, startY + i * lineHeight);
+    if(teamIdx === currentState.Team[i]) {
+      ctx.fillText(String(i), centerX, startY + i * lineHeight - 50);
+    } else {
+      ctx.fillText(String(i), centerX, startY + i * lineHeight + 50);
+    }
   }
 
 }

@@ -33,7 +33,8 @@
     let ws: WebSocket | undefined;
     let stateManager: StateManager = new StateManager();
     let currentState: GameState;
-  
+    let teamIdx: number;
+
     function resizeCanvas() {
         const dpr = window.devicePixelRatio || 1;
         const { width, height } = canvasEl.getBoundingClientRect();
@@ -55,7 +56,7 @@
         ctx.clearRect(0, 0, width, height);
         drawBench(ctx, width, height, 2, hoverIdx);
         drawIdles(ctx, atlases, benchAnimation, width, height, dt);
-        if(currentState) { drawField(ctx, width, height, currentState); }
+        if(currentState) { drawField(ctx, width, height, currentState, teamIdx); }
         
         // schedule next frame
         animationID = requestAnimationFrame(loop);
@@ -101,8 +102,9 @@
         let cancelled = false;
         (async () => { 
 
-            // websocket setup
-            ws = await connectWS(matchID, stateManager);
+            // websocket setup, also set up clientIdx
+            const result = await connectWS(matchID, stateManager);
+            if (result) { ({ ws, teamIdx } = result); }
 
             // init sprites
             const characters = [ 'bulbasaur', 'missingno' ]

@@ -29,6 +29,7 @@ export class StateManager {
                 if("str" in nextEvent) { // EventResult
                     console.log("EventResult");
                 } else { // GameState
+                    console.log("GameState", nextEvent.GameStateID);
                     this.lastState = nextEvent;
                     currentState = cloneGameState(this.lastState);
                 }
