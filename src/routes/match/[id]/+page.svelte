@@ -47,7 +47,7 @@
         lastTime = now;
 
         // interpolate the current state
-        stateManager.ApplyScheduled(currentState, now + performance.timeOrigin);
+        currentState = stateManager.Update(currentState, now + performance.timeOrigin);
 
         // draw
         const width = canvasEl.clientWidth;
@@ -55,7 +55,7 @@
         ctx.clearRect(0, 0, width, height);
         drawBench(ctx, width, height, 2, hoverIdx);
         drawIdles(ctx, atlases, benchAnimation, width, height, dt);
-        if(currentState && currentState.FieldUnits) { drawField(ctx, width, height, currentState.FieldUnits); }
+        if(currentState) { drawField(ctx, width, height, currentState); }
         
         // schedule next frame
         animationID = requestAnimationFrame(loop);

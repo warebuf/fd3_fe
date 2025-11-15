@@ -2,6 +2,7 @@
 import { get } from "svelte/store";
 
 import type { GameState, Timestamp } from "./gameState"
+import { initGameState, cloneGameState } from "./gameState"
 import { MinHeap } from "./timestampMinHeap"
 import { serverClockOffset } from "../networking/ping";
 
@@ -15,8 +16,11 @@ type Event = EventResults | GameState;
 export class StateManager {
 
     private scheduled = new MinHeap<Event>();
+    private lastState : GameState = initGameState();
     
-    ApplyScheduled(currentState: GameState, currentTime: number) {
+    Update(currentState: GameState, currentTime: number) : GameState {
+
+        // update
         for(;this.scheduled.size > 0;) {
             const nextEvent = this.scheduled.peek();
             const eventTime = nextEvent.Timestamp - get(serverClockOffset); // normalize with clock offset
@@ -25,13 +29,18 @@ export class StateManager {
                 if("str" in nextEvent) { // EventResult
                     console.log("EventResult");
                 } else { // GameState
-                    console.log("nextEvent", nextEvent.Timestamp);
-                    currentState = nextEvent;
+                    this.lastState = nextEvent;
+                    currentState = cloneGameState(this.lastState);
                 }
             } else {
                 break;
             }
         }
+
+        // interpolate
+        // 
+
+        return currentState;
     }
 
     handleFullState(state: GameState) {

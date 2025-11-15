@@ -33,6 +33,8 @@ export type GameState = Timestamp & {
 
     // counter
     NextUnitID: number;
+
+    randomID: number; // used for identifying memory address
 };
 
 export function initGameState() : GameState {
@@ -59,5 +61,36 @@ export function initGameState() : GameState {
 
         // id counter
         NextUnitID: 0,
+
+        randomID: Math.random(),
+    };
+}
+
+export function cloneGameState(src: GameState) : GameState {
+    return {
+        // timestamp fields
+        Timestamp: src.Timestamp,
+        GameStateID: src.GameStateID,
+
+        // unit sets
+        BenchUnits: [...src.BenchUnits],
+        FieldUnits: [...src.FieldUnits],
+        DeadUnits: [...src.DeadUnits],
+
+        // metadata per unitID
+        Team: [...src.Team],
+        ModelNo: [...src.ModelNo],
+        HP: [...src.HP],
+
+        // telemetry
+        TimesAttacked: [...src.TimesAttacked],
+        TimesDefended: [...src.TimesDefended],
+        DamageDealt: [...src.DamageDealt],
+        DamageReceived: [...src.DamageReceived],
+
+        // id counter
+        NextUnitID: src.NextUnitID,
+        
+        randomID: Math.random(),
     };
 }
