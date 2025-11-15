@@ -1,9 +1,11 @@
 
+import type { GameState } from "../engine/gameState"
+
 export function drawField(
   ctx: CanvasRenderingContext2D,
   canvasWidth: number,
   canvasHeight: number,
-  units: number[]
+  currentState: GameState
 ): void {
 
   const centerX = canvasWidth / 2;
@@ -16,10 +18,11 @@ export function drawField(
 
   // Draw each number with slight vertical spacing
   const lineHeight = 24;
-  const totalHeight = units.length * lineHeight;
+  const totalHeight = currentState.FieldUnits.length * lineHeight;
   const startY = centerY - totalHeight / 2;
 
-  units.forEach((num, i) => {
-    ctx.fillText(String(num), centerX, startY + i * lineHeight);
-  });
+  for(let i = 0; i < currentState.FieldUnits.length; i++) {
+    ctx.fillText(String(i), centerX, startY + i * lineHeight);
+  }
+
 }
