@@ -28,6 +28,8 @@ export class StateManager {
                     console.log("nextEvent", nextEvent.Timestamp);
                     currentState = nextEvent;
                 }
+            } else {
+                break;
             }
         }
     }
