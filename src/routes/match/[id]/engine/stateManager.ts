@@ -1,5 +1,5 @@
 
-import { writable, get } from "svelte/store";
+import { get } from "svelte/store";
 
 import type { GameState, Timestamp } from "./gameState"
 import { MinHeap } from "./timestampMinHeap"
@@ -12,38 +12,28 @@ type EventResults = Timestamp & { // extends the interface
 
 type Event = EventResults | GameState;
 
-export const currentState = writable<GameState | null>(null);
-
 export class StateManager {
 
     private scheduled = new MinHeap<Event>();
-    private timer: number | null = null; // setTimeout id
-
-    private applyScheduled() {
+    
+    ApplyScheduled(currentState: GameState, currentTime: number) {
         for(;this.scheduled.size > 0;) {
             const nextEvent = this.scheduled.peek();
             const eventTime = nextEvent.Timestamp - get(serverClockOffset); // normalize with clock offset
-            if( Date.now() >= eventTime ) {
+            if( currentTime >= eventTime ) { // an event has passed
                 this.scheduled.pop();
                 if("str" in nextEvent) { // EventResult
                     console.log("EventResult");
                 } else { // GameState
-                    console.log("nextEvent", nextEvent.Timestamp)
-                    currentState.set(nextEvent);
+                    console.log("nextEvent", nextEvent.Timestamp);
+                    currentState = nextEvent;
                 }
-            } else { // schedule
-                const delay = Math.max(0, eventTime - Date.now());
-                this.timer = window.setTimeout(() => {
-                    this.applyScheduled();
-                }, delay);
-                break
             }
         }
     }
 
     handleFullState(state: GameState) {
         this.scheduled.push(state);
-        this.applyScheduled();
     }
 
 }
