@@ -16,8 +16,6 @@
     import { createAtlases } from "$lib/sprites/sprites";
     import { drawIdles } from "$lib/sprites/drawIdles";
 
-    import { currentState } from "./engine/stateManager";
-
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
     let ctx: CanvasRenderingContext2D;
     let animationID: number; // saved for easy cleanup
@@ -33,8 +31,7 @@
 
     let ws: WebSocket | undefined;
     let stateManager: StateManager = new StateManager();
-
-    $: gameState = $currentState;
+    let gameState: GameState;
   
     function resizeCanvas() {
         const dpr = window.devicePixelRatio || 1;
@@ -47,6 +44,8 @@
     function loop(now: number) {
         const dt = now - lastTime; // ms since last frame
         lastTime = now;
+
+        stateManager.ApplyScheduled(gameState, now);
 
         const width = canvasEl.clientWidth;
         const height = canvasEl.clientHeight;
@@ -123,7 +122,7 @@
             if (cancelled) return;
 
             // get the game state
-            if(ws) {getFullState(ws)}
+            if(ws) {getFullState(ws);}
             
             // start the game loop once everything loads
             animationID = requestAnimationFrame(loop);
