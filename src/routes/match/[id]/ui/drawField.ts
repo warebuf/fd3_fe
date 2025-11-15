@@ -12,7 +12,7 @@ export function drawField(
   ctx.fillStyle = "white";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = "20px sans-serif";
+  ctx.font = "10px sans-serif";
 
   // Draw each number with slight vertical spacing
   const lineHeight = 24;

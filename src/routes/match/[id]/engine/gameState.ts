@@ -34,3 +34,30 @@ export type GameState = Timestamp & {
     // counter
     NextUnitID: number;
 };
+
+export function initGameState() : GameState {
+    return {
+        // timestamp fields
+        Timestamp: Date.now(),
+        GameStateID: 0,
+
+        // unit sets
+        BenchUnits: [],
+        FieldUnits: [],
+        DeadUnits: [],
+
+        // metadata per unitID
+        Team: [],
+        ModelNo: [],
+        HP: [],
+
+        // telemetry
+        TimesAttacked: [],
+        TimesDefended: [],
+        DamageDealt: [],
+        DamageReceived: [],
+
+        // id counter
+        NextUnitID: 0,
+    };
+}

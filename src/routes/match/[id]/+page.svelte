@@ -8,6 +8,7 @@
     import { sendBenchMove } from "./networking/eventTypes";
     import { getFullState } from "./networking/getState";
     import { StateManager } from "./engine/stateManager"
+    import { initGameState, type GameState } from './engine/gameState';
 
     import { drawBench, benchHitTest } from "./ui/drawBench"
     import { drawField } from "./ui/drawField"
@@ -31,7 +32,7 @@
 
     let ws: WebSocket | undefined;
     let stateManager: StateManager = new StateManager();
-    let gameState: GameState;
+    let currentState: GameState;
   
     function resizeCanvas() {
         const dpr = window.devicePixelRatio || 1;
@@ -45,15 +46,16 @@
         const dt = now - lastTime; // ms since last frame
         lastTime = now;
 
-        stateManager.ApplyScheduled(gameState, now);
+        // interpolate the current state
+        stateManager.ApplyScheduled(currentState, now);
 
+        // draw
         const width = canvasEl.clientWidth;
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
-
         drawBench(ctx, width, height, 2, hoverIdx);
         drawIdles(ctx, atlases, benchAnimation, width, height, dt);
-        if(gameState && gameState.FieldUnits) { drawField(ctx, width, height, gameState.FieldUnits); }
+        if(currentState && currentState.FieldUnits) { drawField(ctx, width, height, currentState.FieldUnits); }
         
         // schedule next frame
         animationID = requestAnimationFrame(loop);
@@ -93,6 +95,8 @@
         canvasEl.addEventListener('mousemove', onMove);
         canvasEl.addEventListener('mouseleave', onLeave);
         canvasEl.addEventListener('click', onClick);
+
+        currentState = initGameState();
 
         let cancelled = false;
         (async () => { 
