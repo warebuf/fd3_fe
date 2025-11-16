@@ -121,6 +121,8 @@
             // get list of sprite sheets
             const spriteActionsJSON = await spriteActionsRequest.json();
 
+            console.log("spriteActionsJSON", spriteActionsJSON)
+
             // character setup 
             atlases = await createAtlases(spriteActionsJSON);
 

@@ -1,6 +1,8 @@
 
 import type { GameState } from "../engine/gameState"
 
+import { drawCard } from "./drawCard"
+
 export function drawField(
   ctx: CanvasRenderingContext2D,
   canvasWidth: number,
@@ -30,20 +32,46 @@ export function drawField(
     } 
   }
 
+
+
+  const lineWidth = 36;
+  const gap = 2;
+
+  // total span for N cards
+  const totalBotWidth = (botArr.length - 1) * (lineWidth + gap);
+  const totalTopWidth = (topArr.length - 1) * (lineWidth + gap);
+
+  // leftmost center position
+  const botLeftCenter = centerX - totalBotWidth / 2;
+  const topLeftCenter = centerX - totalTopWidth / 2;
+
+  // draw bottom row
+  for (let i = 0; i < botArr.length; i++) {
+    const x = botLeftCenter + i * (lineWidth + gap);
+    drawCard(ctx, x, centerY + 50, false);
+  }
+
+  // draw top row
+  for (let i = 0; i < topArr.length; i++) {
+    const x = topLeftCenter + i * (lineWidth + gap);
+    drawCard(ctx, x, centerY - 50, false);
+  }
+
   // draw
   ctx.fillStyle = "white";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.font = "10px sans-serif";
 
-  const lineWidth = 24;
-  const botLeftCenter = centerX - ((botArr.length - 1) * lineWidth) / 2;
-  const topLeftCenter = centerX - ((topArr.length - 1) * lineWidth) / 2;
+  // draw nums
   for (let i = 0; i < botArr.length; i++) {
-    ctx.fillText( String(botArr[i]), botLeftCenter + i * lineWidth, centerY + 50 );
+    const x = botLeftCenter + i * (lineWidth + gap);
+    ctx.fillText( String(botArr[i]), x, centerY + 50 );
   }
+
   for (let i = 0; i < topArr.length; i++) {
-    ctx.fillText( String(topArr[i]), topLeftCenter + i * lineWidth, centerY - 50 );
+    const x = topLeftCenter + i * (lineWidth + gap);
+    ctx.fillText( String(topArr[i]), x, centerY - 50 );
   }
 
 }
