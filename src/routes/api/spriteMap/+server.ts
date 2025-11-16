@@ -11,16 +11,18 @@ export const SPRITE_NAME: Record<number, string> = {
     1: "bulbasaur",
 }
 
-export const SPRITE_ANIMS: Record<number, string> = {
-    
+// Bench, Field
+export const SPRITE_ANIMS: Record<number, string[]> = {
+    0: ["Hurt", "Hurt"],
+    1: ["Shake", "Shake"]
 }
 
 // get list of .png files for each character
 export const POST: RequestHandler = async ({ request }) => {
   
-    const { characters } = await request.json();
+    const { ModelNo } = await request.json();
   
-    console.log('characters', characters);
+    console.log('ModelNo', ModelNo);
 
     const baseDir = path.resolve('static/sprites');
 
