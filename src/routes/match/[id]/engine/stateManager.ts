@@ -3,11 +3,15 @@ import { get } from "svelte/store";
 
 import type { GameState, Timestamp } from "./gameState"
 import { initGameState, cloneGameState } from "./gameState"
-import { MinHeap } from "./timestampMinHeap"
+import { MinHeap } from "./stateMinHeap"
 import { serverClockOffset } from "../networking/ping";
 
-type EventResults = Timestamp & { // extends the interface
-    Timestamp: number; // just here to remind myself we are fulfilling Timestamp interface
+type EventResults = Timestamp & {
+
+    // extends the interface, just here to remind myself, harmless but redundant
+    Timestamp: number;
+    GameStateID: number;
+    
     str: string;
 }
 
