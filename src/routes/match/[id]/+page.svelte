@@ -109,19 +109,21 @@
             // init sprites
             const characters = [ 'bulbasaur', 'missingno' ]
             benchAnimation = ["Shake", "Hurt"]
-
-            // server call, get list of sheet paths for a character
-            // NOTE: instead of a server call, this could just be a JSON
             const spriteActionsRequest = await fetch('/api/sprites', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ characters: characters })
             });
-
-            // get list of sprite sheets
             const spriteActionsJSON = await spriteActionsRequest.json();
-
             console.log("spriteActionsJSON", spriteActionsJSON)
+
+            //
+            const modelNumbers = [ 0, 1 ];
+            const res = await fetch('/sprites.json');
+            const SPRITES: Record<number, { name: string; anims: string[] }> = await res.json();
+            const spriteResult = modelNumbers.map((id: number) => SPRITES[id]).filter(Boolean);
+            console.log("spriteResult", spriteResult)
+
 
             // character setup 
             atlases = await createAtlases(spriteActionsJSON);

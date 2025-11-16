@@ -1,0 +1,4 @@
+{
+  "0": { "name": "missingno", "anims": ["Hurt", "Hurt"] },
+  "1": { "name": "bulbasaur", "anims": ["Shake", "Shake"] }
+}
