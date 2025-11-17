@@ -10,30 +10,34 @@
     import { StateManager } from "./engine/stateManager"
     import { initGameState, type GameState } from './engine/gameState';
 
-    import { drawBench, benchHitTest } from "./ui/drawBench"
-    import { drawField } from "./ui/drawField"
+    import { drawBench, benchHitTest } from "./ui/zones/drawBench"
+    import { drawField } from "./ui/zones/drawField"
 
-    import type { Atlas } from "$lib/sprites/sprites";
-    import { createAtlases } from "$lib/sprites/sprites";
+    import type { Atlas, SpriteDesc } from "$lib/sprites/sprite2";
+    import { createAtlases2 } from "$lib/sprites/sprite2";
     import { drawIdles } from "$lib/sprites/drawIdles";
+    import { updateSprites } from './ui/updateSprites';
 
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
     let ctx: CanvasRenderingContext2D;
     let animationID: number; // saved for easy cleanup
     let lastTime = performance.now(); // tracks frame time
 
-    let atlases: Atlas[];
-    let benchAnimation: string[] = [];
+    let matchID: string;
+    $: matchID = $page.params.id!;
+    let teamIdx: number;
 
     let hoverIdx: number = -1;
 
-    let matchID: string;
-    $: matchID = $page.params.id!;
+    let atlasMap: Record<number, Atlas> // modelNo to Atlas object
+    let modelAnimations: Record<number, { name: string; anims: string[] }> ; // 0 is bench, 1 is field
 
     let ws: WebSocket | undefined;
     let stateManager: StateManager = new StateManager();
+    
     let currentState: GameState;
-    let teamIdx: number;
+    let sprites: SpriteDesc[] = [];
+
 
     function resizeCanvas() {
         const dpr = window.devicePixelRatio || 1;
@@ -50,13 +54,16 @@
         // interpolate the current state
         currentState = stateManager.Update(currentState, now + performance.timeOrigin);
 
+        // update sprite states
+        if(currentState) { updateSprites(sprites, currentState, dt); }
+
         // draw
         const width = canvasEl.clientWidth;
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
-        drawBench(ctx, width, height, 2, hoverIdx);
-        drawIdles(ctx, atlases, benchAnimation, width, height, dt);
-        if(currentState) { drawField(ctx, width, height, currentState, teamIdx); }
+        //drawBench(ctx, width, height, 2, hoverIdx);
+        //drawIdles(ctx, atlases, benchAnimation, width, height, dt);
+        if(currentState) { drawField(atlasMap, modelAnimations, ctx, width, height, currentState, teamIdx); }
         
         // schedule next frame
         animationID = requestAnimationFrame(loop);
@@ -74,9 +81,9 @@
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
 
-            const idx = benchHitTest(x, y, canvasEl.clientWidth, canvasEl.clientHeight, benchAnimation.length || 2);
-            hoverIdx = idx;
-            canvasEl.style.cursor = idx >= 0 ? 'pointer' : 'default';
+            //const idx = benchHitTest(x, y, canvasEl.clientWidth, canvasEl.clientHeight, benchAnimation.length || 2);
+            //hoverIdx = idx;
+            //canvasEl.style.cursor = idx >= 0 ? 'pointer' : 'default';
         };
 
         const onLeave = () => {
@@ -89,8 +96,8 @@
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
 
-            const idx = benchHitTest(x, y, canvasEl.clientWidth, canvasEl.clientHeight, benchAnimation.length || 2);
-            if (idx >= 0 && ws) { sendBenchMove(ws, idx) };
+            //const idx = benchHitTest(x, y, canvasEl.clientWidth, canvasEl.clientHeight, benchAnimation.length || 2);
+            //if (idx >= 0 && ws) { sendBenchMove(ws, idx) };
         };
 
         canvasEl.addEventListener('mousemove', onMove);
@@ -106,27 +113,12 @@
             const result = await connectWS(matchID, stateManager);
             if (result) { ({ ws, teamIdx } = result); }
 
-            // init sprites
-            const characters = [ 'bulbasaur', 'missingno' ]
-            benchAnimation = ["Shake", "Hurt"]
-            const spriteActionsRequest = await fetch('/api/sprites', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ characters: characters })
-            });
-            const spriteActionsJSON = await spriteActionsRequest.json();
-            console.log("spriteActionsJSON", spriteActionsJSON)
-
-            //
+            // sprite init
             const modelNumbers = [ 0, 1 ];
             const res = await fetch('/sprites.json');
             const SPRITES: Record<number, { name: string; anims: string[] }> = await res.json();
-            const spriteResult = modelNumbers.map((id: number) => SPRITES[id]).filter(Boolean);
-            console.log("spriteResult", spriteResult)
-
-
-            // character setup 
-            atlases = await createAtlases(spriteActionsJSON);
+            modelAnimations = modelNumbers.map((id: number) => SPRITES[id]).filter(Boolean);
+            atlasMap = await createAtlases2(modelAnimations);
 
             // guard against requestAnimationFrame
             if (cancelled) return;

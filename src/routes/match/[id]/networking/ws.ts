@@ -17,7 +17,6 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
 
   const teamIdx = parseInt(await res.text(), 10);
 
-  //console.log(`${window.location.origin.replace(/^http/, "ws")}/backend/ws?matchID=${encodeURIComponent(matchID)}`)
   const ws = new WebSocket( `${window.location.origin.replace(/^http/, "ws")}/backend/ws?matchID=${encodeURIComponent(matchID)}` );
 
   ws.addEventListener("open", () => {

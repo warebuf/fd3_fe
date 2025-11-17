@@ -1,9 +1,13 @@
 
-import type { GameState } from "../engine/gameState"
+import type { GameState } from "../../engine/gameState"
+import type { Atlas } from "$lib/sprites/sprite2"
 
-import { drawCard } from "./drawCard"
+import { drawCard } from "../indiv/drawCard"
+import { drawSprite } from "../indiv/drawSprite";
 
 export function drawField(
+  atlasMap: Record<number, Atlas>,
+  modelAnimations: Record<number, { name: string; anims: string[] }>,
   ctx: CanvasRenderingContext2D,
   canvasWidth: number,
   canvasHeight: number,
@@ -32,8 +36,6 @@ export function drawField(
     } 
   }
 
-
-
   const lineWidth = 36;
   const gap = 2;
 
@@ -49,12 +51,20 @@ export function drawField(
   for (let i = 0; i < botArr.length; i++) {
     const x = botLeftCenter + i * (lineWidth + gap);
     drawCard(ctx, x, centerY + 50, false);
+
+    const modelNo = currentState.ModelNo[botArr[i]];
+    const animationString = modelAnimations[modelNo].anims[1];
+    drawSprite(atlasMap[modelNo], animationString, ctx, x, centerY + 50, 0);
   }
 
   // draw top row
   for (let i = 0; i < topArr.length; i++) {
     const x = topLeftCenter + i * (lineWidth + gap);
     drawCard(ctx, x, centerY - 50, false);
+
+    const modelNo = currentState.ModelNo[topArr[i]];
+    const animationString = modelAnimations[modelNo].anims[1];
+    drawSprite(atlasMap[modelNo], animationString, ctx, x, centerY - 50, 4);
   }
 
   // draw
