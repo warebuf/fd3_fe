@@ -17,7 +17,10 @@ export function updateSprites( sprites : SpriteDesc[], gameState: GameState, dt:
 
     // push the sprite animations forward by dt
     for(let i = 0; i < sprites.length; i++) {
-        sprites[i].frameTime += dt;
+        // get modelNo
+        // get duration
+        
+        // do calculation
 
         
     }

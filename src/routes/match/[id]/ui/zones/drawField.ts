@@ -1,17 +1,18 @@
 
 import type { GameState } from "../../engine/gameState"
-import type { Atlas } from "$lib/sprites/sprite2"
+import type { Atlas, SpriteDesc } from "$lib/sprites/sprite2"
 
 import { drawCard } from "../indiv/drawCard"
 import { drawSprite } from "../indiv/drawSprite";
 
 export function drawField(
-  atlasMap: Record<number, Atlas>,
   ctx: CanvasRenderingContext2D,
   canvasWidth: number,
   canvasHeight: number,
   currentState: GameState,
   teamIdx: number,
+  atlasMap: Record<number, Atlas>,
+  sprites: SpriteDesc[],
 ): void {
 
   const centerX = canvasWidth / 2;
@@ -51,7 +52,7 @@ export function drawField(
     drawCard(ctx, x, centerY + 50, false);
 
     const modelNo = currentState.ModelNo[botArr[i]];
-    drawSprite(atlasMap[modelNo], ctx, x, centerY + 50, true);
+    drawSprite(ctx, x, centerY + 50, atlasMap[modelNo], 1, sprites[botArr[i]], true);
   }
 
   // draw top row
@@ -60,24 +61,7 @@ export function drawField(
     drawCard(ctx, x, centerY - 50, false);
 
     const modelNo = currentState.ModelNo[topArr[i]];
-    drawSprite(atlasMap[modelNo], ctx, x, centerY - 50, false);
-  }
-
-  // draw
-  ctx.fillStyle = "white";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.font = "10px sans-serif";
-
-  // draw nums
-  for (let i = 0; i < botArr.length; i++) {
-    const x = botLeftCenter + i * (lineWidth + gap);
-    ctx.fillText( String(botArr[i]), x, centerY + 50 );
-  }
-
-  for (let i = 0; i < topArr.length; i++) {
-    const x = topLeftCenter + i * (lineWidth + gap);
-    ctx.fillText( String(topArr[i]), x, centerY - 50 );
+    drawSprite(ctx, x, centerY - 50, atlasMap[modelNo], 1, sprites[topArr[i]], false);
   }
 
 }

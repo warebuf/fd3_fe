@@ -62,7 +62,7 @@
         ctx.clearRect(0, 0, width, height);
         //drawBench(ctx, width, height, 2, hoverIdx);
         //drawIdles(ctx, atlases, benchAnimation, width, height, dt);
-        if(currentState) { drawField(atlasMap, ctx, width, height, currentState, teamIdx); }
+        if(currentState) { drawField(ctx, width, height, currentState, teamIdx, atlasMap, sprites); }
         
         // schedule next frame
         animationID = requestAnimationFrame(loop);
