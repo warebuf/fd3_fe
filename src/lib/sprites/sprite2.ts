@@ -2,28 +2,29 @@
 
 
 export type Instruction = {
-    data: Record<string, number>
+    RushFrames: number
+    HitFrames: number
+    ReturnFrames: number
+    FrameHeight: number
+    FrameWidth: number
     duration: number[]
 }
 
 export type Atlas = {
-    name: string
-    images: Record<string, ImageBitmap>;
-    instructions: Record<string, Instruction>
+    actionToImageIdx: number[];
+    images: ImageBitmap[];
+    instructions: Instruction[];
 };
 
 export type SpriteDesc = {
-    modelNo: number
-    actionNames: string[]
-    actionIdx: number
     durationIdx: number // duration index
     frameTime: number // how many ms we are into the frame
-    direction: number // 0: down, 1: dr, 2: right, 3: ur, 4: up, 5: ul, 6: left, 7: dl
-}
+};
 
-async function createInstructionMap(name : string, actions: string[]) : Promise<Record<string, Instruction>> {
+async function createInstructionArr(name : string, actions: string[]) : Promise<Instruction[]> {
 
-    const instructions: Record<string, Instruction> = {};
+    const instructions: Instruction[] = [];
+    const instructionsMap = new Map<string, Instruction>();
 
     // get XML file, parse it
     const xmlRes = await fetch(`/sprites/${name}/AnimData.xml`);
@@ -36,7 +37,14 @@ async function createInstructionMap(name : string, actions: string[]) : Promise<
     const children2 = Array.from(child1.getElementsByTagName("Anim"));
 
     for (const child2 of children2) {
-        const instruction: Instruction = { data: {}, duration: [] };
+        let instruction: Instruction = { 
+            RushFrames: 0,
+            HitFrames: 0,
+            ReturnFrames: 0,
+            FrameHeight: 0,
+            FrameWidth: 0, 
+            duration: [] 
+        };
         let animName = "";
 
         const children3 = Array.from(child2.children);
@@ -49,37 +57,79 @@ async function createInstructionMap(name : string, actions: string[]) : Promise<
                 instruction.duration = durNodes.length > 0 ? durNodes.map(d => Number(d.textContent)) : textVal.split(/\s+/).filter(Boolean).map(Number);
             } else if (tag === "Name") {
                 animName = textVal;
-            } else if (tag === "CopyOf" || tag === "Index") {
-            } else {
+            } else if (tag === "RushFrames") {
                 const n = Number(textVal);
-                instruction.data[tag] = Number.isFinite(n) ? n : 0;
+                instruction.RushFrames = Number.isFinite(n) ? n : 0;
+            } else if (tag === "HitFrames") {
+                const n = Number(textVal);
+                instruction.HitFrames = Number.isFinite(n) ? n : 0;
+            } else if (tag === "ReturnFrames") {
+                const n = Number(textVal);
+                instruction.ReturnFrames = Number.isFinite(n) ? n : 0;
+            } else if (tag === "FrameHeight") {
+                const n = Number(textVal);
+                instruction.FrameHeight = Number.isFinite(n) ? n : 0;
+            } else if (tag === "FrameWidth") {
+                const n = Number(textVal);
+                instruction.FrameWidth = Number.isFinite(n) ? n : 0;
             }
-        }
 
-        if (actions.includes(animName)) {
-            instructions[animName] = instruction
         }
+        instructionsMap.set(animName, instruction);
+    }
 
+    for(let i = 0; i < actions.length; i++) {
+        instructions.push(instructionsMap.get(actions[i])!); 
     }
 
     return instructions;
 }
 
-async function createBitmaps(name : string, actions : string[]) : Promise<Record<string, ImageBitmap>> {
+async function createBitmaps(name: string, actions: string[]): Promise<ImageBitmap[]> {
+    const promises = actions.map(async (action) => {
+      const url = `/sprites/${name}/${action}-Anim.png`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Failed to load image: ${url}`);
+      const blob = await res.blob();
+      return await createImageBitmap(blob);
+    });
+  
+    return Promise.all(promises);
+  }
 
-    const imageBitmaps: Record<string, ImageBitmap> = {};
+// gives an index to the first appearance of a string
+// ie [a, b, a, c] => [0, 1, 0, 2]
+function createActionToImageIdx(anims: string[]) : number[] {
+    const indexMap = new Map<string, number>();
+    let count = 0;
+    let ans : number[] = [];
 
-    for(let i = 0; i < actions.length; i++) {
-        const url = `/sprites/${name}/${actions[i]}-Anim.png`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`Failed to load image: ${url}`);
-        const blob = await res.blob();
-        const bitmap = await createImageBitmap(blob);
-        imageBitmaps[actions[i]] = bitmap;
+    for(let i = 0; i < anims.length; i++) {
+        if(!indexMap.has(anims[i])) {
+            indexMap.set(anims[i], count);
+            ans.push(count);
+            count++;
+        } 
+        else { 
+            ans.push(indexMap.get(anims[i])!); 
+        }
     }
-    
-    return imageBitmaps;
 
+    return ans;
+}
+
+function compressStrings(arr: string[]): string[] {
+    const seen = new Set<string>();
+    const result: string[] = [];
+
+    for (const s of arr) {
+        if (!seen.has(s)) {
+            seen.add(s);
+            result.push(s);
+        }
+    }
+
+    return result;
 }
 
 export async function createAtlases2( files: Record<number, { name: string; anims: string[] }> ): Promise<Record<number, Atlas>> {
@@ -88,7 +138,8 @@ export async function createAtlases2( files: Record<number, { name: string; anim
 
     // init all keys
     for (const idxStr in files) {
-        ans[Number(idxStr)] = { name: files[Number(idxStr)].name, images: {}, instructions: {}};
+        const idx = Number(idxStr);
+        ans[idx] = { actionToImageIdx: createActionToImageIdx(files[idx].anims), images: [], instructions: []};
     }
 
     // create all promises
@@ -96,8 +147,9 @@ export async function createAtlases2( files: Record<number, { name: string; anim
     const bitmapPromises: Promise<any>[] = [];
     for (const idxStr in files) {
         const idx = Number(idxStr);
-        instructionPromises.push( createInstructionMap(files[idx].name, files[idx].anims) );
-        bitmapPromises.push( createBitmaps(files[idx].name, files[idx].anims) );
+        const compressed = compressStrings(files[idx].anims);
+        instructionPromises.push( createInstructionArr(files[idx].name, compressed) );
+        bitmapPromises.push( createBitmaps(files[idx].name, compressed) );
     }
 
     const instructions = await Promise.all(instructionPromises);

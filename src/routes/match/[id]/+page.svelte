@@ -29,13 +29,12 @@
 
     let hoverIdx: number = -1;
 
-    let atlasMap: Record<number, Atlas> // modelNo to Atlas object
-    let modelAnimations: Record<number, { name: string; anims: string[] }> ; // 0 is bench, 1 is field
-
     let ws: WebSocket | undefined;
     let stateManager: StateManager = new StateManager();
     
     let currentState: GameState;
+
+    let atlasMap: Record<number, Atlas>; // modelNo to Atlas object
     let sprites: SpriteDesc[] = [];
 
 
@@ -63,7 +62,7 @@
         ctx.clearRect(0, 0, width, height);
         //drawBench(ctx, width, height, 2, hoverIdx);
         //drawIdles(ctx, atlases, benchAnimation, width, height, dt);
-        if(currentState) { drawField(atlasMap, modelAnimations, ctx, width, height, currentState, teamIdx); }
+        if(currentState) { drawField(atlasMap, ctx, width, height, currentState, teamIdx); }
         
         // schedule next frame
         animationID = requestAnimationFrame(loop);
@@ -117,8 +116,9 @@
             const modelNumbers = [ 0, 1 ];
             const res = await fetch('/sprites.json');
             const SPRITES: Record<number, { name: string; anims: string[] }> = await res.json();
-            modelAnimations = modelNumbers.map((id: number) => SPRITES[id]).filter(Boolean);
+            const modelAnimations = modelNumbers.map((id: number) => SPRITES[id]).filter(Boolean);
             atlasMap = await createAtlases2(modelAnimations);
+            console.log("atlasMap", atlasMap);
 
             // guard against requestAnimationFrame
             if (cancelled) return;

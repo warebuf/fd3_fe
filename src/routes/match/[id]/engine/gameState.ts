@@ -9,14 +9,10 @@ export type GameState = Timestamp & {
     // extends the interface, just reminding myself, harmless but redundant
     Timestamp: number; 
     GameStateID: number;
-  
-    // state sets: array of unitIDs
-    BenchUnits: number[];
-    FieldUnits: number[];
-    DeadUnits: number[];
 
     // team sets: index (unitID) -> team index
     Team: number[];
+    Zone: number[]; // 0: Bench, 1: Field, 2: Deaed
 
     // model set
     ModelNo: number[];
@@ -42,13 +38,9 @@ export function initGameState() : GameState {
         Timestamp: Date.now(),
         GameStateID: 0,
 
-        // unit sets
-        BenchUnits: [],
-        FieldUnits: [],
-        DeadUnits: [],
-
         // metadata per unitID
         Team: [],
+        Zone: [],
         ModelNo: [],
         HP: [],
 
@@ -71,13 +63,9 @@ export function cloneGameState(src: GameState) : GameState {
         Timestamp: src.Timestamp,
         GameStateID: src.GameStateID,
 
-        // unit sets
-        BenchUnits: [...src.BenchUnits],
-        FieldUnits: [...src.FieldUnits],
-        DeadUnits: [...src.DeadUnits],
-
         // metadata per unitID
         Team: [...src.Team],
+        Zone: [...src.Zone],
         ModelNo: [...src.ModelNo],
         HP: [...src.HP],
 

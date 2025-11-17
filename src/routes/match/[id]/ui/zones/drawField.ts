@@ -7,7 +7,6 @@ import { drawSprite } from "../indiv/drawSprite";
 
 export function drawField(
   atlasMap: Record<number, Atlas>,
-  modelAnimations: Record<number, { name: string; anims: string[] }>,
   ctx: CanvasRenderingContext2D,
   canvasWidth: number,
   canvasHeight: number,
@@ -26,14 +25,13 @@ export function drawField(
   ctx.fill();
 
   // create the arrays
-  let botArr = []; // arr of unitIdxs
+  let botArr = []; // arr of unit idexes
   let topArr = [];
-  for(let i = 0; i < currentState.FieldUnits.length; i++) {
-    const unitIdx = currentState.FieldUnits[i];
-    if(currentState.HP[unitIdx] > 0) {
-      if(currentState.Team[unitIdx] === teamIdx) { botArr.push(unitIdx); } 
-      else { topArr.push(unitIdx); }
-    } 
+  for(let i = 0; i < currentState.Zone.length; i++) {
+    if(currentState.Zone[i] === 1 && currentState.HP[i] > 0) { // 1 is field
+      if(currentState.Team[i] === teamIdx) { botArr.push(i); } 
+      else { topArr.push(i); }
+    }
   }
 
   const lineWidth = 36;
@@ -53,8 +51,7 @@ export function drawField(
     drawCard(ctx, x, centerY + 50, false);
 
     const modelNo = currentState.ModelNo[botArr[i]];
-    const animationString = modelAnimations[modelNo].anims[1];
-    drawSprite(atlasMap[modelNo], animationString, ctx, x, centerY + 50, 0);
+    drawSprite(atlasMap[modelNo], ctx, x, centerY + 50, true);
   }
 
   // draw top row
@@ -63,8 +60,7 @@ export function drawField(
     drawCard(ctx, x, centerY - 50, false);
 
     const modelNo = currentState.ModelNo[topArr[i]];
-    const animationString = modelAnimations[modelNo].anims[1];
-    drawSprite(atlasMap[modelNo], animationString, ctx, x, centerY - 50, 4);
+    drawSprite(atlasMap[modelNo], ctx, x, centerY - 50, false);
   }
 
   // draw
