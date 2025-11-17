@@ -21,8 +21,6 @@ export function updateSprites( sprites : SpriteDesc[], gameState: GameState, dt:
         // get duration
         
         // do calculation
-
-        
     }
 
 }
