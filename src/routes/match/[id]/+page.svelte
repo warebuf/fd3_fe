@@ -54,7 +54,7 @@
         currentState = stateManager.Update(currentState, now + performance.timeOrigin);
 
         // update sprite states
-        if(currentState) { updateSprites(sprites, currentState, dt); }
+        if(currentState) { updateSprites(atlasMap, sprites, currentState, dt); }
 
         // draw
         const width = canvasEl.clientWidth;
