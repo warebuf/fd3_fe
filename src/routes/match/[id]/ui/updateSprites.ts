@@ -29,8 +29,8 @@ export function updateSprites( atlasMap : Record<number, Atlas>, sprites : Sprit
         
         // do calculation
         sprites[i].frameTime += dt;
-        while(sprites[i].frameTime >= durations[sprites[i].durationIdx] * 1000 / 30) {
-            sprites[i].frameTime -= durations[sprites[i].durationIdx] * 1000 / 30;
+        while(sprites[i].frameTime >= durations[sprites[i].durationIdx] * 1000 / 15) {
+            sprites[i].frameTime -= durations[sprites[i].durationIdx] * 1000 / 15;
             sprites[i].durationIdx = (sprites[i].durationIdx + 1) % durations.length;
         }
 

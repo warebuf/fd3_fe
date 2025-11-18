@@ -118,7 +118,6 @@
             const SPRITES: Record<number, { name: string; anims: string[] }> = await res.json();
             const modelAnimations = modelNumbers.map((id: number) => SPRITES[id]).filter(Boolean);
             atlasMap = await createAtlases2(modelAnimations);
-            console.log("atlasMap", atlasMap);
 
             // guard against requestAnimationFrame
             if (cancelled) return;
