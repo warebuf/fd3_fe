@@ -1,11 +1,29 @@
 
 
+import type { GameState } from "../../engine/gameState"
+import { drawCard } from "../indiv/drawCard"
+
 export const BENCH = { size: 36, radius: 10, gap: 2, bottomPad: 10 };
 
-export function drawBench( ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, count: number, hoverIdx: number): void {
+export function drawBench( 
+  ctx: CanvasRenderingContext2D, 
+  canvasWidth: number, 
+  canvasHeight: number, 
+  currentState: GameState,
+  teamIdx: number,
+  hoverIdx: number
+): void {
+
+  let count = 0;
+  let benchUnits : Number[] = []; // save idx
+  for(let i = 0; i < currentState.Team.length; i++) {
+    if(currentState.Team[i] === teamIdx && currentState.Zone[i] === 0) { // on bench
+      benchUnits.push(i);
+      count++;
+    }
+  }
 
   const size = BENCH.size;       // box size
-  const radius = BENCH.radius;     // corner radius
   const gap = BENCH.gap;         // spacing between boxes
   const bottomPad = BENCH.bottomPad;
 
@@ -15,30 +33,10 @@ export function drawBench( ctx: CanvasRenderingContext2D, canvasWidth: number, c
 
   for (let i = 0; i < count; i++) {
     const x = startX + i * (size + gap);
-
-    ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + size - radius, y);
-    ctx.quadraticCurveTo(x + size, y, x + size, y + radius);
-    ctx.lineTo(x + size, y + size - radius);
-    ctx.quadraticCurveTo(x + size, y + size, x + size - radius, y + size);
-    ctx.lineTo(x + radius, y + size);
-    ctx.quadraticCurveTo(x, y + size, x, y + size - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
-    ctx.closePath();
-
-    ctx.fillStyle = 'black';
-    ctx.fill();
-
-    if(hoverIdx === i) { ctx.strokeStyle = '#C5C6D0'; }
-    else { ctx.strokeStyle = '#404040'; } // try 404040, 595959, or 666666 to test tone
-    
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    drawCard(ctx, x+(size/2), y, (i===hoverIdx), true);
   }
-}
 
+}
 
 export function benchHitTest(px: number, py: number, width: number, height: number, count: number): number {
   
@@ -50,7 +48,7 @@ export function benchHitTest(px: number, py: number, width: number, height: numb
 
   for (let i = 0; i < count; i++) {
     const x = startX + i * (size + gap);
-    if (px >= x && px <= x + size && py >= y && py <= y + size) return i;
+    if (px >= x && px <= x + size && py >= y - (size/2) && py <= y + (size/2)) return i;
   }
   return -1;
 }

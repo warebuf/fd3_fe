@@ -1,7 +1,7 @@
 
+
 import type { GameState } from "../../engine/gameState"
 import type { Atlas, SpriteDesc } from "$lib/sprites/sprite2"
-
 import { drawCard } from "../indiv/drawCard"
 import { drawSprite } from "../indiv/drawSprite";
 
@@ -49,7 +49,7 @@ export function drawField(
   // draw bottom row
   for (let i = 0; i < botArr.length; i++) {
     const x = botLeftCenter + i * (lineWidth + gap);
-    drawCard(ctx, x, centerY + 50, false);
+    drawCard(ctx, x, centerY + 50, false, false);
 
     const modelNo = currentState.ModelNo[botArr[i]];
     drawSprite(ctx, x, centerY + 50, atlasMap[modelNo], 1, sprites[botArr[i]], true);
@@ -58,7 +58,7 @@ export function drawField(
   // draw top row
   for (let i = 0; i < topArr.length; i++) {
     const x = topLeftCenter + i * (lineWidth + gap);
-    drawCard(ctx, x, centerY - 50, false);
+    drawCard(ctx, x, centerY - 50, false, false);
 
     const modelNo = currentState.ModelNo[topArr[i]];
     drawSprite(ctx, x, centerY - 50, atlasMap[modelNo], 1, sprites[topArr[i]], false);

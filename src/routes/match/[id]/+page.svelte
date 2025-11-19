@@ -15,7 +15,6 @@
 
     import type { Atlas, SpriteDesc } from "$lib/sprites/sprite2";
     import { createAtlases2 } from "$lib/sprites/sprite2";
-    import { drawIdles } from "$lib/sprites/drawIdles";
     import { updateSprites } from './ui/updateSprites';
 
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
@@ -60,9 +59,10 @@
         const width = canvasEl.clientWidth;
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
-        //drawBench(ctx, width, height, 2, hoverIdx);
-        //drawIdles(ctx, atlases, benchAnimation, width, height, dt);
-        if(currentState) { drawField(ctx, width, height, currentState, teamIdx, atlasMap, sprites); }
+        if(currentState) { 
+            drawBench(ctx, width, height, currentState, teamIdx, hoverIdx);
+            drawField(ctx, width, height, currentState, teamIdx, atlasMap, sprites); 
+        }
         
         // schedule next frame
         animationID = requestAnimationFrame(loop);
@@ -80,9 +80,9 @@
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
 
-            //const idx = benchHitTest(x, y, canvasEl.clientWidth, canvasEl.clientHeight, benchAnimation.length || 2);
-            //hoverIdx = idx;
-            //canvasEl.style.cursor = idx >= 0 ? 'pointer' : 'default';
+            const idx = benchHitTest(x, y, canvasEl.clientWidth, canvasEl.clientHeight, 2);
+            hoverIdx = idx;
+            canvasEl.style.cursor = idx >= 0 ? 'pointer' : 'default';
         };
 
         const onLeave = () => {
@@ -95,8 +95,8 @@
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
 
-            //const idx = benchHitTest(x, y, canvasEl.clientWidth, canvasEl.clientHeight, benchAnimation.length || 2);
-            //if (idx >= 0 && ws) { sendBenchMove(ws, idx) };
+            const idx = benchHitTest(x, y, canvasEl.clientWidth, canvasEl.clientHeight, 2);
+            if (idx >= 0 && ws) { sendBenchMove(ws, idx) };
         };
 
         canvasEl.addEventListener('mousemove', onMove);

@@ -5,7 +5,7 @@ const size = 36;
 const borderRadius = 10;
 
 // x, y is the center of the card
-export function drawCard(ctx: CanvasRenderingContext2D, x: number, y: number, on: boolean) {
+export function drawCard(ctx: CanvasRenderingContext2D, x: number, y: number, on: boolean, backside: boolean) {
 
     // shift from top left corner to center
     x = x - (size / 2);
@@ -32,4 +32,13 @@ export function drawCard(ctx: CanvasRenderingContext2D, x: number, y: number, on
     ctx.lineWidth = 1;
     ctx.stroke();
 
+    // draw centered text
+    if(backside) {
+        ctx.fillStyle = "white"
+        ctx.font = "bold 12px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("FD", x + size / 2, y + size / 2);
+    }
+    
 }
