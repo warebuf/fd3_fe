@@ -1,10 +1,11 @@
 
 
-import type { SpriteDesc } from "$lib/sprites/sprite2"
+import type { SpriteDesc, Atlas } from "$lib/sprites/sprite2"
 import type { GameState } from '../engine/gameState';
 
 
-export function updateSprites( sprites : SpriteDesc[], gameState: GameState, dt: number ) {
+
+export function updateSprites( atlasMap : Record<number, Atlas>, sprites : SpriteDesc[], gameState: GameState, dt: number ) {
 
     // update the sprites to match the gameState
     for(let i = sprites.length; i < gameState.ModelNo.length; i++) {
@@ -17,10 +18,22 @@ export function updateSprites( sprites : SpriteDesc[], gameState: GameState, dt:
 
     // push the sprite animations forward by dt
     for(let i = 0; i < sprites.length; i++) {
+        
         // get modelNo
-        // get duration
+        const modelNo = gameState.ModelNo[i];
+        const boardState = gameState.Zone[i];
+        const atlas = atlasMap[modelNo];
+        const imageIdx = atlas.actionToImageIdx[boardState];
+        const instructions = atlas.instructions[imageIdx];
+        const durations = instructions.duration;
         
         // do calculation
+        sprites[i].frameTime += dt;
+        while(sprites[i].frameTime >= durations[sprites[i].durationIdx] * 1000 / 15) {
+            sprites[i].frameTime -= durations[sprites[i].durationIdx] * 1000 / 15;
+            sprites[i].durationIdx = (sprites[i].durationIdx + 1) % durations.length;
+        }
+
     }
 
 }

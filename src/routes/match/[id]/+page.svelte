@@ -54,7 +54,7 @@
         currentState = stateManager.Update(currentState, now + performance.timeOrigin);
 
         // update sprite states
-        if(currentState) { updateSprites(sprites, currentState, dt); }
+        if(currentState) { updateSprites(atlasMap, sprites, currentState, dt); }
 
         // draw
         const width = canvasEl.clientWidth;
@@ -118,7 +118,6 @@
             const SPRITES: Record<number, { name: string; anims: string[] }> = await res.json();
             const modelAnimations = modelNumbers.map((id: number) => SPRITES[id]).filter(Boolean);
             atlasMap = await createAtlases2(modelAnimations);
-            console.log("atlasMap", atlasMap);
 
             // guard against requestAnimationFrame
             if (cancelled) return;
