@@ -22,7 +22,10 @@ export class StateManager {
     private scheduled = new MinHeap<Event>();
     private lastState : GameState = initGameState();
     
-    Update(currentState: GameState, currentTime: number) : GameState {
+    // take the last server-sent state, iterpolate the current state based on currentTime
+    Update(currentState: GameState, currentTime: number) : [GameState, boolean] {
+
+        let significantEvent = false;
 
         // update
         for(;this.scheduled.size > 0;) {
@@ -32,10 +35,12 @@ export class StateManager {
                 this.scheduled.pop();
                 if("str" in nextEvent) { // EventResult
                     console.log("EventResult");
+                    significantEvent = true;
                 } else { // GameState
                     console.log("GameState", nextEvent.GameStateID);
                     this.lastState = nextEvent;
                     currentState = cloneGameState(this.lastState);
+                    significantEvent = true;
                 }
             } else {
                 break;
@@ -45,7 +50,7 @@ export class StateManager {
         // interpolate
         // 
 
-        return currentState;
+        return [currentState, significantEvent];
     }
 
     handleFullState(state: GameState) {

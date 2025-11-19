@@ -18,13 +18,6 @@ export function drawField(
   const centerX = canvasWidth / 2;
   const centerY = canvasHeight / 2;
 
-  // === Draw red dot in the center ===
-  const radius = 1;
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-  ctx.fillStyle = "red";
-  ctx.fill();
-
   // create the arrays
   let botArr = []; // arr of unit idexes
   let topArr = [];

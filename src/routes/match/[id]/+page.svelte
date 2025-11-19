@@ -16,6 +16,7 @@
     import type { Atlas, SpriteDesc } from "$lib/sprites/sprite2";
     import { createAtlases2 } from "$lib/sprites/sprite2";
     import { updateSprites } from './ui/updateSprites';
+    import { calcPlayerBench } from './ui/updateUIData/calcPlayerBench';
 
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
     let ctx: CanvasRenderingContext2D;
@@ -26,12 +27,15 @@
     $: matchID = $page.params.id!;
     let teamIdx: number;
 
-    let hoverIdx: number = -1;
+    let hoverIdx: number = -1; // is unitIdx
 
     let ws: WebSocket | undefined;
     let stateManager: StateManager = new StateManager();
     
     let currentState: GameState;
+
+    // derived states
+    let playerBench : number[] = [];
 
     let atlasMap: Record<number, Atlas>; // modelNo to Atlas object
     let sprites: SpriteDesc[] = [];
@@ -50,17 +54,25 @@
         lastTime = now;
 
         // interpolate the current state
-        currentState = stateManager.Update(currentState, now + performance.timeOrigin);
+        let significantEvent = false;
+        [currentState, significantEvent] = stateManager.Update(currentState, now + performance.timeOrigin);
 
         // update sprite states
-        if(currentState) { updateSprites(atlasMap, sprites, currentState, dt); }
+        if(currentState) { 
+            updateSprites(atlasMap, sprites, currentState, dt); 
+        }
+
+        // update derived states
+        if(significantEvent) {
+            playerBench = calcPlayerBench(currentState, teamIdx);
+        }
 
         // draw
         const width = canvasEl.clientWidth;
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
         if(currentState) { 
-            drawBench(ctx, width, height, currentState, teamIdx, hoverIdx);
+            drawBench(ctx, width, height, currentState, teamIdx, hoverIdx, atlasMap, sprites);
             drawField(ctx, width, height, currentState, teamIdx, atlasMap, sprites); 
         }
         
@@ -80,7 +92,7 @@
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
 
-            const idx = benchHitTest(x, y, canvasEl.clientWidth, canvasEl.clientHeight, 2);
+            const idx = benchHitTest(x, y, canvasEl.clientWidth, canvasEl.clientHeight, playerBench);
             hoverIdx = idx;
             canvasEl.style.cursor = idx >= 0 ? 'pointer' : 'default';
         };
@@ -95,7 +107,7 @@
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
 
-            const idx = benchHitTest(x, y, canvasEl.clientWidth, canvasEl.clientHeight, 2);
+            const idx = benchHitTest(x, y, canvasEl.clientWidth, canvasEl.clientHeight, playerBench);
             if (idx >= 0 && ws) { sendBenchMove(ws, idx) };
         };
 
