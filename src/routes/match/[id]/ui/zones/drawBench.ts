@@ -46,7 +46,7 @@ export function drawBench(
     drawCard(ctx, x+(size/2), y, (benchUnits[i]===hoverIdx), false);
 
     const modelNo = currentState.ModelNo[benchUnits[i]];
-    drawSprite(ctx, x+(size/2), y, atlasMap[modelNo], 0, sprites[i], true);
+    drawSprite(ctx, x+(size/2), y, atlasMap[modelNo], 0, sprites[benchUnits[i]], true);
   }
 
   // draw opponent bench
