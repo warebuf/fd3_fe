@@ -7,8 +7,8 @@ export interface Timestamp {
 export type GameState = Timestamp & {
   
     // extends the interface, just reminding myself, harmless but redundant
-    Timestamp: number; 
     GameStateID: number;
+    Timestamp: number; 
 
     // team sets: index (unitID) -> team index
     Team: number[];
@@ -20,11 +20,12 @@ export type GameState = Timestamp & {
     // core unit stats
     HP: number[];
 
-    // telemetry (index by unitID)
-    TimesAttacked: number[];
-    TimesDefended: number[];
-    DamageDealt: number[];
-    DamageReceived: number[];
+    // abilities
+	Abilities:       number[]; // abilities are flattened for each unit
+	AbilityStartIdx: number[]; // the starting index in Abilities[] for this unit
+	AbilityCount:    number[]; // how many abilities belong to each unit
+	AbilityCharge:   number[];
+	AbilitySPD:      number[];
 
     // counter
     NextUnitID: number;
@@ -43,12 +44,11 @@ export function initGameState() : GameState {
         Zone: [],
         ModelNo: [],
         HP: [],
-
-        // telemetry
-        TimesAttacked: [],
-        TimesDefended: [],
-        DamageDealt: [],
-        DamageReceived: [],
+        Abilities: [],
+        AbilityStartIdx: [],
+        AbilityCount: [],
+        AbilityCharge: [],
+        AbilitySPD: [],
 
         // id counter
         NextUnitID: 0,
@@ -69,11 +69,12 @@ export function cloneGameState(src: GameState) : GameState {
         ModelNo: [...src.ModelNo],
         HP: [...src.HP],
 
-        // telemetry
-        TimesAttacked: [...src.TimesAttacked],
-        TimesDefended: [...src.TimesDefended],
-        DamageDealt: [...src.DamageDealt],
-        DamageReceived: [...src.DamageReceived],
+        // ability
+        Abilities: [...src.Abilities],
+        AbilityStartIdx: [...src.AbilityStartIdx],
+        AbilityCount: [...src.AbilityCount],
+        AbilityCharge: [...src.AbilityCharge],
+        AbilitySPD: [...src.AbilitySPD],
 
         // id counter
         NextUnitID: src.NextUnitID,
