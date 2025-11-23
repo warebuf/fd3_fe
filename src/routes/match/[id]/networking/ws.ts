@@ -37,8 +37,6 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
           ...msg.data,
           Timestamp: new Date(msg.data.Timestamp).getTime()
         }
-        console.log("msg.data", msg.data)
-        console.log("newState", newState)
         stateManager.handleFullState(newState);
         break;
       default:
