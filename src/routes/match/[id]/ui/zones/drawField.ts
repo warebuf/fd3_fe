@@ -4,6 +4,7 @@ import type { GameState } from "../../engine/gameState"
 import type { Atlas, SpriteDesc } from "$lib/sprites/sprite2"
 import { drawCard } from "../indiv/drawCard"
 import { drawSprite } from "../indiv/drawSprite";
+import { drawHP } from "../indiv/drawHP";
 
 export function drawField(
   ctx: CanvasRenderingContext2D,
@@ -46,6 +47,8 @@ export function drawField(
 
     const modelNo = currentState.ModelNo[botArr[i]];
     drawSprite(ctx, x, centerY + 50, atlasMap[modelNo], 1, sprites[botArr[i]], true);
+
+    drawHP(ctx, x, centerY + 50, currentState.HP[botArr[i]]);
   }
 
   // draw top row
@@ -55,6 +58,8 @@ export function drawField(
 
     const modelNo = currentState.ModelNo[topArr[i]];
     drawSprite(ctx, x, centerY - 50, atlasMap[modelNo], 1, sprites[topArr[i]], false);
+
+    drawHP(ctx, x, centerY - 50, currentState.HP[topArr[i]]);
   }
 
 }

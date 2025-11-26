@@ -5,6 +5,7 @@ import type { Atlas, SpriteDesc } from "$lib/sprites/sprite2"
 
 import { drawCard } from "../indiv/drawCard"
 import { drawSprite } from "../indiv/drawSprite";
+import { drawHP } from "../indiv/drawHP";
 
 export const BENCH = { size: 36, radius: 10, gap: 2, bottomPad: 10 };
 
@@ -47,6 +48,8 @@ export function drawBench(
 
     const modelNo = currentState.ModelNo[benchUnits[i]];
     drawSprite(ctx, x+(size/2), y, atlasMap[modelNo], 0, sprites[benchUnits[i]], true);
+
+    drawHP(ctx, x+(size/2), y, currentState.HP[benchUnits[i]]);
   }
 
   // draw opponent bench
