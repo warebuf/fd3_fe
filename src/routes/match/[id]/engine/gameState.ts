@@ -27,9 +27,6 @@ export type GameState = Timestamp & {
 	AbilityCharge:   number[];
 	AbilitySPD:      number[];
 
-    // counter
-    NextUnitID: number;
-
     randomID: number; // used for identifying memory address
 };
 
@@ -49,9 +46,6 @@ export function initGameState() : GameState {
         AbilityCount: [],
         AbilityCharge: [],
         AbilitySPD: [],
-
-        // id counter
-        NextUnitID: 0,
 
         randomID: Math.random(),
     };
@@ -75,9 +69,6 @@ export function cloneGameState(src: GameState) : GameState {
         AbilityCount: [...src.AbilityCount],
         AbilityCharge: [...src.AbilityCharge],
         AbilitySPD: [...src.AbilitySPD],
-
-        // id counter
-        NextUnitID: src.NextUnitID,
         
         randomID: Math.random(),
     };
