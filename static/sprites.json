@@ -1,4 +1,4 @@
 {
-  "0": { "name": "missingno", "anims": ["Hurt", "Hurt"] },
-  "1": { "name": "bulbasaur", "anims": ["Shake", "Shake"] }
+  "0": { "name": "missingno", "anims": ["Hurt", "Hurt",  "Idle"] },
+  "1": { "name": "bulbasaur", "anims": ["Shake", "Shake", "Faint"] }
 }
