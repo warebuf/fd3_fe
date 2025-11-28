@@ -125,11 +125,12 @@
             if (result) { ({ ws, teamIdx } = result); }
 
             // sprite init
-            const modelNumbers = [ 0, 1 ];
+            const modelNumbers = [ 0, 1, 2 ];
             const res = await fetch('/sprites.json');
             const SPRITES: Record<number, { name: string; anims: string[] }> = await res.json();
             const modelAnimations = modelNumbers.map((id: number) => SPRITES[id]).filter(Boolean);
             atlasMap = await createAtlases2(modelAnimations);
+            console.log("atlasMap", atlasMap)
 
             // guard against requestAnimationFrame
             if (cancelled) return;

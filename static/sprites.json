@@ -1,4 +1,6 @@
 {
   "0": { "name": "missingno", "anims": ["Hurt", "Hurt",  "Idle"] },
-  "1": { "name": "bulbasaur", "anims": ["Shake", "Shake", "Faint"] }
+  "1": { "name": "bulbasaur", "anims": ["Shake", "Shake", "Faint"] },
+  "2": { "name": "caterpie", "anims": ["Walk", "Walk", "Sleep"] }
+
 }
