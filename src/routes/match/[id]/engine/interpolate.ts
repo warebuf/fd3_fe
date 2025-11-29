@@ -10,7 +10,6 @@ export function interpolate( authoritativeState : GameState, interpolatedState: 
     // interpolate
     const localizedTimestamp = authoritativeState.Timestamp - get(serverClockOffset);
     const millisecondsPassed = Math.floor(currentTime - localizedTimestamp); 
-    console.log(millisecondsPassed)
 
     for(let i = 0; i < authoritativeState.HP.length; i++) {
 
