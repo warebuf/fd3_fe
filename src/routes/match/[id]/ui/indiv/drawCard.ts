@@ -35,7 +35,7 @@ export function drawCard(ctx: CanvasRenderingContext2D, x: number, y: number, on
     // draw centered text
     if(backside) {
         ctx.fillStyle = "white"
-        ctx.font = "bold 12px sans-serif";
+        ctx.font = "italic bold 12px sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("FD", x + size / 2, y + size / 2);

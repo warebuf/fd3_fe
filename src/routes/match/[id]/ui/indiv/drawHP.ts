@@ -11,7 +11,7 @@ export function drawHP(ctx: CanvasRenderingContext2D, x: number, y: number, HP: 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     
-    //ctx.fillText(HP.toString(), x, y - (size / 2) - 8 ); // draw at top
-    ctx.fillText(HP.toString(), x, y + (size / 2) + 10  ); // draw at bottom
+    ctx.fillText(HP.toString(), x, y - (size / 2) - 8 ); // draw at top
+    //ctx.fillText(HP.toString(), x, y + (size / 2) + 10  ); // draw at bottom
 
 }
