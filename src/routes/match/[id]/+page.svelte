@@ -8,7 +8,8 @@
     import { sendBenchMove } from "./networking/eventTypes";
     import { getFullState } from "./networking/getState";
     import { StateManager } from "./engine/stateManager"
-    import { initGameState, type GameState } from './engine/gameState';
+    import { initGameState, cloneGameState, type GameState } from './engine/gameState';
+    import { interpolate } from './engine/interpolate';
 
     import { drawBench, benchHitTest } from "./ui/zones/drawBench"
     import { drawField } from "./ui/zones/drawField"
@@ -32,7 +33,8 @@
     let ws: WebSocket | undefined;
     let stateManager: StateManager = new StateManager();
     
-    let currentState: GameState;
+    let authoritativeState: GameState;
+    let interpolatedState: GameState;
 
     // derived states
     let playerBench : number[] = [];
@@ -53,27 +55,31 @@
         const dt = now - lastTime; // ms since last frame
         lastTime = now;
 
-        // interpolate the current state
+        // update with any scheduled events
         let significantEvent = false;
-        [currentState, significantEvent] = stateManager.Update(currentState, now + performance.timeOrigin);
+        [authoritativeState, significantEvent] = stateManager.Update(authoritativeState, now + performance.timeOrigin);
+
+        // interpolate current state
+        if(significantEvent) { interpolatedState = cloneGameState(authoritativeState); }
+        interpolate(authoritativeState, interpolatedState, now + performance.timeOrigin);
 
         // update sprite states
-        if(currentState) { 
-            updateSprites(atlasMap, sprites, currentState, dt); 
+        if(interpolatedState) { 
+            updateSprites(atlasMap, sprites, interpolatedState, dt); 
         }
 
         // update derived states
         if(significantEvent) {
-            playerBench = calcPlayerBench(currentState, teamIdx);
+            playerBench = calcPlayerBench(interpolatedState, teamIdx);
         }
 
         // draw
         const width = canvasEl.clientWidth;
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
-        if(currentState) { 
-            drawBench(ctx, width, height, currentState, teamIdx, hoverIdx, atlasMap, sprites);
-            drawField(ctx, width, height, currentState, teamIdx, atlasMap, sprites); 
+        if(interpolatedState) { 
+            drawBench(ctx, width, height, interpolatedState, teamIdx, hoverIdx, atlasMap, sprites);
+            drawField(ctx, width, height, interpolatedState, teamIdx, atlasMap, sprites); 
         }
         
         // schedule next frame
@@ -115,7 +121,8 @@
         canvasEl.addEventListener('mouseleave', onLeave);
         canvasEl.addEventListener('click', onClick);
 
-        currentState = initGameState();
+        authoritativeState = initGameState();
+        interpolatedState = cloneGameState(authoritativeState);
 
         let cancelled = false;
         (async () => { 

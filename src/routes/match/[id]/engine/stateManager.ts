@@ -37,7 +37,6 @@ export class StateManager {
                     console.log("EventResult");
                     significantEvent = true;
                 } else { // GameState
-                    console.log("GameState", nextEvent.GameStateID);
                     this.lastState = nextEvent;
                     currentState = cloneGameState(this.lastState);
                     significantEvent = true;
@@ -46,9 +45,6 @@ export class StateManager {
                 break;
             }
         }
-
-        // interpolate
-        // 
 
         return [currentState, significantEvent];
     }
