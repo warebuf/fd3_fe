@@ -16,14 +16,8 @@ const size = 36;
 // also need to add RDY
 // also need to add colors
 
-  function drawPieClockBorder(
-    ctx: CanvasRenderingContext2D,
-    cx: number,
-    cy: number,
-    radius: number,
-    ratio: number,
-    text: string
-  ) {
+  function drawPieClockBorder( ctx: CanvasRenderingContext2D, cx: number, cy: number, radius: number, ratio: number, text: string ) {
+
     // Clamp ratio
     ratio = Math.max(0, Math.min(1, ratio));
   
@@ -54,13 +48,7 @@ const size = 36;
     ctx.fillText(text, cx, cy);
   }
   
-  export function drawCharge2(
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    state: GameState,
-    unitIdx: number
-  ) {
+  export function drawCharge2( ctx: CanvasRenderingContext2D, x: number, y: number, state: GameState, unitIdx: number ) {
     const cx = x;
     const cy = y + size / 2 + 20;
     const radius = size * 0.18;

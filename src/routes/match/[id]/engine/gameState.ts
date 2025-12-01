@@ -9,6 +9,7 @@ export type GameState = Timestamp & {
     // extends the interface, just reminding myself, harmless but redundant
     GameStateID: number;
     Timestamp: number; 
+    Round: number;
 
     // team sets: index (unitID) -> team index
     Team: number[];
@@ -27,7 +28,6 @@ export type GameState = Timestamp & {
 	AbilityCharge:   number[];
 	AbilitySPD:      number[];
 
-    randomID: number; // used for identifying memory address
 };
 
 export function initGameState() : GameState {
@@ -35,6 +35,7 @@ export function initGameState() : GameState {
         // timestamp fields
         Timestamp: Date.now(),
         GameStateID: 0,
+        Round: 0,
 
         // metadata per unitID
         Team: [],
@@ -47,7 +48,6 @@ export function initGameState() : GameState {
         AbilityCharge: [],
         AbilitySPD: [],
 
-        randomID: Math.random(),
     };
 }
 
@@ -56,6 +56,7 @@ export function cloneGameState(src: GameState) : GameState {
         // timestamp fields
         Timestamp: src.Timestamp,
         GameStateID: src.GameStateID,
+        Round: src.Round,
 
         // metadata per unitID
         Team: [...src.Team],
@@ -70,6 +71,5 @@ export function cloneGameState(src: GameState) : GameState {
         AbilityCharge: [...src.AbilityCharge],
         AbilitySPD: [...src.AbilitySPD],
         
-        randomID: Math.random(),
     };
 }
