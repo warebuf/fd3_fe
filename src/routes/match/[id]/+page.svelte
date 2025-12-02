@@ -11,6 +11,7 @@
     import { initGameState, cloneGameState, type GameState } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
+    import { drawNextRoundCount} from "./ui/zones/drawNextRoundCount"
     import { drawBench, benchHitTest } from "./ui/zones/drawBench"
     import { drawField } from "./ui/zones/drawField"
 
@@ -32,6 +33,7 @@
 
     let ws: WebSocket | undefined;
     let stateManager: StateManager = new StateManager();
+    let nextRoundTime : Date;
     
     let authoritativeState: GameState;
     let interpolatedState: GameState;
@@ -77,6 +79,7 @@
         const width = canvasEl.clientWidth;
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
+        drawNextRoundCount(ctx, width, height, nextRoundTime);
         if(interpolatedState) { 
             drawBench(ctx, width, height, interpolatedState, teamIdx, hoverIdx, atlasMap, sprites);
             drawField(ctx, width, height, interpolatedState, teamIdx, atlasMap, sprites); 
@@ -129,7 +132,7 @@
 
             // websocket setup, also set up clientIdx
             const result = await connectWS(matchID, stateManager);
-            if (result) { ({ ws, teamIdx } = result); }
+            if (result) { ({ ws, teamIdx, nextRoundTime } = result); }
 
             // sprite init
             const modelNumbers = [ 0, 1, 2 ];

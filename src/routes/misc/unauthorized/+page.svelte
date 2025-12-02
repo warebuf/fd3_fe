@@ -5,3 +5,12 @@
         text-align: center;
     }
 </style>
+
+<script>
+    document.addEventListener("keydown", (e) => {
+        // Spacebar key
+        if (e.code === "Space") {
+            window.location.href = "/";
+        }
+    });
+</script>
