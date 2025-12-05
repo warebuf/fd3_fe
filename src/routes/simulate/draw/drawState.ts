@@ -16,6 +16,11 @@ export function drawState(
   state: GameState
 ): void {
 
+    bench1Count = 0;
+    bench2Count = 0;
+    field1Count = 0;
+    field2Count = 0;
+
     let x = 200;
     let y = 0;
 
@@ -53,7 +58,7 @@ export function drawState(
 
             ctx.strokeStyle = "white";
             ctx.strokeRect(destX,destY,36,36);
-            ctx.strokeText("100", destX, destY+36);
+            ctx.strokeText(state.HP[i].toString(), destX, destY+36);
 
             ctx.drawImage(
                 atlas.images[0], 

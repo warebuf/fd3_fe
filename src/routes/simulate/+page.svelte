@@ -31,6 +31,7 @@
     }
 
     function draw() {
+        ctx.clearRect(0, 0, canvasEl.clientWidth, canvasEl.clientHeight);
         drawToolbox(ctx, canvasEl.clientWidth, canvasEl.clientHeight, atlasMap);
         drawState(ctx, atlasMap, state); 
     }
@@ -101,10 +102,34 @@
             },
             body: JSON.stringify(copyState),
         });
-        console.log(resp)
+        const respJSON = await resp.json();
+        console.log(respJSON);
+        state = respJSON;
+        draw();
     }
-    async function simProb() {
 
+    async function simMatch() {
+        let copyState : any = { ...state }; // shallow copy this object
+        copyState.Timestamp = new Date(copyState.Timestamp).toISOString();
+        const resp = await fetch("/backend/simMatch", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(copyState),
+        });
+    }
+
+    async function simProb() {
+        let copyState : any = { ...state }; // shallow copy this object
+        copyState.Timestamp = new Date(copyState.Timestamp).toISOString();
+        const resp = await fetch("/backend/simProb", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(copyState),
+        });
     }
 
 </script>
@@ -135,10 +160,12 @@
 <button on:click={() => simStep()}>
     Simulate Step
 </button>
+<button on:click={() => simMatch()}>
+    Simulate Match
+</button>
 <button on:click={() => simProb()}>
     Simulate Probabilities
 </button>
-
 <style>
 
     button.selected {
