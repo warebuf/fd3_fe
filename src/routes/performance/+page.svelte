@@ -20,7 +20,7 @@
     let modelData: any;
 
     let selectedTeam = 0; // default
-    let selectedZone = 0;
+    let selectedZone = 1;
 
     function resizeCanvas() {
         const dpr = window.devicePixelRatio || 1;
@@ -53,6 +53,21 @@
                 draw();
             }
         };
+
+        const onKeyDown = (e: KeyboardEvent) => {
+            const key = e.key.toLowerCase();
+            if (key === 'b') {
+                selectZone(0); // Bench
+            } else if (key === 'f') {
+                selectZone(1); // Field
+            } else if (key === '1') {
+                selectTeam(0); // Team 0
+            } else if (key === '2') {
+                selectTeam(1); // Team 1
+            }
+        };
+
+        window.addEventListener('keydown', onKeyDown);
 
         canvasEl.addEventListener('click', onClick);
 
