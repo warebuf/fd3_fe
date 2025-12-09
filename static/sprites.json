@@ -3,6 +3,8 @@
   "1": { "name": "bulbasaur", "anims": ["Shake", "Shake", "Faint"] },
   "2": { "name": "caterpie", "anims": ["Walk", "Walk", "Sleep"] },
   "3": { "name": "turtwig", "anims": ["Walk", "Walk", "Sleep"] },
-  "4": { "name": "chimchar", "anims": ["Walk", "Walk", "Sleep"] }
+  "4": { "name": "chimchar", "anims": ["Walk", "Walk", "Sleep"] },
+  "5": { "name": "mudkip", "anims": ["Walk", "Walk", "Sleep"] },
+  "6": { "name": "torchic", "anims": ["Walk", "Walk", "Sleep"] }
 
 }

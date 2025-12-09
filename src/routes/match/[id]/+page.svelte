@@ -135,7 +135,7 @@
             if (result) { ({ ws, teamIdx, nextRoundTime } = result); }
 
             // sprite init
-            const modelNumbers = [ 0,1,2,3,4 ];
+            const modelNumbers = [ 0,1,2,3,4,5,6 ];
             const res = await fetch('/sprites.json');
             const SPRITES: Record<number, { name: string; anims: string[] }> = await res.json();
             const modelAnimations = modelNumbers.map((id: number) => SPRITES[id]).filter(Boolean);
