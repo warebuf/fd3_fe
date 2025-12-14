@@ -82,7 +82,28 @@
         (async () => { 
 
             // 
-            const characters = [ 'bulbasaur', 'missingno', 'caterpie', 'charmander', 'ekans', 'kakuna', 'pidgey', 'pikachu', 'rattata', 'sandshrew', 'sparrow', 'squirtle', 'weedle' ]
+            const characters = [ 
+                'bulbasaur', 
+                'caterpie', 
+                'charmander', 
+                'chimchar', 
+                'ekans', 
+                'kakuna', 
+                'missingno', 
+                'mudkip', 
+                'oshawott',
+                'pidgey',
+                'pikachu',
+                'piplup',
+                'rattata',
+                'sandshrew', 
+                'sparrow', 
+                'squirtle',
+                'torchic',
+                'turtwig',
+                'victini', 
+                'weedle',
+            ]
 
             // server call, get list of sheet paths for a character
             // NOTE: instead of a server call, this could just be a JSON
