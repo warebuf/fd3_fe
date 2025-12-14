@@ -5,6 +5,7 @@
   "3": { "name": "turtwig", "anims": ["Walk", "Walk", "Sleep"] },
   "4": { "name": "chimchar", "anims": ["Walk", "Walk", "Sleep"] },
   "5": { "name": "mudkip", "anims": ["Walk", "Walk", "Sleep"] },
-  "6": { "name": "torchic", "anims": ["Walk", "Walk", "Sleep"] }
+  "6": { "name": "torchic", "anims": ["Walk", "Walk", "Sleep"] },
+  "7": { "name": "victini", "anims": ["Idle", "Walk", "Sleep"] }
 
 }
