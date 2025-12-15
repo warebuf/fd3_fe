@@ -7,7 +7,7 @@ import { drawCard } from "../indiv/drawCard"
 import { drawSprite } from "../indiv/drawSprite";
 import { drawHP } from "../indiv/drawHP";
 
-export const BENCH = { size: 36, radius: 10, gap: 2, bottomPad: 10 };
+export const BENCH = { size: 36, radius: 10, gap: 2 };
 
 export function drawBench( 
   ctx: CanvasRenderingContext2D, 
@@ -36,20 +36,22 @@ export function drawBench(
 
   const size = BENCH.size;       // box size
   const gap = BENCH.gap;         // spacing between boxes
-  const bottomPad = BENCH.bottomPad;
 
   // draw player bench
   const totalWidth = count * size + (count - 1) * gap;
   const startX = (canvasWidth - totalWidth) / 2;
-  const y = canvasHeight - size - bottomPad;
+
+  const centerY = (canvasHeight / 2);
+
+
   for (let i = 0; i < count; i++) {
     const x = startX + i * (size + gap);
-    drawCard(ctx, x+(size/2), y, (benchUnits[i]===hoverIdx), false);
+    drawCard(ctx, x+(size/2), centerY + 150, (benchUnits[i]===hoverIdx), false);
 
     const modelNo = currentState.ModelNo[benchUnits[i]];
-    drawSprite(ctx, x+(size/2), y, atlasMap[modelNo], 0, sprites[benchUnits[i]], true);
+    drawSprite(ctx, x+(size/2), centerY + 150, atlasMap[modelNo], 0, sprites[benchUnits[i]], true);
 
-    drawHP(ctx, x+(size/2), y, currentState.HP[benchUnits[i]]);
+    drawHP(ctx, x+(size/2), centerY + 150, currentState.HP[benchUnits[i]]);
   }
 
   // draw opponent bench
@@ -57,19 +59,20 @@ export function drawBench(
   const oppStartX = (canvasWidth - oppTotalWidth) / 2;
   for(let i = 0; i < oppCount; i++) {
     const x = oppStartX + i * (size + gap);
-    drawCard(ctx, x+(size/2), 40, false, true);
+    drawCard(ctx, x+(size/2), centerY - 118, false, true);
   }
 
 }
 
-export function benchHitTest(px: number, py: number, width: number, height: number, playerBench: number[]): number {
+export function benchHitTest(canvasHeight: number, px: number, py: number, width: number, height: number, playerBench: number[]): number {
   
-  const { size, gap, bottomPad } = BENCH;
+  const { size, gap } = BENCH;
   const count = playerBench.length;
   
   const totalWidth = count * size + (count - 1) * gap;
   const startX = (width - totalWidth) / 2;
-  const y = height - size - bottomPad;
+  const centerY = (canvasHeight / 2);
+  const y = centerY + 150;
 
   for (let i = 0; i < count; i++) {
     const x = startX + i * (size + gap);

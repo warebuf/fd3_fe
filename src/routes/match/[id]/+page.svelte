@@ -101,7 +101,7 @@
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
 
-            const idx = benchHitTest(x, y, canvasEl.clientWidth, canvasEl.clientHeight, playerBench);
+            const idx = benchHitTest(canvasEl.clientHeight, x, y, canvasEl.clientWidth, canvasEl.clientHeight, playerBench);
             hoverIdx = idx;
             canvasEl.style.cursor = idx >= 0 ? 'pointer' : 'default';
         };
@@ -116,7 +116,7 @@
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
 
-            const idx = benchHitTest(x, y, canvasEl.clientWidth, canvasEl.clientHeight, playerBench);
+            const idx = benchHitTest(canvasEl.clientHeight, x, y, canvasEl.clientWidth, canvasEl.clientHeight, playerBench);
             if (idx >= 0 && ws) { sendBenchMove(ws, idx) };
         };
 
@@ -135,7 +135,7 @@
             if (result) { ({ ws, teamIdx, nextRoundTime } = result); }
 
             // sprite init
-            const modelNumbers = [ 0,1,2,3,4,5,6,7 ];
+            const modelNumbers = [ 0,1,2,3 ];
             const res = await fetch('/sprites.json');
             const SPRITES: Record<number, { name: string; anims: string[] }> = await res.json();
             const modelAnimations = modelNumbers.map((id: number) => SPRITES[id]).filter(Boolean);
