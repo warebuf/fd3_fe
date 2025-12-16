@@ -79,11 +79,11 @@
         const width = canvasEl.clientWidth;
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
-        drawNextRoundCount(ctx, width, height, nextRoundTime);
         if(interpolatedState) { 
             drawBench(ctx, width, height, interpolatedState, teamIdx, hoverIdx, atlasMap, sprites);
             drawField(ctx, width, height, interpolatedState, teamIdx, atlasMap, sprites); 
         }
+        drawNextRoundCount(ctx, width, height, nextRoundTime);
         
         // schedule next frame
         animationID = requestAnimationFrame(loop);

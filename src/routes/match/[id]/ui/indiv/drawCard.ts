@@ -27,8 +27,8 @@ export function drawCard(ctx: CanvasRenderingContext2D, x: number, y: number, on
     ctx.fillStyle = 'black';
     ctx.fill();
 
-    if(on) { ctx.strokeStyle = '#C5C6D0'; }
-    else if(blue) { ctx.strokeStyle = "blue"; }
+    if(blue) { ctx.strokeStyle = "blue"; }
+    else if(on) { ctx.strokeStyle = '#C5C6D0'; }
     else { ctx.strokeStyle = '#404040'; } // try 404040, 595959, or 666666 to test tone
 
     ctx.lineWidth = 1;
