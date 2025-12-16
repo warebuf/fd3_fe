@@ -18,8 +18,7 @@ export function updateSprites( atlasMap : Record<number, Atlas>, sprites : Sprit
 
     // push the sprite animations forward by dt
     for(let i = 0; i < sprites.length; i++) {
-        
-        // get modelNo
+
         const modelNo = gameState.ModelNo[i];
         const boardState = gameState.Zone[i];
         const atlas = atlasMap[modelNo];

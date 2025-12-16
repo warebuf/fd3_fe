@@ -1,7 +1,7 @@
 {
-  "0": { "name": "missingno", "anims": ["Hurt", "Hurt",  "Idle"] },
-  "1": { "name": "turtwig", "anims": ["Walk", "Walk", "Sleep"] },
-  "2": { "name": "chimchar", "anims": ["Walk", "Walk", "Sleep"] },
-  "3": { "name": "victini", "anims": ["Idle", "Walk", "Sleep"] }
-  
+  "0": { "name": "missingno", "anims": ["Hurt", "Hurt", "Idle", "Rotate"] },
+  "1": { "name": "turtwig", "anims": ["Walk", "Walk", "Sleep", "Rotate"] },
+  "2": { "name": "chimchar", "anims": ["Walk", "Walk", "Sleep", "Rotate"] },
+  "3": { "name": "victini", "anims": ["Idle", "Walk", "Sleep", "Rotate"] }
+
 }

@@ -45,10 +45,11 @@ export function drawField(
   // draw bottom row
   for (let i = 0; i < botArr.length; i++) {
     const x = botLeftCenter + i * (lineWidth + gap);
-    drawCard(ctx, x, centerY + 50, false, false);
+    drawCard(ctx, x, centerY + 50, false, false, false);
 
     const modelNo = currentState.ModelNo[botArr[i]];
-    drawSprite(ctx, x, centerY + 50, atlasMap[modelNo], 1, sprites[botArr[i]], true);
+    console.log("i, modelno",botArr[i], modelNo, atlasMap[modelNo])
+    drawSprite(ctx, x, centerY + 50, atlasMap[modelNo], currentState.Zone[botArr[i]], sprites[botArr[i]], true);
     drawHP(ctx, x, centerY + 50, currentState.HP[botArr[i]]);
     drawCharge2(ctx, x, centerY + 50, currentState, botArr[i]);
 
@@ -57,10 +58,11 @@ export function drawField(
   // draw top row
   for (let i = 0; i < topArr.length; i++) {
     const x = topLeftCenter + i * (lineWidth + gap);
-    drawCard(ctx, x, centerY - 50, false, false);
+    drawCard(ctx, x, centerY - 50, false, false, false);
 
     const modelNo = currentState.ModelNo[topArr[i]];
-    drawSprite(ctx, x, centerY - 50, atlasMap[modelNo], 1, sprites[topArr[i]], false);
+    console.log("i, modelno",topArr[i], modelNo, atlasMap[modelNo])
+    drawSprite(ctx, x, centerY - 50, atlasMap[modelNo], currentState.Zone[topArr[i]], sprites[topArr[i]], false);
     drawHP(ctx, x, centerY - 50, currentState.HP[topArr[i]]);
     drawCharge2(ctx, x, centerY - 50, currentState, topArr[i]);
     

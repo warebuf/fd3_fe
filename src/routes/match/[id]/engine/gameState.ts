@@ -13,7 +13,7 @@ export type GameState = Timestamp & {
 
     // team sets: index (unitID) -> team index
     Team: number[];
-    Zone: number[]; // 0: Bench, 1: Field, 2: Deaed
+    Zone: number[]; // 0: Bench, 1: Field, 2: Dead, 3: queuedSummon
 
     // model set
     ModelNo: number[];
