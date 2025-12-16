@@ -48,7 +48,6 @@ export function drawField(
     drawCard(ctx, x, centerY + 50, false, false, false);
 
     const modelNo = currentState.ModelNo[botArr[i]];
-    console.log("i, modelno",botArr[i], modelNo, atlasMap[modelNo])
     drawSprite(ctx, x, centerY + 50, atlasMap[modelNo], currentState.Zone[botArr[i]], sprites[botArr[i]], true);
     drawHP(ctx, x, centerY + 50, currentState.HP[botArr[i]]);
     drawCharge2(ctx, x, centerY + 50, currentState, botArr[i]);
@@ -61,7 +60,6 @@ export function drawField(
     drawCard(ctx, x, centerY - 50, false, false, false);
 
     const modelNo = currentState.ModelNo[topArr[i]];
-    console.log("i, modelno",topArr[i], modelNo, atlasMap[modelNo])
     drawSprite(ctx, x, centerY - 50, atlasMap[modelNo], currentState.Zone[topArr[i]], sprites[topArr[i]], false);
     drawHP(ctx, x, centerY - 50, currentState.HP[topArr[i]]);
     drawCharge2(ctx, x, centerY - 50, currentState, topArr[i]);

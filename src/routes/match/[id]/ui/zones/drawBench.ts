@@ -46,7 +46,7 @@ export function drawBench(
 
   for (let i = 0; i < count; i++) {
     const x = startX + i * (size + gap);
-    drawCard(ctx, x+(size/2), centerY + 150, benchUnits[i]===hoverIdx, false, currentState.Zone[i]===3);
+    drawCard(ctx, x+(size/2), centerY + 150, benchUnits[i]===hoverIdx, false, currentState.Zone[benchUnits[i]]===3);
 
     const modelNo = currentState.ModelNo[benchUnits[i]];
     drawSprite(ctx, x+(size/2), centerY + 150, atlasMap[modelNo], currentState.Zone[benchUnits[i]], sprites[benchUnits[i]], true);

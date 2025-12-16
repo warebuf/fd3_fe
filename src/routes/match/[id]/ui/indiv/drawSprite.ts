@@ -17,7 +17,6 @@ export function drawSprite(
     const frameWidth = atlas.instructions[imgIdx].FrameWidth;
     const centerX = -(frameWidth/2);
     const centerY = -(frameHeight/2);
-    console.log("imgIdx, durationIdex", imgIdx, sprite.durationIdx)
     const spriteSheetX = sprite.durationIdx * frameWidth;
     const spriteSheetY = (facingForward ? 4 : 0)  * frameHeight;
 
