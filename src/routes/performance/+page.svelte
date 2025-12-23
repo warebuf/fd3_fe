@@ -147,6 +147,18 @@
         });
     }
 
+    async function simAll() {
+        let copyState : any = { ...state }; // shallow copy this object
+        copyState.Timestamp = new Date(copyState.Timestamp).toISOString();
+        const resp = await fetch("/backend/simAll", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(copyState),
+        });
+    }
+
 </script>
 
 <div class="wrap">
@@ -180,6 +192,9 @@
 </button>
 <button on:click={() => simProb()}>
     Simulate Probabilities
+</button>
+<button on:click={() => simAll()}>
+    Simulate All
 </button>
 <style>
 
