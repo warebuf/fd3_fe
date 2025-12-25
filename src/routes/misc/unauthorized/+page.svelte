@@ -6,11 +6,21 @@
     }
 </style>
 
-<script>
-    document.addEventListener("keydown", (e) => {
-        // Spacebar key
+<script lang="ts">
+    import { onMount } from "svelte";
+  
+    onMount(() => {
+      const handler = (e: KeyboardEvent) => {
         if (e.code === "Space") {
-            window.location.href = "/";
+          e.preventDefault();
+          window.location.href = "/";
         }
+      };
+  
+      document.addEventListener("keydown", handler);
+  
+      return () => {
+        document.removeEventListener("keydown", handler);
+      };
     });
-</script>
+  </script>

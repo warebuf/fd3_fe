@@ -20,13 +20,15 @@ export type GameState = Timestamp & {
 
     // core unit stats
     HP: number[];
+    EXP: number[];
 
-    // abilities
-	Abilities:       number[]; // abilities are flattened for each unit
-	AbilityStartIdx: number[]; // the starting index in Abilities[] for this unit
-	AbilityCount:    number[]; // how many abilities belong to each unit
-	AbilityCharge:   number[];
-	AbilitySPD:      number[];
+    // functions
+	Functions:       number[]; // functions are flattened for each unit
+	FunctionType: number[];
+    FunctionStartIdx: number[]; // the starting index in Functions[] for this unit
+	FunctionCount:    number[]; // how many functions belong to each unit
+	FunctionCharge:   number[];
+	FunctionSPD:      number[];
 
 };
 
@@ -42,12 +44,13 @@ export function initGameState() : GameState {
         Zone: [],
         ModelNo: [],
         HP: [],
-        Abilities: [],
-        AbilityStartIdx: [],
-        AbilityCount: [],
-        AbilityCharge: [],
-        AbilitySPD: [],
-
+        EXP: [],
+        Functions: [],
+        FunctionType: [],
+        FunctionStartIdx: [],
+        FunctionCount: [],
+        FunctionCharge: [],
+        FunctionSPD: [],
     };
 }
 
@@ -63,13 +66,14 @@ export function cloneGameState(src: GameState) : GameState {
         Zone: [...src.Zone],
         ModelNo: [...src.ModelNo],
         HP: [...src.HP],
+        EXP: [...src.EXP],
 
-        // ability
-        Abilities: [...src.Abilities],
-        AbilityStartIdx: [...src.AbilityStartIdx],
-        AbilityCount: [...src.AbilityCount],
-        AbilityCharge: [...src.AbilityCharge],
-        AbilitySPD: [...src.AbilitySPD],
-        
+        // functions
+        Functions: [...src.Functions],
+        FunctionType: [...src.FunctionType],
+        FunctionStartIdx: [...src.FunctionStartIdx],
+        FunctionCount: [...src.FunctionCount],
+        FunctionCharge: [...src.FunctionCharge],
+        FunctionSPD: [...src.FunctionSPD],
     };
 }

@@ -8,15 +8,26 @@ export function addFromToolbox( state: GameState, modelData: any, modelNo: numbe
     state.Team.push(teamIdx);
     state.Zone.push(Zone);
     state.HP.push(modelData[modelNo].HP);
+    state.EXP.push(0);
 
-    // ability stuff
-    state.AbilityStartIdx.push(state.Abilities.length);
-    for(let i = 0; i < modelData[modelNo].Abilities.length; i++) {
-        state.Abilities.push(modelData[modelNo].Abilities[i].AbilityID);
-        state.AbilitySPD.push(modelData[modelNo].Abilities[i].CD * 1000);
-        state.AbilityCharge.push(0);
+    // function stuff
+    state.FunctionStartIdx.push(state.Functions.length);
+    for(let i = 0; i < modelData[modelNo].Functions.length; i++) {
+        state.Functions.push(modelData[modelNo].Functions[i].FunctionID);
+        state.FunctionSPD.push(modelData[modelNo].Functions[i].CD * 1000);
+        state.FunctionCharge.push(0);
+
+        switch(modelData[modelNo].Functions[i].Type) {
+            case "Auto":
+                state.FunctionType.push(0);
+                break;
+            case "Manual":
+                state.FunctionType.push(1);
+                break;
+        }
+
     }
-    state.AbilityCount.push(modelData[modelNo].Abilities.length);
+    state.FunctionCount.push(modelData[modelNo].Functions.length);
 
 }
 

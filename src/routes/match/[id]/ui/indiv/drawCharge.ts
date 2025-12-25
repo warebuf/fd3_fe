@@ -55,13 +55,13 @@ const size = 36;
     const gap = radius * 2 + 4;
   
     for (
-      let i = state.AbilityStartIdx[unitIdx];
-      i < state.AbilityStartIdx[unitIdx] + state.AbilityCount[unitIdx];
+      let i = state.FunctionStartIdx[unitIdx];
+      i < state.FunctionStartIdx[unitIdx] + state.FunctionCount[unitIdx];
       i++
     ) {
-      const charge = state.AbilityCharge[i];
-      const SPD = state.AbilitySPD[i];
-      const idx = i - state.AbilityStartIdx[unitIdx];
+      const charge = state.FunctionCharge[i];
+      const SPD = state.FunctionSPD[i];
+      const idx = i - state.FunctionStartIdx[unitIdx];
   
       let ratio = SPD > 0 ? charge / SPD : 0;
       ratio = Math.max(0, Math.min(1, ratio));

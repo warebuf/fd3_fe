@@ -16,11 +16,16 @@ export function interpolate( authoritativeState : GameState, interpolatedState: 
         // for now just update charge of on field units, obviously amendable in the ufture
 
         if( authoritativeState.HP[i] > 0 && authoritativeState.Zone[i] === 1) {
-            for( let j = authoritativeState.AbilityStartIdx[i]; j < authoritativeState.AbilityStartIdx[i] + authoritativeState.AbilityCount[i]; j++ ) {
-                interpolatedState.AbilityCharge[j] = authoritativeState.AbilityCharge[j] + millisecondsPassed;
-                if(interpolatedState.AbilityCharge[j] > interpolatedState.AbilitySPD[j]) {
-                    interpolatedState.AbilityCharge[j] = interpolatedState.AbilitySPD[j];
+            for( let j = authoritativeState.FunctionStartIdx[i]; j < authoritativeState.FunctionStartIdx[i] + authoritativeState.FunctionCount[i]; j++ ) {
+                console.log("authoritativeState.FunctionType[i]", authoritativeState.FunctionType[i]);
+                if(authoritativeState.FunctionType[i] === 0) {
+                    interpolatedState.FunctionCharge[j] = authoritativeState.FunctionCharge[j] + millisecondsPassed;
+                    if(interpolatedState.FunctionCharge[j] > interpolatedState.FunctionSPD[j]) {
+                        interpolatedState.FunctionCharge[j] = interpolatedState.FunctionSPD[j];
+                    }
                 }
+                
+                
             }
         }
 

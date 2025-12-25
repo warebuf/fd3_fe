@@ -5,8 +5,11 @@ import type { Atlas, SpriteDesc } from "$lib/sprites/sprite2"
 import { drawCard } from "../indiv/drawCard"
 import { drawSprite } from "../indiv/drawSprite";
 import { drawHP } from "../indiv/drawHP";
-import { drawIdx } from "../indiv/drawIdx";
 import { drawCharge2 } from "../indiv/drawCharge";
+
+
+const lineWidth = 36;
+const gap = 2;
 
 export function drawField(
   ctx: CanvasRenderingContext2D,
@@ -30,9 +33,6 @@ export function drawField(
       else { topArr.push(i); }
     }
   }
-
-  const lineWidth = 36;
-  const gap = 2;
 
   // total span for N cards
   const totalBotWidth = (botArr.length - 1) * (lineWidth + gap);
@@ -66,4 +66,46 @@ export function drawField(
     
   }
 
+}
+
+export function fieldHitTest(px: number, py: number, width: number, height: number, teamIdx: number, state: GameState): number {
+  
+  const centerX = width / 2;
+  const centerY = height / 2;
+
+  if( (py >= centerY - 50 - (lineWidth / 2)) && (py <= centerY - 50 + (lineWidth / 2)) ) {
+
+    const topArr : number[] = [];
+    for(let i = 0; i < state.ModelNo.length; i++) {
+      if( state.Zone[i] === 1 && state.HP[i] > 0) {
+        if (state.Team[i] !== teamIdx) { topArr.push(i); }
+      }
+    }
+    const topWidth = (topArr.length * lineWidth) + (topArr.length > 0 ? (topArr.length - 1) * gap : 0);
+    const leftmost = centerX - (topWidth / 2);
+    for(let i = 0; i < topArr.length; i++) {
+      const left = leftmost + (i * (gap + lineWidth));
+      const right = left + lineWidth;
+      console.log(i, left, right)
+      if( px >= left && px <= right) { return topArr[i] };
+    }
+
+  } else if ( (py >= centerY + 50 - (lineWidth / 2)) && (py <= centerY + 50 + (lineWidth / 2)) ) {
+
+    const botArr : number[] = [];
+    for(let i = 0; i < state.ModelNo.length; i++) {
+      if( state.Zone[i] === 1 && state.HP[i] > 0) {
+        if (state.Team[i] === teamIdx) { botArr.push(i); } 
+      }
+    }
+    const botWidth = (botArr.length * lineWidth) + (botArr.length > 0 ? (botArr.length - 1) * gap : 0);
+    const leftmost = centerX - (botWidth / 2);
+    for(let i = 0; i < botArr.length; i++) {
+      const left = leftmost + (i * (gap + lineWidth));
+      const right = left + lineWidth;
+      if( px >= left && px <= right) { return botArr[i] };
+    }
+
+  } 
+  return -1;
 }

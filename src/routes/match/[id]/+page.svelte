@@ -13,12 +13,13 @@
 
     import { drawNextRoundCount} from "./ui/zones/drawNextRoundCount"
     import { drawBench, benchHitTest } from "./ui/zones/drawBench"
-    import { drawField } from "./ui/zones/drawField"
+    import { drawField, fieldHitTest } from "./ui/zones/drawField"
 
     import type { Atlas, SpriteDesc } from "$lib/sprites/sprite2";
     import { createAtlases2 } from "$lib/sprites/sprite2";
     import { updateSprites } from './ui/updateSprites';
     import { calcPlayerBench } from './ui/updateUIData/calcPlayerBench';
+    import { drawStats } from './ui/zones/drawStats';
 
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
     let ctx: CanvasRenderingContext2D;
@@ -43,7 +44,7 @@
 
     let atlasMap: Record<number, Atlas>; // modelNo to Atlas object
     let sprites: SpriteDesc[] = [];
-
+    let modelData: any;
 
     function resizeCanvas() {
         const dpr = window.devicePixelRatio || 1;
@@ -80,6 +81,7 @@
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
         if(interpolatedState) { 
+            drawStats(ctx, width, height, interpolatedState, hoverIdx, modelData);
             drawBench(ctx, width, height, interpolatedState, teamIdx, hoverIdx, atlasMap, sprites);
             drawField(ctx, width, height, interpolatedState, teamIdx, atlasMap, sprites); 
         }
@@ -101,7 +103,8 @@
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
 
-            const idx = benchHitTest(canvasEl.clientHeight, x, y, canvasEl.clientWidth, canvasEl.clientHeight, playerBench);
+            let idx = benchHitTest(canvasEl.clientHeight, x, y, canvasEl.clientWidth, canvasEl.clientHeight, playerBench);
+            if(idx < 0) { idx = fieldHitTest(x,y,canvasEl.clientWidth, canvasEl.clientHeight, teamIdx,interpolatedState); }
             hoverIdx = idx;
             canvasEl.style.cursor = idx >= 0 ? 'pointer' : 'default';
         };
@@ -135,11 +138,14 @@
             if (result) { ({ ws, teamIdx, nextRoundTime } = result); }
 
             // sprite init
-            const modelNumbers = [ 0,1,2,3 ];
+            const modelNumbers = [ 0,1,2,3,4 ];
             const res = await fetch('/sprites.json');
             const SPRITES: Record<number, { name: string; anims: string[] }> = await res.json();
             const modelAnimations = modelNumbers.map((id: number) => SPRITES[id]).filter(Boolean);
             atlasMap = await createAtlases2(modelAnimations);
+
+            const modelDataResponse = await fetch("/backend/getModelData");
+            modelData = await modelDataResponse.json();
 
             // guard against requestAnimationFrame
             if (cancelled) return;
