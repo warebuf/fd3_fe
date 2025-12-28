@@ -47,6 +47,14 @@ const size = 36;
     ctx.textBaseline = "middle";
     ctx.fillText(text, cx, cy);
   }
+
+  function drawReady(ctx: CanvasRenderingContext2D, cx: number, cy: number){
+    ctx.font = `6px sans-serif`;
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("READY", cx, cy);
+  }
   
   export function drawCharge2( ctx: CanvasRenderingContext2D, x: number, y: number, state: GameState, unitIdx: number ) {
     const cx = x;
@@ -54,26 +62,54 @@ const size = 36;
     const radius = size * 0.18;
     const gap = radius * 2 + 4;
   
-    for (
-      let i = state.FunctionStartIdx[unitIdx];
-      i < state.FunctionStartIdx[unitIdx] + state.FunctionCount[unitIdx];
-      i++
-    ) {
-      const charge = state.FunctionCharge[i];
-      const SPD = state.FunctionSPD[i];
-      const idx = i - state.FunctionStartIdx[unitIdx];
-  
-      let ratio = SPD > 0 ? charge / SPD : 0;
-      ratio = Math.max(0, Math.min(1, ratio));
-  
-      const clockY = cy + idx * gap;
-  
-      // Convert cooldown left → readable seconds
-      const msLeft = SPD > 0 ? (SPD - charge) : 0;
-      const sec = Math.ceil(msLeft / 100) / 10;
-      const text = sec > 0 ? sec.toString() : "";
-  
-      drawPieClockBorder(ctx, cx, clockY, radius, ratio, text);
+    const startIdx = state.FunctionStartIdx[unitIdx];
+    const count = state.FunctionCount[unitIdx];
+    for ( let i = startIdx; i < startIdx + count; i++ ) {
+
+      if( state.FunctionType[i] === 0 ) {
+        const charge = state.FunctionCharge[i];
+        const SPD = state.FunctionSPD[i];
+
+        if(charge === SPD) {
+          drawReady(ctx, cx, cy);
+          continue;
+        }
+
+        const idx = i - startIdx;
+    
+        let ratio = SPD > 0 ? charge / SPD : 0;
+        ratio = Math.max(0, Math.min(1, ratio));
+    
+        const clockY = cy + idx * gap;
+    
+        // Convert cooldown left → readable seconds
+        const msLeft = SPD > 0 ? (SPD - charge) : 0;
+        const sec = Math.ceil(msLeft / 100) / 10;
+        const text = sec > 0 ? sec.toString() : "";
+    
+        drawPieClockBorder(ctx, cx, clockY, radius, ratio, text);
+      } else if ( state.FunctionType[i] === 1 ) {
+        ctx.font = `6px sans-serif`;
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        const idx = i - startIdx;
+
+        const funcNum = state.Functions[i];
+
+        if( funcNum === 6) { // at 75 EXP
+          const exp = state.EXP[unitIdx];
+          if( exp < 75) {
+            ctx.fillText(exp.toLocaleString() + " / 75", cx, cy + (idx * gap) );
+          } else {
+            const mult = Math.floor(exp/75)
+            ctx.fillText( "READY " + mult.toLocaleString() + "x", cx, cy + (idx * gap) );
+          }
+        }
+        
+      }
+
+      
     }
   }
   

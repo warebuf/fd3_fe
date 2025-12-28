@@ -86,7 +86,6 @@ export function fieldHitTest(px: number, py: number, width: number, height: numb
     for(let i = 0; i < topArr.length; i++) {
       const left = leftmost + (i * (gap + lineWidth));
       const right = left + lineWidth;
-      console.log(i, left, right)
       if( px >= left && px <= right) { return topArr[i] };
     }
 

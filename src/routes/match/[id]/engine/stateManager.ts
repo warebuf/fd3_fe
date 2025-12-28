@@ -34,7 +34,6 @@ export class StateManager {
             if( currentTime >= eventTime ) { // an event has passed
                 this.scheduled.pop();
                 if("str" in nextEvent) { // EventResult
-                    console.log("EventResult");
                     significantEvent = true;
                 } else { // GameState
                     this.lastState = nextEvent;

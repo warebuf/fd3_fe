@@ -20,7 +20,6 @@ export function drawStats(
 
     const modelNo = currentState.ModelNo[hoverIdx];
     const model = modelData[modelNo];
-    console.log("model", model)
 
     // top left corner
     const centerX = canvasWidth - w - margin;
@@ -77,7 +76,7 @@ export function drawStats(
     ctx.fillText("HP: " + currentState.HP[hoverIdx].toLocaleString(), x, y)
     y += 15;
 
-    ctx.fillText("EXP: ", x, y)
+    ctx.fillText("EXP: " + currentState.EXP[hoverIdx].toLocaleString(), x, y)
     y += 30;
 
     for(let i = 0; i < model.Functions.length; i++) {

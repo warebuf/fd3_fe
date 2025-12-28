@@ -17,8 +17,7 @@ export function interpolate( authoritativeState : GameState, interpolatedState: 
 
         if( authoritativeState.HP[i] > 0 && authoritativeState.Zone[i] === 1) {
             for( let j = authoritativeState.FunctionStartIdx[i]; j < authoritativeState.FunctionStartIdx[i] + authoritativeState.FunctionCount[i]; j++ ) {
-                console.log("authoritativeState.FunctionType[i]", authoritativeState.FunctionType[i]);
-                if(authoritativeState.FunctionType[i] === 0) {
+                if(authoritativeState.FunctionType[j] === 0) {
                     interpolatedState.FunctionCharge[j] = authoritativeState.FunctionCharge[j] + millisecondsPassed;
                     if(interpolatedState.FunctionCharge[j] > interpolatedState.FunctionSPD[j]) {
                         interpolatedState.FunctionCharge[j] = interpolatedState.FunctionSPD[j];

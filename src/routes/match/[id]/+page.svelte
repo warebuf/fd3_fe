@@ -16,10 +16,11 @@
     import { drawField, fieldHitTest } from "./ui/zones/drawField"
 
     import type { Atlas, SpriteDesc } from "$lib/sprites/sprite2";
-    import { createAtlases2 } from "$lib/sprites/sprite2";
+    import { createAtlases2, createBitmap } from "$lib/sprites/sprite2";
     import { updateSprites } from './ui/updateSprites';
     import { calcPlayerBench } from './ui/updateUIData/calcPlayerBench';
     import { drawStats } from './ui/zones/drawStats';
+    import { drawTarget, drawTargetButton } from './ui/indiv/drawMenu';
 
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
     let ctx: CanvasRenderingContext2D;
@@ -45,6 +46,10 @@
     let atlasMap: Record<number, Atlas>; // modelNo to Atlas object
     let sprites: SpriteDesc[] = [];
     let modelData: any;
+
+    let targetSprite : ImageBitmap;
+    let targetIconSprite : ImageBitmap;
+    let selectedUnit : number = -1;
 
     function resizeCanvas() {
         const dpr = window.devicePixelRatio || 1;
@@ -86,6 +91,11 @@
             drawField(ctx, width, height, interpolatedState, teamIdx, atlasMap, sprites); 
         }
         drawNextRoundCount(ctx, width, height, nextRoundTime);
+        if(selectedUnit >= 0) {
+            drawTarget(ctx,425,514, targetSprite)
+            drawTargetButton(ctx,100,100, targetIconSprite);
+        }
+
         
         // schedule next frame
         animationID = requestAnimationFrame(loop);
@@ -104,7 +114,7 @@
             const y = e.clientY - r.top;
 
             let idx = benchHitTest(canvasEl.clientHeight, x, y, canvasEl.clientWidth, canvasEl.clientHeight, playerBench);
-            if(idx < 0) { idx = fieldHitTest(x,y,canvasEl.clientWidth, canvasEl.clientHeight, teamIdx,interpolatedState); }
+            if(idx < 0) { idx = fieldHitTest(x,y,canvasEl.clientWidth, canvasEl.clientHeight, teamIdx, interpolatedState); }
             hoverIdx = idx;
             canvasEl.style.cursor = idx >= 0 ? 'pointer' : 'default';
         };
@@ -119,8 +129,15 @@
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
 
-            const idx = benchHitTest(canvasEl.clientHeight, x, y, canvasEl.clientWidth, canvasEl.clientHeight, playerBench);
-            if (idx >= 0 && ws) { sendBenchMove(ws, idx) };
+            let idx = benchHitTest(canvasEl.clientHeight, x, y, canvasEl.clientWidth, canvasEl.clientHeight, playerBench);
+            if (idx >= 0 && ws) { sendBenchMove(ws, idx) }
+            else {
+                idx = fieldHitTest(x,y,canvasEl.clientWidth, canvasEl.clientHeight, teamIdx, interpolatedState);
+                if(idx >= 0 && interpolatedState.ModelNo[idx] === 4) {
+                    selectedUnit = idx;
+                }
+            }
+
         };
 
         canvasEl.addEventListener('mousemove', onMove);
@@ -146,6 +163,9 @@
 
             const modelDataResponse = await fetch("/backend/getModelData");
             modelData = await modelDataResponse.json();
+
+            targetSprite = await createBitmap("target");
+            targetIconSprite = await createBitmap("targetIcon");
 
             // guard against requestAnimationFrame
             if (cancelled) return;
