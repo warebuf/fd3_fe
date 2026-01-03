@@ -29,6 +29,7 @@ export type GameState = Timestamp & {
 	FunctionCount:    number[]; // how many functions belong to each unit
 	FunctionCharge:   number[];
 	FunctionSPD:      number[];
+    FunctionTarget: number[];
 
 };
 
@@ -51,6 +52,7 @@ export function initGameState() : GameState {
         FunctionCount: [],
         FunctionCharge: [],
         FunctionSPD: [],
+        FunctionTarget: [],
     };
 }
 
@@ -75,5 +77,6 @@ export function cloneGameState(src: GameState) : GameState {
         FunctionCount: [...src.FunctionCount],
         FunctionCharge: [...src.FunctionCharge],
         FunctionSPD: [...src.FunctionSPD],
+        FunctionTarget: [...src.FunctionTarget],
     };
 }

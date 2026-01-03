@@ -14,14 +14,16 @@
     import { drawNextRoundCount} from "./ui/zones/drawNextRoundCount"
     import { drawBench, benchHitTest } from "./ui/zones/drawBench"
     import { drawField, fieldHitTest } from "./ui/zones/drawField"
+    import { initDrawMenuSprites, drawTargets, drawTargetButton, onTargetButton, drawTargetSelectText, resetSelected, setSelected, getSelectedUnitIdx, getSelectedFuncIdx, getSelectedButtonType, setPendingTargets, getPendingTargets, drawPendingTargets, getAutoFuncIdx } from './ui/indiv/drawSelectedButtons';
+    import type { Coordinate } from './ui/misc/Coordinates';
 
     import type { Atlas, SpriteDesc } from "$lib/sprites/sprite2";
-    import { createAtlases2, createBitmap } from "$lib/sprites/sprite2";
+    import { createAtlases2 } from "$lib/sprites/sprite2";
     import { updateSprites } from './ui/updateSprites';
     import { calcPlayerBench } from './ui/updateUIData/calcPlayerBench';
     import { drawStats } from './ui/zones/drawStats';
-    import { drawTarget, drawTargetButton } from './ui/indiv/drawMenu';
 
+    
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
     let ctx: CanvasRenderingContext2D;
     let animationID: number; // saved for easy cleanup
@@ -47,9 +49,9 @@
     let sprites: SpriteDesc[] = [];
     let modelData: any;
 
-    let targetSprite : ImageBitmap;
-    let targetIconSprite : ImageBitmap;
-    let selectedUnit : number = -1;
+    // ui stuff
+    let uiState = 0;
+    let unitPositions: Record<number,Coordinate> = {};
 
     function resizeCanvas() {
         const dpr = window.devicePixelRatio || 1;
@@ -79,6 +81,7 @@
         // update derived states
         if(significantEvent) {
             playerBench = calcPlayerBench(interpolatedState, teamIdx);
+            unitPositions = {};
         }
 
         // draw
@@ -87,15 +90,20 @@
         ctx.clearRect(0, 0, width, height);
         if(interpolatedState) { 
             drawStats(ctx, width, height, interpolatedState, hoverIdx, modelData);
-            drawBench(ctx, width, height, interpolatedState, teamIdx, hoverIdx, atlasMap, sprites);
-            drawField(ctx, width, height, interpolatedState, teamIdx, atlasMap, sprites); 
+            drawBench(ctx, width, height, interpolatedState, teamIdx, hoverIdx, atlasMap, sprites, unitPositions, significantEvent);
+            drawField(ctx, width, height, interpolatedState, teamIdx, atlasMap, sprites, unitPositions, significantEvent); 
         }
         drawNextRoundCount(ctx, width, height, nextRoundTime);
-        if(selectedUnit >= 0) {
-            drawTarget(ctx,425,514, targetSprite)
-            drawTargetButton(ctx,100,100, targetIconSprite);
-        }
 
+        if(uiState == 2) {
+            drawTargetSelectText(ctx);
+            drawPendingTargets(ctx, unitPositions);
+        } else if(uiState === 1) {
+            drawTargets(ctx, interpolatedState, unitPositions, -1, uiState);
+            drawTargetButton(ctx);
+        } else {
+            drawTargets(ctx, interpolatedState, unitPositions, hoverIdx, uiState);
+        }
         
         // schedule next frame
         animationID = requestAnimationFrame(loop);
@@ -114,7 +122,9 @@
             const y = e.clientY - r.top;
 
             let idx = benchHitTest(canvasEl.clientHeight, x, y, canvasEl.clientWidth, canvasEl.clientHeight, playerBench);
-            if(idx < 0) { idx = fieldHitTest(x,y,canvasEl.clientWidth, canvasEl.clientHeight, teamIdx, interpolatedState); }
+            if(idx < 0) { 
+                [idx] = fieldHitTest(x,y,canvasEl.clientWidth, canvasEl.clientHeight, teamIdx, interpolatedState); 
+            }
             hoverIdx = idx;
             canvasEl.style.cursor = idx >= 0 ? 'pointer' : 'default';
         };
@@ -129,13 +139,73 @@
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
 
-            let idx = benchHitTest(canvasEl.clientHeight, x, y, canvasEl.clientWidth, canvasEl.clientHeight, playerBench);
-            if (idx >= 0 && ws) { sendBenchMove(ws, idx) }
-            else {
-                idx = fieldHitTest(x,y,canvasEl.clientWidth, canvasEl.clientHeight, teamIdx, interpolatedState);
-                if(idx >= 0 && interpolatedState.ModelNo[idx] === 4) {
-                    selectedUnit = idx;
+            const [fieldIdx, midx, midy] = fieldHitTest(x,y,canvasEl.clientWidth, canvasEl.clientHeight, teamIdx, interpolatedState);
+
+            let checkUIState0 = true;
+            if(uiState === 2) {
+
+                checkUIState0 = false;
+
+                let reset = true;
+                if(fieldIdx >= 0) {
+                    const finished = setPendingTargets(fieldIdx, interpolatedState.Team[fieldIdx]===teamIdx); // add to target list
+                    if(finished && ws) { // if complete, send to server
+                        const uid = getSelectedUnitIdx();
+                        const fid = getSelectedFuncIdx(interpolatedState);
+                        const arr = getPendingTargets();
+                        const t1 = (arr.length > 0) ? arr[0] : -1;
+                        const t2 = (arr.length > 1) ? arr[1] : -1;
+                        ws.send(JSON.stringify( { Type: "Target", UnitID: uid, FunctionID: fid, Target1: t1, Target2: t2 } ));
+                    } else {
+                        reset = false;
+                    }
                 }
+
+                if(reset) {
+                    resetSelected();
+                    uiState = 0;
+                }
+                
+            } else if(uiState === 1) {
+                if( onTargetButton(x,y) ) { // clicked aim/sword
+
+                    const buttonType = getSelectedButtonType();
+                    if( buttonType === "" ) {
+
+                    } else if( buttonType === "Manual" ) { // sword
+                        const fidx = getAutoFuncIdx(interpolatedState);
+                        if(ws && fidx >= 0) { 
+                            ws.send(JSON.stringify( { Type: "Active", UnitID: getSelectedUnitIdx(), FunctionID: fidx }))
+                        }
+                        resetSelected();
+                        uiState = 0;
+                        checkUIState0 = false;
+                    } else { // aim
+                        uiState = 2;
+                        checkUIState0 = false;
+                    }
+
+                } else if (fieldIdx === getSelectedUnitIdx() && ws) { // clicked card
+                    const fidx = getAutoFuncIdx(interpolatedState);
+                    if(ws && fidx >= 0) { 
+                        ws.send(JSON.stringify( { Type: "Active", UnitID: getSelectedUnitIdx(), FunctionID: fidx }))
+                    }
+                    checkUIState0 = false;
+                    resetSelected();
+                    uiState = 0;
+                } else { // clicked elsewhere
+                    resetSelected();
+                    uiState = 0;
+                }
+            }
+
+            if(checkUIState0) {
+                const benchIdx = benchHitTest(canvasEl.clientHeight, x, y, canvasEl.clientWidth, canvasEl.clientHeight, playerBench);
+                if(fieldIdx >= 0 && interpolatedState.ModelNo[fieldIdx] === 4) {
+                    setSelected(modelData, interpolatedState, fieldIdx, midx, midy);
+                    uiState = 1;
+                }
+                else if (benchIdx >= 0 && ws) { sendBenchMove(ws, benchIdx); }
             }
 
         };
@@ -164,8 +234,7 @@
             const modelDataResponse = await fetch("/backend/getModelData");
             modelData = await modelDataResponse.json();
 
-            targetSprite = await createBitmap("target");
-            targetIconSprite = await createBitmap("targetIcon");
+            await initDrawMenuSprites();
 
             // guard against requestAnimationFrame
             if (cancelled) return;

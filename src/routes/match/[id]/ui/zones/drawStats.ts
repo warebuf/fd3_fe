@@ -69,6 +69,10 @@ export function drawStats(
     if(currentState.Zone[hoverIdx] === 2) { str3 += "Dead"}
     if(currentState.Zone[hoverIdx] === 3) { str3 += "To Summon"}
     ctx.fillText(str3 , x + strWidth + str2Width, y);
+
+    ctx.textAlign = "right";
+    ctx.fillText(hoverIdx.toLocaleString() , x + 180, y);
+    ctx.textAlign = "left";
     y += 15;
 
     ctx.font = "10px sans-serif";

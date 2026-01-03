@@ -7,6 +7,8 @@ import { drawCard } from "../indiv/drawCard"
 import { drawSprite } from "../indiv/drawSprite";
 import { drawHP } from "../indiv/drawHP";
 
+import type { Coordinate } from "../misc/Coordinates";
+
 export const BENCH = { size: 36, radius: 10, gap: 2 };
 
 export function drawBench( 
@@ -18,6 +20,8 @@ export function drawBench(
   hoverIdx: number,
   atlasMap: Record<number, Atlas>,
   sprites: SpriteDesc[],
+  unitPositions: Record<number, Coordinate>,
+  updatePos: boolean
 ): void {
 
   let count = 0;
@@ -47,6 +51,7 @@ export function drawBench(
   for (let i = 0; i < count; i++) {
     const x = startX + i * (size + gap);
     drawCard(ctx, x+(size/2), centerY + 150, benchUnits[i]===hoverIdx, false, currentState.Zone[benchUnits[i]]===3);
+    if(updatePos) { unitPositions[benchUnits[i]] = {X: x, Y: centerY + 150 - (size/2)}; }
 
     const modelNo = currentState.ModelNo[benchUnits[i]];
     drawSprite(ctx, x+(size/2), centerY + 150, atlasMap[modelNo], currentState.Zone[benchUnits[i]], sprites[benchUnits[i]], true);

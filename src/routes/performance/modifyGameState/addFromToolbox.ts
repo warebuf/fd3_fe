@@ -17,13 +17,13 @@ export function addFromToolbox( state: GameState, modelData: any, modelNo: numbe
         state.FunctionSPD.push(modelData[modelNo].Functions[i].CD * 1000);
         state.FunctionCharge.push(0);
 
-        switch(modelData[modelNo].Functions[i].Type) {
-            case "Auto":
-                state.FunctionType.push(0);
-                break;
-            case "Manual":
-                state.FunctionType.push(1);
-                break;
+        switch (modelData[modelNo].Functions[i].Type) {
+        case "Auto":
+            state.FunctionType.push(0);
+            break;
+        case "Manual":
+            state.FunctionType.push(1);
+            break;
         }
 
     }

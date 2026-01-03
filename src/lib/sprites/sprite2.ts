@@ -97,24 +97,6 @@ async function createBitmaps(name: string, actions: string[]): Promise<ImageBitm
     return Promise.all(promises);
 }
 
-// 75, 14, 16, 45, 46, 47
-export async function createBitmap(type : string): Promise<ImageBitmap> {
-    
-    let url = "/crosshairs/1/xhairs_color/action_xhairs_75.png"; 
-
-    if(type === "target") {
-        
-    } else if(type === "targetIcon") {
-        url = "/random/target.png";
-    }
-    
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Failed to load image: ${url}`);
-    const blob = await res.blob();
-    return await createImageBitmap(blob);
-
-}
-
 // gives an index to the first appearance of a string
 // ie [a, b, a, c] => [0, 1, 0, 2]
 function createActionToImageIdx(anims: string[]) : number[] {

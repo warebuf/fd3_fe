@@ -7,6 +7,7 @@ import { drawSprite } from "../indiv/drawSprite";
 import { drawHP } from "../indiv/drawHP";
 import { drawCharge2 } from "../indiv/drawCharge";
 
+import type { Coordinate } from "../misc/Coordinates";
 
 const lineWidth = 36;
 const gap = 2;
@@ -19,6 +20,8 @@ export function drawField(
   teamIdx: number,
   atlasMap: Record<number, Atlas>,
   sprites: SpriteDesc[],
+  unitPositions: Record<number, Coordinate>,
+  updatePos: boolean
 ): void {
 
   const centerX = canvasWidth / 2;
@@ -46,6 +49,7 @@ export function drawField(
   for (let i = 0; i < botArr.length; i++) {
     const x = botLeftCenter + i * (lineWidth + gap);
     drawCard(ctx, x, centerY + 50, false, false, false);
+    if(updatePos) { unitPositions[botArr[i]] = {X: x - (lineWidth/2), Y: centerY + 50 - (lineWidth/2)}; }
 
     const modelNo = currentState.ModelNo[botArr[i]];
     drawSprite(ctx, x, centerY + 50, atlasMap[modelNo], currentState.Zone[botArr[i]], sprites[botArr[i]], true);
@@ -58,6 +62,7 @@ export function drawField(
   for (let i = 0; i < topArr.length; i++) {
     const x = topLeftCenter + i * (lineWidth + gap);
     drawCard(ctx, x, centerY - 50, false, false, false);
+    if(updatePos) { unitPositions[topArr[i]] = {X: x - (lineWidth/2), Y: centerY - 50 - (lineWidth/2)}; }
 
     const modelNo = currentState.ModelNo[topArr[i]];
     drawSprite(ctx, x, centerY - 50, atlasMap[modelNo], currentState.Zone[topArr[i]], sprites[topArr[i]], false);
@@ -68,7 +73,7 @@ export function drawField(
 
 }
 
-export function fieldHitTest(px: number, py: number, width: number, height: number, teamIdx: number, state: GameState): number {
+export function fieldHitTest(px: number, py: number, width: number, height: number, teamIdx: number, state: GameState): number[] {
   
   const centerX = width / 2;
   const centerY = height / 2;
@@ -86,7 +91,11 @@ export function fieldHitTest(px: number, py: number, width: number, height: numb
     for(let i = 0; i < topArr.length; i++) {
       const left = leftmost + (i * (gap + lineWidth));
       const right = left + lineWidth;
-      if( px >= left && px <= right) { return topArr[i] };
+      if( px >= left && px <= right) { 
+        const midX = (left + right) / 2;
+        const midY = centerY - 50;
+        return [topArr[i], midX, midY] 
+      };
     }
 
   } else if ( (py >= centerY + 50 - (lineWidth / 2)) && (py <= centerY + 50 + (lineWidth / 2)) ) {
@@ -102,9 +111,13 @@ export function fieldHitTest(px: number, py: number, width: number, height: numb
     for(let i = 0; i < botArr.length; i++) {
       const left = leftmost + (i * (gap + lineWidth));
       const right = left + lineWidth;
-      if( px >= left && px <= right) { return botArr[i] };
+      if( px >= left && px <= right) { 
+        const midX = (left + right) / 2;
+        const midY = centerY + 50;
+        return [botArr[i], midX, midY] 
+      };
     }
 
   } 
-  return -1;
+  return [-1, -1, -1];
 }
