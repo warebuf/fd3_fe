@@ -153,8 +153,6 @@ export function drawTargets(ctx: CanvasRenderingContext2D, state: GameState, uni
     const w = 70;
     const h = 70;
 
-    console.log()
-
     let uid = hoveredIdx;
     if(uid < 0) { uid = selectedUnit; }
     if(uid < 0) { return; }

@@ -118,7 +118,6 @@
             body: JSON.stringify(copyState),
         });
         const respJSON = await resp.json();
-        console.log(respJSON);
         state = respJSON;
         draw();
     }

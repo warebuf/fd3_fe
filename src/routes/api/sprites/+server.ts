@@ -11,8 +11,6 @@ import path from 'path';
 export const POST: RequestHandler = async ({ request }) => {
   
     const { characters } = await request.json();
-  
-    console.log('characters', characters);
 
     const baseDir = path.resolve('static/sprites');
 
