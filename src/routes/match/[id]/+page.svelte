@@ -22,6 +22,8 @@
     import { updateSprites } from './ui/updateSprites';
     import { calcPlayerBench } from './ui/updateUIData/calcPlayerBench';
     import { drawStats } from './ui/zones/drawStats';
+    import { drawStructures } from './ui/zones/drawStructures';
+    import { getStructureBitmap } from './ui/getSpriteBitmap/getStructureBitmap';
 
     
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
@@ -47,6 +49,7 @@
 
     let atlasMap: Record<number, Atlas>; // modelNo to Atlas object
     let sprites: SpriteDesc[] = [];
+    let structBitmap: ImageBitmap;
     let modelData: any;
 
     // ui stuff
@@ -92,6 +95,7 @@
             drawStats(ctx, width, height, interpolatedState, hoverIdx, modelData);
             drawBench(ctx, width, height, interpolatedState, teamIdx, hoverIdx, atlasMap, sprites, unitPositions, significantEvent);
             drawField(ctx, width, height, interpolatedState, teamIdx, atlasMap, sprites, unitPositions, significantEvent); 
+            drawStructures(ctx, width, height, interpolatedState, teamIdx, structBitmap);
         }
         drawNextRoundCount(ctx, width, height, nextRoundTime);
 
@@ -230,6 +234,9 @@
             const SPRITES: Record<number, { name: string; anims: string[] }> = await res.json();
             const modelAnimations = modelNumbers.map((id: number) => SPRITES[id]).filter(Boolean);
             atlasMap = await createAtlases2(modelAnimations);
+
+            //
+            structBitmap = await getStructureBitmap();
 
             const modelDataResponse = await fetch("/backend/getModelData");
             modelData = await modelDataResponse.json();
