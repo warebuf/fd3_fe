@@ -23,7 +23,7 @@
     import { calcPlayerBench } from './ui/updateUIData/calcPlayerBench';
     import { drawStats } from './ui/zones/drawStats';
     import { drawStructures } from './ui/zones/drawStructures';
-    import { getStructureBitmap } from './ui/getSpriteBitmap/getStructureBitmap';
+    import { getStructureBitmap } from './ui/getBitmap/getStructureBitmap';
 
     
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
