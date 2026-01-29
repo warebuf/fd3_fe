@@ -23,9 +23,10 @@
     import { calcPlayerBench } from './ui/updateUIData/calcPlayerBench';
     import { drawStats } from './ui/zones/drawStats';
     import { drawStructures } from './ui/zones/drawStructures';
-    import { getStructureBitmap } from './ui/getBitmap/getStructureBitmap';
+    import { getStructureBitmap } from './ui/bitmaps/getStructureBitmap';
 
     
+
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
     let ctx: CanvasRenderingContext2D;
     let animationID: number; // saved for easy cleanup
