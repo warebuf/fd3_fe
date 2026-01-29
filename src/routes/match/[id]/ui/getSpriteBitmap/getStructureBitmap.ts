@@ -1,9 +1,8 @@
 
 
-// 4 or 5
 export async function getStructureBitmap(): Promise<ImageBitmap> {
 
-    const url = `/structures/4.png`;
+    const url = `/structures/7.png`;
   
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Failed to fetch sprite: ${url}`);
