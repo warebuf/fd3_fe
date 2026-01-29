@@ -1,0 +1,6 @@
+Bench,Board,Dead,Presummon
+,,,
+Hurt,Hurt,Idle,Rotate
+Walk,Walk,Sleep,Rotate
+Idle,Walk,Sleep,Rotate
+Idle,Walk,Sleep,Rotate
