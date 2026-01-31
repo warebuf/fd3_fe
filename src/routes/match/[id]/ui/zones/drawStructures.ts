@@ -1,53 +1,74 @@
+import type { GameState } from "../../engine/gameState";
 
+let animTimeMs = 0;
 
-import type { GameState } from "../../engine/gameState"
+// tune these
+const FRAME_W = 100;
+const FRAME_H = 100;
+const FRAME_COUNT = 150;
+const FPS = 9; // animation speed (frames per second)
+const MS_PER_FRAME = 1000 / FPS;
 
+export function drawStructures( ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, currentState: GameState, teamIdx: number, bitmap: ImageBitmap, deltaTimeMs: number ): void {
+    
+    animTimeMs += Math.min(deltaTimeMs, 100);
 
-
-export function drawStructures( 
-    ctx: CanvasRenderingContext2D, 
-    canvasWidth: number, 
-    canvasHeight: number, 
-    currentState: GameState,
-    teamIdx: number,
-    bitmap: ImageBitmap
-): void {
+    const frameCount = Math.floor(animTimeMs / MS_PER_FRAME) % FRAME_COUNT;
 
     ctx.font = `12px sans-serif`;
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    let playerStructures = [];
-    let oppStructures = [];
+    const playerStructures: number[] = [];
+    const oppStructures: number[] = [];
 
-    for(let i = 0; i < currentState.StructureHP.length; i++) {
-        if(teamIdx === currentState.StructureTeam[i]) { playerStructures.push(i); } 
-        else { oppStructures.push(i); }
+    for (let i = 0; i < currentState.StructureHP.length; i++) {
+        if (teamIdx === currentState.StructureTeam[i]) playerStructures.push(i);
+        else oppStructures.push(i);
     }
 
-    // num * size + (num - 1) * gap
     const gap = 10;
-    const size = 100;
-    const totalPlayerWidth = playerStructures.length * size + (playerStructures.length - 1) * gap;
-    const totalOppWidth = oppStructures.length * size + (oppStructures.length - 1) * gap;
+    const size = 66;
+
+    const totalPlayerWidth = playerStructures.length > 0 ? playerStructures.length * size + (playerStructures.length - 1) * gap : 0;
+    const totalOppWidth = oppStructures.length > 0 ? oppStructures.length * size + (oppStructures.length - 1) * gap : 0;
+
     const startPlayerX = (size / 2) + (canvasWidth - totalPlayerWidth) / 2;
     const startOppX = (size / 2) + (canvasWidth - totalOppWidth) / 2;
 
-    // calculate y, assume sprite height is 100
-    const playerY = (canvasHeight/2) + 200;
-    const oppY = (canvasHeight/2) - 200;
+    const playerY = canvasHeight / 2 + 250;
+    const oppY = canvasHeight / 2 - 250;
 
-    for(let i = 0; i < playerStructures.length; i++) {
+    // (optional) clamp source rect so you don’t read past the bitmap
+    const maxFramesInSheet = Math.floor(bitmap.width / FRAME_W);
+    const safeFrame = Math.min(frameCount, Math.max(0, maxFramesInSheet - 1));
+
+    for (let i = 0; i < playerStructures.length; i++) {
         const idx = playerStructures[i];
-        ctx.drawImage(bitmap, startPlayerX + i*(gap + size), playerY);
-        ctx.fillText(currentState.StructureHP[idx].toLocaleString(), startPlayerX + i*(gap + size), playerY + size + gap);
+        const x = startPlayerX + i * (gap + size);
+
+        ctx.drawImage(
+            bitmap,
+            safeFrame * FRAME_W, 0, FRAME_W, FRAME_H,
+            x - size / 2, playerY - size / 2,
+            size, size
+        );
+
+        ctx.fillText(currentState.StructureHP[idx].toLocaleString(), x, playerY + size / 2 + gap + 10);
     }
 
-    for(let i = 0; i < oppStructures.length; i++) {
+    for (let i = 0; i < oppStructures.length; i++) {
         const idx = oppStructures[i];
-        ctx.drawImage(bitmap, startPlayerX + i*(gap + size), oppY - size - gap);
-        ctx.fillText(currentState.StructureHP[idx].toLocaleString(), startOppX + i*(gap + size), oppY);
+        const x = startOppX + i * (gap + size);
+
+        ctx.drawImage(
+            bitmap,
+            safeFrame * FRAME_W, 0, FRAME_W, FRAME_H,
+            x - size / 2, oppY - size / 2 - gap,
+            size, size
+        );
+
+        ctx.fillText(currentState.StructureHP[idx].toLocaleString(), x, oppY + size / 2 + gap);
     }
-    
 }

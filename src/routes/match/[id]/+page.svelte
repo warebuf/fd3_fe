@@ -23,9 +23,10 @@
     import { calcPlayerBench } from './ui/updateUIData/calcPlayerBench';
     import { drawStats } from './ui/zones/drawStats';
     import { drawStructures } from './ui/zones/drawStructures';
-    import { getStructureBitmap } from './ui/getSpriteBitmap/getStructureBitmap';
+    import { getStructureBitmap } from './ui/bitmaps/getStructureBitmap';
 
     
+
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
     let ctx: CanvasRenderingContext2D;
     let animationID: number; // saved for easy cleanup
@@ -95,7 +96,7 @@
             drawStats(ctx, width, height, interpolatedState, hoverIdx, modelData);
             drawBench(ctx, width, height, interpolatedState, teamIdx, hoverIdx, atlasMap, sprites, unitPositions, significantEvent);
             drawField(ctx, width, height, interpolatedState, teamIdx, atlasMap, sprites, unitPositions, significantEvent); 
-            drawStructures(ctx, width, height, interpolatedState, teamIdx, structBitmap);
+            drawStructures(ctx, width, height, interpolatedState, teamIdx, structBitmap, dt);
         }
         drawNextRoundCount(ctx, width, height, nextRoundTime);
 

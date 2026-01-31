@@ -1,7 +1,0 @@
-{
-  "0": { "name": "missingno", "anims": ["Hurt", "Hurt", "Idle", "Rotate"] },
-  "1": { "name": "turtwig", "anims": ["Walk", "Walk", "Sleep", "Rotate"] },
-  "2": { "name": "chimchar", "anims": ["Walk", "Walk", "Sleep", "Rotate"] },
-  "3": { "name": "victini", "anims": ["Idle", "Walk", "Sleep", "Rotate"] },
-  "4": { "name": "growlithe", "anims": ["Idle", "Walk", "Sleep", "Rotate"] }
-}
