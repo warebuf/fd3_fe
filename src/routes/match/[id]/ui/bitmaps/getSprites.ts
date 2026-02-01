@@ -59,9 +59,9 @@ function compressStrings(arr: string[]): string[] {
     return result;
 }
 
-async function createBitmaps(name: string, actions: string[]): Promise<ImageBitmap[]> {
-    const promises = actions.map(async (action) => {
-      const url = `/sprites/${name}/${action}.png`;
+async function createBitmaps(idx: string, compressed: string[]): Promise<ImageBitmap[]> {
+    const promises = compressed.map(async (action) => {
+      const url = `/sprites/${idx}/${action}.png`;
       const res = await fetch(url);
       if (!res.ok) throw new Error(`Failed to load image: ${url}`);
       const blob = await res.blob();
@@ -71,9 +71,9 @@ async function createBitmaps(name: string, actions: string[]): Promise<ImageBitm
     return Promise.all(promises);
 }
 
-async function createInstructions(name: string, actions: string[]) : Promise<Instruction[]> {
+async function createInstructions(idx: string, compressed: string[]) : Promise<Instruction[]> {
     
-    const res = await fetch(`/sprites/${name}/a.csv`);
+    const res = await fetch(`/sprites/${idx}/a.csv`);
     const csv = await res.text();
 
 
@@ -108,8 +108,8 @@ async function createInstructions(name: string, actions: string[]) : Promise<Ins
     }
 
     const instructions: Instruction[] = [];
-    for(let i = 0; i < actions.length; i++) {
-        instructions.push(instructionMap[actions[i]]);
+    for(let i = 0; i < compressed.length; i++) {
+        instructions.push(instructionMap[compressed[i]]);
     }
 
     return instructions;
