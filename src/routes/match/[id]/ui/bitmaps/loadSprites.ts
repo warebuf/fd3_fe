@@ -3,10 +3,10 @@
 // there is a strategy to get this right, not sure what it is, 
 
 export type Instruction = { 
-    Width: number; 
-    Height: number; 
-    Duration: number[]; 
-    HitFrame: number; 
+    width: number; 
+    height: number; 
+    duration: number[]; 
+    hitFrame: number; 
 }
 
 export type Atlas = { 
@@ -24,21 +24,26 @@ import csvText from "./sprites.csv?raw"; // can import csvs as a string in vite
 
 function getSpriteActions() : string[][] {
 
-    const lines = csvText.trim().split("\n");
+    const lines = csvText.trim().replace(/\r/g, "").split("\n");
     const result = [];
 
     for (let i = 1; i < lines.length; i++) {
-        const row = lines[i].split(",");
+        const elements = lines[i].split(",");
         let ok = true;
 
-        for (let j = 0; j < row.length; j++) {
-            if (row[j].trim() === "") {
+        for (let j = 0; j < elements.length; j++) { // if any of the elements are empty, add an empty arr
+            if (elements[j].trim() === "" || elements[j].trim() === '') {
                 ok = false;
                 break;
             }
         }
 
-        if (ok) result.push(row);
+        if(ok) {
+            result.push(elements);
+        } else {
+            result.push([]);
+        }
+        
     }
 
     return result;
@@ -73,7 +78,16 @@ async function createBitmaps(idx: string, compressed: string[]): Promise<ImageBi
 
 async function createInstructions(idx: string, compressed: string[]) : Promise<Instruction[]> {
     
+    if(compressed.length === 0) {
+        return [];
+    }
+
     const res = await fetch(`/sprites/${idx}/a.csv`);
+
+    if (!res.ok) {
+        return [];
+    }
+
     const csv = await res.text();
 
 
@@ -99,10 +113,10 @@ async function createInstructions(idx: string, compressed: string[]) : Promise<I
         const duration = durArr.map(Number);
 
         instructionMap[name] = {
-            Width: width,
-            Height: height,
-            HitFrame: hitFrame,
-            Duration: duration
+            width: width,
+            height: height,
+            hitFrame: hitFrame,
+            duration: duration
         }
 
     }
@@ -135,10 +149,11 @@ function createActionToImageIdx(anims: string[]) : number[] {
     return ans;
 }
 
-export async function loadSprites() { 
+export async function loadSprites() : Promise<Record<number, Atlas>> { 
     
     // parse the JSON into an arr of arr of strings 
     const actions : string[][] = getSpriteActions();
+    console.log("actions", actions)
     
     const instructionPromises : Promise<any>[] = []; 
     const bitmapPromises : Promise<any>[] = []; 
@@ -159,8 +174,6 @@ export async function loadSprites() {
             instructions: instructions[i],
         }
     }
-
-    console.log("ans", ans)
 
     return ans;
 
