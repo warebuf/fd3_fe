@@ -153,7 +153,6 @@ export async function loadSprites() : Promise<Record<number, Atlas>> {
     
     // parse the JSON into an arr of arr of strings 
     const actions : string[][] = getSpriteActions();
-    console.log("actions", actions)
     
     const instructionPromises : Promise<any>[] = []; 
     const bitmapPromises : Promise<any>[] = []; 
@@ -174,6 +173,8 @@ export async function loadSprites() : Promise<Record<number, Atlas>> {
             instructions: instructions[i],
         }
     }
+
+    console.log(ans)
 
     return ans;
 

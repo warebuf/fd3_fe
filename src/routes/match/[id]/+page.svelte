@@ -229,8 +229,6 @@
             if (result) { ({ ws, teamIdx, nextRoundTime } = result); }
 
             atlasMap = await loadSprites();
-
-            //
             structBitmap = await getStructureBitmap();
 
             const modelDataResponse = await fetch("/backend/getModelData");

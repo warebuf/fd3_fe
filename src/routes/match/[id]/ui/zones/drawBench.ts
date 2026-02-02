@@ -1,7 +1,7 @@
 
 
 import type { GameState } from "../../engine/gameState"
-import type { Atlas, SpriteDesc } from "$lib/sprites/sprite2"
+import type { Atlas, Sprite } from "../bitmaps/loadSprites"
 
 import { drawCard } from "../indiv/drawCard"
 import { drawSprite } from "../indiv/drawSprite";
@@ -19,7 +19,7 @@ export function drawBench(
   teamIdx: number,
   hoverIdx: number,
   atlasMap: Record<number, Atlas>,
-  sprites: SpriteDesc[],
+  sprites: Sprite[],
   unitPositions: Record<number, Coordinate>,
   updatePos: boolean
 ): void {
