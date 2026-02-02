@@ -17,9 +17,8 @@
     import { initDrawMenuSprites, drawTargets, drawTargetButton, onTargetButton, drawTargetSelectText, resetSelected, setSelected, getSelectedUnitIdx, getSelectedFuncIdx, getSelectedButtonType, setPendingTargets, getPendingTargets, drawPendingTargets, getAutoFuncIdx } from './ui/indiv/drawSelectedButtons';
     import type { Coordinate } from './ui/misc/Coordinates';
 
-    import type { Atlas, SpriteDesc } from "$lib/sprites/sprite2";
-    import { createAtlases2 } from "$lib/sprites/sprite2";
-    import { updateSprites } from './ui/updateSprites';
+    import { loadSprites, type Atlas, type Sprite } from './ui/bitmaps/loadSprites';
+    import { updateSprites } from './ui/bitmaps/updateSprites';
     import { calcPlayerBench } from './ui/updateUIData/calcPlayerBench';
     import { drawStats } from './ui/zones/drawStats';
     import { drawStructures } from './ui/zones/drawStructures';
@@ -49,7 +48,7 @@
     let playerBench : number[] = [];
 
     let atlasMap: Record<number, Atlas>; // modelNo to Atlas object
-    let sprites: SpriteDesc[] = [];
+    let sprites: Sprite[] = [];
     let structBitmap: ImageBitmap;
     let modelData: any;
 
@@ -229,12 +228,7 @@
             const result = await connectWS(matchID, stateManager);
             if (result) { ({ ws, teamIdx, nextRoundTime } = result); }
 
-            // sprite init
-            const modelNumbers = [ 0,1,2,3,4 ];
-            const res = await fetch('/sprites.json');
-            const SPRITES: Record<number, { name: string; anims: string[] }> = await res.json();
-            const modelAnimations = modelNumbers.map((id: number) => SPRITES[id]).filter(Boolean);
-            atlasMap = await createAtlases2(modelAnimations);
+            atlasMap = await loadSprites();
 
             //
             structBitmap = await getStructureBitmap();

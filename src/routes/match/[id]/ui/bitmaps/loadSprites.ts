@@ -3,10 +3,10 @@
 // there is a strategy to get this right, not sure what it is, 
 
 export type Instruction = { 
-    Width: number; 
-    Height: number; 
-    Duration: number[]; 
-    HitFrame: number; 
+    width: number; 
+    height: number; 
+    duration: number[]; 
+    hitFrame: number; 
 }
 
 export type Atlas = { 
@@ -99,10 +99,10 @@ async function createInstructions(idx: string, compressed: string[]) : Promise<I
         const duration = durArr.map(Number);
 
         instructionMap[name] = {
-            Width: width,
-            Height: height,
-            HitFrame: hitFrame,
-            Duration: duration
+            width: width,
+            height: height,
+            hitFrame: hitFrame,
+            duration: duration
         }
 
     }
@@ -135,7 +135,7 @@ function createActionToImageIdx(anims: string[]) : number[] {
     return ans;
 }
 
-export async function loadSprites() { 
+export async function loadSprites() : Promise<Record<number, Atlas>> { 
     
     // parse the JSON into an arr of arr of strings 
     const actions : string[][] = getSpriteActions();
@@ -159,8 +159,6 @@ export async function loadSprites() {
             instructions: instructions[i],
         }
     }
-
-    console.log("ans", ans)
 
     return ans;
 

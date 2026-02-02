@@ -1,15 +1,15 @@
 
 
-import type { SpriteDesc, Atlas } from "$lib/sprites/sprite2"
-import type { GameState } from '../engine/gameState';
+import type { Atlas, Sprite } from './loadSprites';
+import type { GameState } from '../../engine/gameState';
 
 
 
-export function updateSprites( atlasMap : Record<number, Atlas>, sprites : SpriteDesc[], gameState: GameState, dt: number ) {
+export function updateSprites( atlasMap : Record<number, Atlas>, sprites : Sprite[], gameState: GameState, dt: number ) {
 
     // update the sprites to match the gameState
     for(let i = sprites.length; i < gameState.ModelNo.length; i++) {
-        const newSprite : SpriteDesc = {
+        const newSprite : Sprite = {
             durationIdx: 0,
             frameTime: 0,
         }
