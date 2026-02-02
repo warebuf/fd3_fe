@@ -1,0 +1,5 @@
+Name,Width,Height,HitFrame,Duration
+Idle,24,48,,"40;12;40;12"
+Walk,24,48,,"6;8;6;8"
+Sleep,32,40,,"30;35"
+Rotate,24,48,,"2;2;2;2;2;2;2;2;2"

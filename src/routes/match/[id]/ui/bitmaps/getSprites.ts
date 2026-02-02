@@ -59,6 +59,82 @@ function compressStrings(arr: string[]): string[] {
     return result;
 }
 
+async function createBitmaps(idx: string, compressed: string[]): Promise<ImageBitmap[]> {
+    const promises = compressed.map(async (action) => {
+      const url = `/sprites/${idx}/${action}.png`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Failed to load image: ${url}`);
+      const blob = await res.blob();
+      return await createImageBitmap(blob);
+    });
+  
+    return Promise.all(promises);
+}
+
+async function createInstructions(idx: string, compressed: string[]) : Promise<Instruction[]> {
+    
+    const res = await fetch(`/sprites/${idx}/a.csv`);
+    const csv = await res.text();
+
+
+    const lines = csv.split("\n");
+
+    const instructionMap : Record<string, Instruction> = {}
+    for(let i = 1; i < lines.length; i++) {
+
+        const fields = lines[i].split(",");
+
+        const name = fields[0];
+
+        const width = Number(fields[1]);
+        const height = Number(fields[2]);
+
+        let hitFrame = -1;
+        if(fields[3].length > 0) {
+            hitFrame = Number(fields[3]);
+        }
+
+        const durStr = fields[4].replace(/"/g, "");
+        const durArr = durStr.split(";");        
+        const duration = durArr.map(Number);
+
+        instructionMap[name] = {
+            Width: width,
+            Height: height,
+            HitFrame: hitFrame,
+            Duration: duration
+        }
+
+    }
+
+    const instructions: Instruction[] = [];
+    for(let i = 0; i < compressed.length; i++) {
+        instructions.push(instructionMap[compressed[i]]);
+    }
+
+    return instructions;
+
+}
+
+function createActionToImageIdx(anims: string[]) : number[] {
+    const indexMap = new Map<string, number>();
+    let count = 0;
+    let ans : number[] = [];
+
+    for(let i = 0; i < anims.length; i++) {
+        if(!indexMap.has(anims[i])) {
+            indexMap.set(anims[i], count);
+            ans.push(count);
+            count++;
+        } 
+        else { 
+            ans.push(indexMap.get(anims[i])!); 
+        }
+    }
+
+    return ans;
+}
+
 export async function loadSprites() { 
     
     // parse the JSON into an arr of arr of strings 
@@ -66,25 +142,27 @@ export async function loadSprites() {
     
     const instructionPromises : Promise<any>[] = []; 
     const bitmapPromises : Promise<any>[] = []; 
-    const promisesIndex = []; 
     for(let i = 0; i < actions.length; i++) {
-
-        // compress the strings 
-        const compressed = compressStrings(actions[i]); 
-        
-        // iterate through the compressed, get the instructions and bitmaps 
-        for(let j = 0; j < compressed.length; j++) { 
-            instructionPromises.push( getInstruction(i, compressed[j]) ); 
-            bitmapPromises.push( getBitmap(i, compressed[j]) ); 
-            promisesIndex.push( i ); 
-        } 
+        const compressed = compressStrings(actions[i]); // compress strings
+        instructionPromises.push( createInstructions(i.toString(), compressed) ); 
+        bitmapPromises.push( createBitmaps(i.toString(), compressed) ); 
     } 
     
     const instructions = await Promise.all(instructionPromises); 
     const bitmaps = await Promise.all(bitmapPromises); // something to do with putting the objects into a map 
 
-    //
     const ans: Record<number, Atlas> = {};
+    for(let i = 0; i < actions.length; i++) {
+        ans[i] = {
+            actionToImageIdx: createActionToImageIdx(actions[i]),
+            images: bitmaps[i],
+            instructions: instructions[i],
+        }
+    }
+
+    console.log("ans", ans)
+
+    return ans;
 
 }
 
