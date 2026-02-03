@@ -24,7 +24,7 @@
     import { drawStructures } from './ui/zones/drawStructures';
     import { getStructureBitmap } from './ui/bitmaps/getStructureBitmap';
 
-    
+    import { drawTempAttack } from './ui/misc/drawTempAttack';
 
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
     let ctx: CanvasRenderingContext2D;
@@ -96,6 +96,9 @@
             drawBench(ctx, width, height, interpolatedState, teamIdx, hoverIdx, atlasMap, sprites, unitPositions, significantEvent);
             drawField(ctx, width, height, interpolatedState, teamIdx, atlasMap, sprites, unitPositions, significantEvent); 
             drawStructures(ctx, width, height, interpolatedState, teamIdx, structBitmap, dt);
+
+            drawTempAttack(ctx, atlasMap, dt);
+
         }
         drawNextRoundCount(ctx, width, height, nextRoundTime);
 
