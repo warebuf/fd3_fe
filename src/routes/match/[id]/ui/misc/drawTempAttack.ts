@@ -60,12 +60,14 @@ export function drawTempAttack( ctx: CanvasRenderingContext2D, atlasMap: Record<
       const width = instructions.width;
       const height = instructions.height;
 
+      const startX = instructions.startX;
+      const startY = instructions.startY
 
       ctx.drawImage(
         atlas.images[atlasIndex], 
         sprite.durationIdx * width, 0, // top left corner of frame
         width, height, // frame dimensions
-        500, 500, // destination coordinates
+        300 - startX, 300 - startY, // destination coordinates
         width, height, // destination dimensions
     );
 

@@ -7,6 +7,8 @@ export type Instruction = {
     height: number; 
     duration: number[]; 
     hitFrame: number; 
+    startX: number; // the center of the sprite
+    startY: number; // the center of the sprite
 }
 
 export type Atlas = { 
@@ -100,23 +102,22 @@ async function createInstructions(idx: string, compressed: string[]) : Promise<I
 
         const name = fields[0];
 
-        const width = Number(fields[1]);
-        const height = Number(fields[2]);
-
         let hitFrame = -1;
         if(fields[3].length > 0) {
-            hitFrame = Number(fields[3]);
+            hitFrame = Number(fields[5]);
         }
 
-        const durStr = fields[4].replace(/"/g, "");
+        const durStr = fields[6].replace(/"/g, "");
         const durArr = durStr.split(";");        
         const duration = durArr.map(Number);
 
         instructionMap[name] = {
-            width: width,
-            height: height,
+            width: Number(fields[1]),
+            height: Number(fields[2]),
             hitFrame: hitFrame,
-            duration: duration
+            duration: duration,
+            startX: Number(fields[3]),
+            startY: Number(fields[4])
         }
 
     }
@@ -173,8 +174,6 @@ export async function loadSprites() : Promise<Record<number, Atlas>> {
             instructions: instructions[i],
         }
     }
-
-    console.log(ans)
 
     return ans;
 
