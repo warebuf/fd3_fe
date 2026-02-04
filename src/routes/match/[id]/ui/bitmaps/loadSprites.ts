@@ -82,7 +82,7 @@ async function createInstructions(idx: string, compressed: string[]) : Promise<I
         return [];
     }
 
-    const res = await fetch(`/sprites/${idx}/a.csv`);
+    const res = await fetch(`/sprites/${idx}/.csv`);
 
     if (!res.ok) {
         return [];
