@@ -29,7 +29,7 @@ function getAtlasIndex( atlas : Atlas ) : number {
 
 export function drawTempAttack( ctx: CanvasRenderingContext2D, atlasMap: Record<number, Atlas>, dt: number ) {
 
-      const modelIndex = 2;
+      const modelIndex = 3;
       const atlas = atlasMap[modelIndex];
 
       // do calculation
