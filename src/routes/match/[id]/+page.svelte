@@ -23,6 +23,7 @@
     import { drawStats } from './ui/zones/drawStats';
     import { drawStructures } from './ui/zones/drawStructures';
     import { getStructureBitmap } from './ui/bitmaps/getStructureBitmap';
+    import { getExclamBitmap } from './ui/bitmaps/getExclamBitmap';
 
     import { drawTempAttack } from './ui/misc/drawTempAttack';
 
@@ -49,6 +50,7 @@
 
     let atlasMap: Record<number, Atlas>; // modelNo to Atlas object
     let sprites: Sprite[] = [];
+    let exclamationBitmap: ImageBitmap;
     let structBitmap: ImageBitmap;
     let modelData: any;
 
@@ -97,7 +99,7 @@
             drawField(ctx, width, height, interpolatedState, teamIdx, atlasMap, sprites, unitPositions, significantEvent); 
             drawStructures(ctx, width, height, interpolatedState, teamIdx, structBitmap, dt);
 
-            drawTempAttack(ctx, atlasMap, dt);
+            drawTempAttack(ctx, atlasMap, exclamationBitmap, dt);
 
         }
         drawNextRoundCount(ctx, width, height, nextRoundTime);
@@ -233,6 +235,7 @@
 
             atlasMap = await loadSprites();
             structBitmap = await getStructureBitmap();
+            exclamationBitmap = await getExclamBitmap();
 
             const modelDataResponse = await fetch("/backend/getModelData");
             modelData = await modelDataResponse.json();

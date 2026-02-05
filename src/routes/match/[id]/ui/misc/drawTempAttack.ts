@@ -27,7 +27,7 @@ function getAtlasIndex( atlas : Atlas ) : number {
 
 // TODO: add the anchor points to the Atlas
 
-export function drawTempAttack( ctx: CanvasRenderingContext2D, atlasMap: Record<number, Atlas>, dt: number ) {
+export function drawTempAttack( ctx: CanvasRenderingContext2D, atlasMap: Record<number, Atlas>, exclamBitmap : ImageBitmap, dt: number ) {
 
       const modelIndex = 3;
       const atlas = atlasMap[modelIndex];
@@ -39,7 +39,6 @@ export function drawTempAttack( ctx: CanvasRenderingContext2D, atlasMap: Record<
       let atlasIndex = getAtlasIndex(atlas);
       let instructions = atlas.instructions[atlasIndex];
       let durations = instructions.duration;
-
 
       while( sprite.frameTime >= durations[sprite.durationIdx] * 1000 / 30 ) {
             sprite.frameTime -= durations[sprite.durationIdx] * 1000 / 30;
@@ -69,7 +68,15 @@ export function drawTempAttack( ctx: CanvasRenderingContext2D, atlasMap: Record<
         width, height, // frame dimensions
         300 - startX, 300 - startY, // destination coordinates
         width, height, // destination dimensions
-    );
+      );
+
+      if(phase === 1) {
+            ctx.drawImage(
+                  exclamBitmap,
+                  300 - (32/2),
+                  300 - (32/2) - 30
+            )
+      }
 
 
 }
