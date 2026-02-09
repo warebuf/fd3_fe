@@ -78,5 +78,4 @@ export function drawTempAttack( ctx: CanvasRenderingContext2D, atlasMap: Record<
             )
       }
 
-
 }
