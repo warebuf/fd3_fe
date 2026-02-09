@@ -80,3 +80,12 @@ export function drawTempAttack( ctx: CanvasRenderingContext2D, atlasMap: Record<
       }
 
 }
+
+export function drawTempSummon(ctx: CanvasRenderingContext2D, atlasMap: Record<number, Atlas>, dt: number ) {
+
+      const modelIndex = 3;
+      const atlas = atlasMap[modelIndex];
+
+
+
+}

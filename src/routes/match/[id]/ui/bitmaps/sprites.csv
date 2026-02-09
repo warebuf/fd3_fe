@@ -1,6 +1,6 @@
-Bench,Board,Dead,Presummon,Charge,Attack,Hop
-,,,,,,
-Idle,Walk,Sleep,Rotate,Charge,Attack,Hop
-Idle,Walk,Sleep,Rotate,Charge,Attack,Hop
-Idle,Walk,Sleep,Rotate,Charge,Attack,Hop
-Idle,Walk,Sleep,Rotate,Charge,Attack,Hop
+Bench,Board,Dead,Presummon,Charge,Attack,Hop,BoardRetro
+,,,,,,,
+Idle,Walk,Sleep,Rotate,Charge,Attack,Hop,WalkRetro
+Idle,Walk,Sleep,Rotate,Charge,Attack,Hop,WalkRetro
+Idle,Walk,Sleep,Rotate,Charge,Attack,Hop,WalkRetro
+Idle,Walk,Sleep,Rotate,Charge,Attack,Hop,WalkRetro

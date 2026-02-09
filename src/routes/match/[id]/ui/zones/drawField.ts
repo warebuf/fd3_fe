@@ -18,6 +18,7 @@ export function drawField(
   canvasHeight: number,
   currentState: GameState,
   teamIdx: number,
+  hoverIdx: number,
   atlasMap: Record<number, Atlas>,
   sprites: Sprite[],
   unitPositions: Record<number, Coordinate>,
@@ -31,7 +32,7 @@ export function drawField(
   let botArr = []; // arr of unit idexes
   let topArr = [];
   for(let i = 0; i < currentState.Zone.length; i++) {
-    if(currentState.Zone[i] === 1 && currentState.HP[i] > 0) { // 1 is field
+    if( currentState.Zone[i] === 1 && currentState.HP[i] > 0 || i === hoverIdx ) { // 1 is field
       if(currentState.Team[i] === teamIdx) { botArr.push(i); } 
       else { topArr.push(i); }
     }
@@ -52,7 +53,7 @@ export function drawField(
     if(updatePos) { unitPositions[botArr[i]] = {X: x - (lineWidth/2), Y: centerY + 50 - (lineWidth/2)}; }
 
     const modelNo = currentState.ModelNo[botArr[i]];
-    drawSprite(ctx, x, centerY + 50, atlasMap[modelNo], currentState.Zone[botArr[i]], sprites[botArr[i]], true);
+    drawSprite(ctx, x, centerY + 50, atlasMap[modelNo], currentState.Zone[botArr[i]], sprites[botArr[i]], true, botArr[i] === hoverIdx);
     drawHP(ctx, x, centerY + 50, currentState.HP[botArr[i]]);
     drawCharge2(ctx, x, centerY + 50, currentState, botArr[i]);
 
@@ -65,7 +66,7 @@ export function drawField(
     if(updatePos) { unitPositions[topArr[i]] = {X: x - (lineWidth/2), Y: centerY - 50 - (lineWidth/2)}; }
 
     const modelNo = currentState.ModelNo[topArr[i]];
-    drawSprite(ctx, x, centerY - 50, atlasMap[modelNo], currentState.Zone[topArr[i]], sprites[topArr[i]], false);
+    drawSprite(ctx, x, centerY - 50, atlasMap[modelNo], currentState.Zone[topArr[i]], sprites[topArr[i]], false, false);
     drawHP(ctx, x, centerY - 50, currentState.HP[topArr[i]]);
     drawCharge2(ctx, x, centerY - 50, currentState, topArr[i]);
     
