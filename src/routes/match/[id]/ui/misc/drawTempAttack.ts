@@ -70,6 +70,7 @@ export function drawTempAttack( ctx: CanvasRenderingContext2D, atlasMap: Record<
         width, height, // destination dimensions
       );
 
+      // 32 x 32 exlamation image
       if(phase === 1) {
             ctx.drawImage(
                   exclamBitmap,
@@ -77,6 +78,14 @@ export function drawTempAttack( ctx: CanvasRenderingContext2D, atlasMap: Record<
                   300 - (32/2) - 30
             )
       }
+
+}
+
+export function drawTempSummon(ctx: CanvasRenderingContext2D, atlasMap: Record<number, Atlas>, dt: number ) {
+
+      const modelIndex = 3;
+      const atlas = atlasMap[modelIndex];
+
 
 
 }

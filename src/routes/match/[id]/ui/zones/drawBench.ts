@@ -54,7 +54,7 @@ export function drawBench(
     if(updatePos) { unitPositions[benchUnits[i]] = {X: x, Y: centerY + 150 - (size/2)}; }
 
     const modelNo = currentState.ModelNo[benchUnits[i]];
-    drawSprite(ctx, x+(size/2), centerY + 150, atlasMap[modelNo], currentState.Zone[benchUnits[i]], sprites[benchUnits[i]], true);
+    drawSprite(ctx, x+(size/2), centerY + 150, atlasMap[modelNo], currentState.Zone[benchUnits[i]], sprites[benchUnits[i]], true, false);
 
     drawHP(ctx, x+(size/2), centerY + 150, currentState.HP[benchUnits[i]]);
   }

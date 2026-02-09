@@ -96,7 +96,7 @@
         if(interpolatedState) { 
             drawStats(ctx, width, height, interpolatedState, hoverIdx, modelData);
             drawBench(ctx, width, height, interpolatedState, teamIdx, hoverIdx, atlasMap, sprites, unitPositions, significantEvent);
-            drawField(ctx, width, height, interpolatedState, teamIdx, atlasMap, sprites, unitPositions, significantEvent); 
+            drawField(ctx, width, height, interpolatedState, teamIdx, hoverIdx, atlasMap, sprites, unitPositions, significantEvent); 
             drawStructures(ctx, width, height, interpolatedState, teamIdx, structBitmap, dt);
 
             drawTempAttack(ctx, atlasMap, exclamationBitmap, dt);
