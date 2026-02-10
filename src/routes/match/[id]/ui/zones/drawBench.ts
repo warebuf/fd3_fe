@@ -47,7 +47,6 @@ export function drawBench(
 
   const centerY = (canvasHeight / 2);
 
-
   for (let i = 0; i < count; i++) {
     const x = startX + i * (size + gap);
     drawCard( ctx, x+(size/2), centerY + 150, benchUnits[i]===hoverIdx, false );
