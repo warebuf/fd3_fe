@@ -7,7 +7,7 @@ export function calcPlayerBench( currentState: GameState, teamIdx : number ) : n
 
     let benchUnits : number[] = []; // save idx
     for(let i = 0; i < currentState.Team.length; i++) {
-        if(currentState.Zone[i] === 0 || currentState.Zone[i] === 3) { // on bench
+        if( currentState.Zone[i] === 0 ) { // on bench
             if(currentState.Team[i] === teamIdx) {
                 benchUnits.push(i);
             }
