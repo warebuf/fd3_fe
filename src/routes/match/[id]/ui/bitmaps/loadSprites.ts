@@ -7,7 +7,6 @@ export type Instruction = {
     height: number; 
     duration: number[]; 
     hitFrame: number; 
-    hopApex: number;
     startX: number; // the center of the sprite
     startY: number; // the center of the sprite
 }
@@ -108,12 +107,8 @@ async function createInstructions(idx: string, compressed: string[]) : Promise<I
             hitFrame = Number(fields[5]);
         }
 
-        let hopApex = -1;
-        if(fields[6].length > 0) {
-            hitFrame = Number(fields[6]);
-        }
 
-        const durStr = fields[7].replace(/"/g, "");
+        const durStr = fields[6].replace(/"/g, "");
         const durArr = durStr.split(";");        
         const duration = durArr.map(Number);
 
@@ -121,7 +116,6 @@ async function createInstructions(idx: string, compressed: string[]) : Promise<I
             width: Number(fields[1]),
             height: Number(fields[2]),
             hitFrame: hitFrame,
-            hopApex: hopApex,
             duration: duration,
             startX: Number(fields[3]),
             startY: Number(fields[4])
