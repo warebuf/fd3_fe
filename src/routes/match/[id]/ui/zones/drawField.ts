@@ -67,6 +67,12 @@ export function drawField(
     if( currentState.Zone[botArr[i]] !== 3 ) {
       drawHP(ctx, x, Y, currentState.HP[botArr[i]]);
       drawCharge2(ctx, x, Y, currentState, botArr[i]);
+    } else {
+      ctx.fillStyle = "white"
+      ctx.font = "8px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("Summon", x, Y + 60);
     }
     
   }
@@ -87,6 +93,12 @@ export function drawField(
     if( currentState.Zone[topArr[i]] !== 3 ) {
       drawHP(ctx, x, Y, currentState.HP[topArr[i]]);
       drawCharge2(ctx, x, Y, currentState, topArr[i]);
+    } else {      
+      ctx.fillStyle = "white"
+      ctx.font = "8px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("Summon", x, Y + 60);
     }
     
   }
