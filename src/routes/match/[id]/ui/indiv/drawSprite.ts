@@ -9,7 +9,8 @@ export function drawSprite(
     atlas: Atlas,
     action: number,
     sprite: Sprite,
-    facingForward: boolean
+    facingForward: boolean,
+    drawRetro: boolean,
 ) {
 
     const imgIdx = atlas.actionToImageIdx[action];

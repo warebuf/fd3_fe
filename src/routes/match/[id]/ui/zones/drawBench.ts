@@ -28,7 +28,7 @@ export function drawBench(
   let oppCount = 0;
   let benchUnits : number[] = []; // save idx
   for(let i = 0; i < currentState.Team.length; i++) {
-    if( currentState.Zone[i] === 0 ) { // on bench
+    if( currentState.Zone[i] === 0 || currentState.Zone[i] === 3 ) { // on bench
       if(currentState.Team[i] === teamIdx) {
         benchUnits.push(i);
         count++;
@@ -50,11 +50,11 @@ export function drawBench(
 
   for (let i = 0; i < count; i++) {
     const x = startX + i * (size + gap);
-    drawCard( ctx, x+(size/2), centerY + 150, benchUnits[i]===hoverIdx, false );
+    drawCard(ctx, x+(size/2), centerY + 150, benchUnits[i]===hoverIdx, false, currentState.Zone[benchUnits[i]]===3);
     if(updatePos) { unitPositions[benchUnits[i]] = {X: x, Y: centerY + 150 - (size/2)}; }
 
     const modelNo = currentState.ModelNo[benchUnits[i]];
-    drawSprite(ctx, x+(size/2), centerY + 150, atlasMap[modelNo], currentState.Zone[benchUnits[i]], sprites[benchUnits[i]], true);
+    drawSprite(ctx, x+(size/2), centerY + 150, atlasMap[modelNo], currentState.Zone[benchUnits[i]], sprites[benchUnits[i]], true, false);
 
     drawHP(ctx, x+(size/2), centerY + 150, currentState.HP[benchUnits[i]]);
   }
@@ -64,7 +64,7 @@ export function drawBench(
   const oppStartX = (canvasWidth - oppTotalWidth) / 2;
   for(let i = 0; i < oppCount; i++) {
     const x = oppStartX + i * (size + gap);
-    drawCard( ctx, x+(size/2), centerY - 118, false, true );
+    drawCard(ctx, x+(size/2), centerY - 118, false, true, false);
   }
 
 }

@@ -5,7 +5,7 @@ const size = 36;
 const borderRadius = 10;
 
 // x, y is the center of the card
-export function drawCard(ctx: CanvasRenderingContext2D, x: number, y: number, on: boolean, backside: boolean) {
+export function drawCard(ctx: CanvasRenderingContext2D, x: number, y: number, on: boolean, backside: boolean, blue: boolean) {
 
     // shift from top left corner to center
     x = x - (size / 2);
@@ -27,7 +27,8 @@ export function drawCard(ctx: CanvasRenderingContext2D, x: number, y: number, on
     ctx.fillStyle = 'black';
     ctx.fill();
 
-    if(on) { ctx.strokeStyle = '#C5C6D0'; }
+    if(blue) { ctx.strokeStyle = "blue"; }
+    else if(on) { ctx.strokeStyle = '#C5C6D0'; }
     else { ctx.strokeStyle = '#404040'; } // try 404040, 595959, or 666666 to test tone
 
     ctx.lineWidth = 1;

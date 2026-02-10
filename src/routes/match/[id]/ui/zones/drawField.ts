@@ -32,7 +32,7 @@ export function drawField(
   let botArr = []; // arr of unit idexes
   let topArr = [];
   for(let i = 0; i < currentState.Zone.length; i++) {
-    if( currentState.Zone[i] === 1 || currentState.Zone[i] === 3 || i === hoverIdx ) { // 1 is field
+    if( currentState.Zone[i] === 1 && currentState.HP[i] > 0 || i === hoverIdx ) { // 1 is field
       if(currentState.Team[i] === teamIdx) { botArr.push(i); } 
       else { topArr.push(i); }
     }
@@ -49,45 +49,26 @@ export function drawField(
   // draw bottom row
   for (let i = 0; i < botArr.length; i++) {
     const x = botLeftCenter + i * (lineWidth + gap);
-    drawCard( ctx, x, centerY + 50, false, false );
+    drawCard(ctx, x, centerY + 50, false, false, false);
     if(updatePos) { unitPositions[botArr[i]] = {X: x - (lineWidth/2), Y: centerY + 50 - (lineWidth/2)}; }
 
-    let actionNo = currentState.Zone[botArr[i]];
-    if( currentState.Zone[botArr[i]] === 0 ) { // if on bench, draw greyed sprite
-      actionNo = 3;
-    }
-
-    let Y = centerY + 50;
-    if( currentState.Zone[botArr[i]] === 3 ) {
-      Y -= 50;
-    }
-
     const modelNo = currentState.ModelNo[botArr[i]];
-    drawSprite(ctx, x, Y, atlasMap[modelNo], actionNo, sprites[botArr[i]], true);
-    if( currentState.Zone[botArr[i]] !== 3 ) {
-      drawHP(ctx, x, Y, currentState.HP[botArr[i]]);
-      drawCharge2(ctx, x, Y, currentState, botArr[i]);
-    }
-    
+    drawSprite(ctx, x, centerY + 50, atlasMap[modelNo], currentState.Zone[botArr[i]], sprites[botArr[i]], true, botArr[i] === hoverIdx);
+    drawHP(ctx, x, centerY + 50, currentState.HP[botArr[i]]);
+    drawCharge2(ctx, x, centerY + 50, currentState, botArr[i]);
+
   }
 
   // draw top row
   for (let i = 0; i < topArr.length; i++) {
     const x = topLeftCenter + i * (lineWidth + gap);
-    drawCard( ctx, x, centerY - 50, false, false );
+    drawCard(ctx, x, centerY - 50, false, false, false);
     if(updatePos) { unitPositions[topArr[i]] = {X: x - (lineWidth/2), Y: centerY - 50 - (lineWidth/2)}; }
-    
-    let Y = centerY - 50;
-    if( currentState.Zone[topArr[i]] === 3 ) {
-      Y -= 50;
-    }
 
     const modelNo = currentState.ModelNo[topArr[i]];
-    drawSprite(ctx, x, Y, atlasMap[modelNo], currentState.Zone[topArr[i]], sprites[topArr[i]], false);
-    if( currentState.Zone[topArr[i]] !== 3 ) {
-      drawHP(ctx, x, Y, currentState.HP[topArr[i]]);
-      drawCharge2(ctx, x, Y, currentState, topArr[i]);
-    }
+    drawSprite(ctx, x, centerY - 50, atlasMap[modelNo], currentState.Zone[topArr[i]], sprites[topArr[i]], false, false);
+    drawHP(ctx, x, centerY - 50, currentState.HP[topArr[i]]);
+    drawCharge2(ctx, x, centerY - 50, currentState, topArr[i]);
     
   }
 
