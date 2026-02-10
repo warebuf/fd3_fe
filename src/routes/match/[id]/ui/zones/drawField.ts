@@ -54,12 +54,12 @@ export function drawField(
 
     let actionNo = currentState.Zone[botArr[i]];
     if( currentState.Zone[botArr[i]] === 0 ) { // if on bench, draw greyed sprite
-      actionNo = 3;
+      actionNo = 6;
     }
 
     let Y = centerY + 50;
     if( currentState.Zone[botArr[i]] === 3 ) {
-      Y -= 50;
+      Y -= 25;
     }
 
     const modelNo = currentState.ModelNo[botArr[i]];
@@ -79,7 +79,7 @@ export function drawField(
     
     let Y = centerY - 50;
     if( currentState.Zone[topArr[i]] === 3 ) {
-      Y -= 50;
+      Y -= 25;
     }
 
     const modelNo = currentState.ModelNo[topArr[i]];
