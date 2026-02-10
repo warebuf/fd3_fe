@@ -77,15 +77,12 @@ export function drawTempAttack( ctx: CanvasRenderingContext2D, atlasMap: Record<
                   300 - (32/2),
                   300 - (32/2) - 30
             )
+            ctx.fillStyle = "white"
+            ctx.font = "8px sans-serif";
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle";
+            ctx.fillText( "Attack", 300 - startX, 300 - startY + 60 );
+
       }
-
-}
-
-export function drawTempSummon(ctx: CanvasRenderingContext2D, atlasMap: Record<number, Atlas>, dt: number ) {
-
-      const modelIndex = 3;
-      const atlas = atlasMap[modelIndex];
-
-
 
 }
