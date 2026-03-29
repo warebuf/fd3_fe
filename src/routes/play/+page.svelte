@@ -13,10 +13,14 @@
     try {
       // create guest cookie
       const res = await fetch("/backend/getGuestID", {
-        method: "GET",
+        method: "POST",
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify([1,2,3]),
       });
-      if (!res.ok && res.status !== 204) {
+      if (!res.ok) {
         throw new Error("failed to get guestID");
       }
 
