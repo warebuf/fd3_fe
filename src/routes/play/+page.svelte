@@ -18,7 +18,7 @@
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify([1,2,3]),
+        body: JSON.stringify([1,1,1,2,2,2]),
       });
       if (!res.ok) {
         throw new Error("failed to get guestID");

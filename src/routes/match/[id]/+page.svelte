@@ -5,27 +5,10 @@
     import { connectWS } from "./networking/ws";
     import { ping, stopPing } from "./networking/ping";
 
-    import { sendBenchMove } from "./networking/eventTypes";
     import { getFullState } from "./networking/getState";
     import { StateManager } from "./engine/stateManager"
     import { initGameState, cloneGameState, type GameState } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
-
-    import { drawNextRoundCount} from "./ui/zones/drawNextRoundCount"
-    import { drawBench, benchHitTest } from "./ui/zones/drawBench"
-    import { drawField, fieldHitTest } from "./ui/zones/drawField"
-    import { initDrawMenuSprites, drawTargets, drawTargetButton, onTargetButton, drawTargetSelectText, resetSelected, setSelected, getSelectedUnitIdx, getSelectedFuncIdx, getSelectedButtonType, setPendingTargets, getPendingTargets, drawPendingTargets, getAutoFuncIdx } from './ui/indiv/drawSelectedButtons';
-    import type { Coordinate } from './ui/misc/Coordinates';
-
-    import { loadSprites, type Atlas, type Sprite } from './ui/bitmaps/loadSprites';
-    import { updateSprites } from './ui/bitmaps/updateSprites';
-    import { calcPlayerBench } from './ui/updateUIData/calcPlayerBench';
-    import { drawStats } from './ui/zones/drawStats';
-    import { drawStructures } from './ui/zones/drawStructures';
-    import { getStructureBitmap } from './ui/bitmaps/getStructureBitmap';
-    import { getExclamBitmap } from './ui/bitmaps/getExclamBitmap';
-
-    import { drawTempAttack } from './ui/misc/drawTempAttack';
 
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
     let ctx: CanvasRenderingContext2D;
@@ -44,19 +27,6 @@
     
     let authoritativeState: GameState;
     let interpolatedState: GameState;
-
-    // derived states
-    let playerBench : number[] = [];
-
-    let atlasMap: Record<number, Atlas>; // modelNo to Atlas object
-    let sprites: Sprite[] = [];
-    let exclamationBitmap: ImageBitmap;
-    let structBitmap: ImageBitmap;
-    let modelData: any;
-
-    // ui stuff
-    let uiState = 0;
-    let unitPositions: Record<number,Coordinate> = {};
 
     function resizeCanvas() {
         const dpr = window.devicePixelRatio || 1;
@@ -78,41 +48,14 @@
         if(significantEvent) { interpolatedState = cloneGameState(authoritativeState); }
         interpolate(authoritativeState, interpolatedState, now + performance.timeOrigin);
 
-        // update sprite states
-        if(interpolatedState) { 
-            updateSprites(atlasMap, sprites, interpolatedState, dt); 
-        }
-
         // update derived states
         if(significantEvent) {
-            playerBench = calcPlayerBench(interpolatedState, teamIdx);
-            unitPositions = {};
         }
 
         // draw
         const width = canvasEl.clientWidth;
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
-        if(interpolatedState) { 
-            drawStats(ctx, width, height, interpolatedState, hoverIdx, modelData);
-            drawBench(ctx, width, height, interpolatedState, teamIdx, hoverIdx, atlasMap, sprites, unitPositions, significantEvent);
-            drawField(ctx, width, height, interpolatedState, teamIdx, hoverIdx, atlasMap, sprites, unitPositions, significantEvent); 
-            drawStructures(ctx, width, height, interpolatedState, teamIdx, structBitmap, dt);
-
-            drawTempAttack(ctx, atlasMap, exclamationBitmap, dt);
-
-        }
-        drawNextRoundCount(ctx, width, height, nextRoundTime);
-
-        if(uiState == 2) {
-            drawTargetSelectText(ctx);
-            drawPendingTargets(ctx, unitPositions);
-        } else if(uiState === 1) {
-            drawTargets(ctx, interpolatedState, unitPositions, -1, uiState);
-            drawTargetButton(ctx);
-        } else {
-            drawTargets(ctx, interpolatedState, unitPositions, hoverIdx, uiState);
-        }
         
         // schedule next frame
         animationID = requestAnimationFrame(loop);
@@ -129,17 +72,9 @@
             const r = canvasEl.getBoundingClientRect();
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
-
-            let idx = benchHitTest(canvasEl.clientHeight, x, y, canvasEl.clientWidth, canvasEl.clientHeight, playerBench);
-            if(idx < 0) { 
-                [idx] = fieldHitTest(x,y,canvasEl.clientWidth, canvasEl.clientHeight, teamIdx, interpolatedState); 
-            }
-            hoverIdx = idx;
-            canvasEl.style.cursor = idx >= 0 ? 'pointer' : 'default';
         };
 
         const onLeave = () => {
-            hoverIdx = -1;
             canvasEl.style.cursor = 'default';
         };
 
@@ -147,75 +82,6 @@
             const r = canvasEl.getBoundingClientRect();
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
-
-            const [fieldIdx, midx, midy] = fieldHitTest(x,y,canvasEl.clientWidth, canvasEl.clientHeight, teamIdx, interpolatedState);
-
-            let checkUIState0 = true;
-            if(uiState === 2) {
-
-                checkUIState0 = false;
-
-                let reset = true;
-                if(fieldIdx >= 0) {
-                    const finished = setPendingTargets(fieldIdx, interpolatedState.Team[fieldIdx]===teamIdx); // add to target list
-                    if(finished && ws) { // if complete, send to server
-                        const uid = getSelectedUnitIdx();
-                        const fid = getSelectedFuncIdx(interpolatedState);
-                        const arr = getPendingTargets();
-                        const t1 = (arr.length > 0) ? arr[0] : -1;
-                        const t2 = (arr.length > 1) ? arr[1] : -1;
-                        ws.send(JSON.stringify( { Type: "Target", UnitID: uid, FunctionID: fid, Target1: t1, Target2: t2 } ));
-                    } else {
-                        reset = false;
-                    }
-                }
-
-                if(reset) {
-                    resetSelected();
-                    uiState = 0;
-                }
-                
-            } else if(uiState === 1) {
-                if( onTargetButton(x,y) ) { // clicked aim/sword
-
-                    const buttonType = getSelectedButtonType();
-                    if( buttonType === "" ) {
-
-                    } else if( buttonType === "Manual" ) { // sword
-                        const fidx = getAutoFuncIdx(interpolatedState);
-                        if(ws && fidx >= 0) { 
-                            ws.send(JSON.stringify( { Type: "Active", UnitID: getSelectedUnitIdx(), FunctionID: fidx }))
-                        }
-                        resetSelected();
-                        uiState = 0;
-                        checkUIState0 = false;
-                    } else { // aim
-                        uiState = 2;
-                        checkUIState0 = false;
-                    }
-
-                } else if (fieldIdx === getSelectedUnitIdx() && ws) { // clicked card
-                    const fidx = getAutoFuncIdx(interpolatedState);
-                    if(ws && fidx >= 0) { 
-                        ws.send(JSON.stringify( { Type: "Active", UnitID: getSelectedUnitIdx(), FunctionID: fidx }))
-                    }
-                    checkUIState0 = false;
-                    resetSelected();
-                    uiState = 0;
-                } else { // clicked elsewhere
-                    resetSelected();
-                    uiState = 0;
-                }
-            }
-
-            if(checkUIState0) {
-                const benchIdx = benchHitTest(canvasEl.clientHeight, x, y, canvasEl.clientWidth, canvasEl.clientHeight, playerBench);
-                if(fieldIdx >= 0 && interpolatedState.ModelNo[fieldIdx] === 4) {
-                    setSelected(modelData, interpolatedState, fieldIdx, midx, midy);
-                    uiState = 1;
-                }
-                else if (benchIdx >= 0 && ws) { sendBenchMove(ws, benchIdx); }
-            }
 
         };
 
@@ -233,21 +99,13 @@
             const result = await connectWS(matchID, stateManager);
             if (result) { ({ ws, teamIdx, nextRoundTime } = result); }
 
-            atlasMap = await loadSprites();
-            structBitmap = await getStructureBitmap();
-            exclamationBitmap = await getExclamBitmap();
-
-            const modelDataResponse = await fetch("/backend/getModelData");
-            modelData = await modelDataResponse.json();
-
-            await initDrawMenuSprites();
-
-            // guard against requestAnimationFrame
+            // user navigated away, do not continue
             if (cancelled) return;
 
             // get the game state
-            if(ws) {getFullState(ws);}
-            
+            if (!ws) return;
+            ws.send(JSON.stringify({ type: "fullState" }));
+
             // start the game loop once everything loads
             animationID = requestAnimationFrame(loop);
 

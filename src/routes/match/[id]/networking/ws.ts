@@ -21,11 +21,10 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
 
   const ws = new WebSocket( `${window.location.origin.replace(/^http/, "ws")}/backend/ws?matchID=${encodeURIComponent(matchID)}` );
 
-  ws.addEventListener("open", () => {
-    console.log("✅ Connected to server");
-    sendPing(ws);
-  });
-
+  await new Promise(resolve => ws.addEventListener("open", resolve, { once: true })); // when the websocket connection opens, stop awaiting
+  console.log("✅ Connected to server");
+  sendPing(ws);
+  
   ws.addEventListener("message", (event) => {
     
     const clientReceive = Date.now(); 
