@@ -5,7 +5,6 @@
     import { connectWS } from "./networking/ws";
     import { ping, stopPing } from "./networking/ping";
 
-    import { getFullState } from "./networking/getState";
     import { StateManager } from "./engine/stateManager"
     import { initGameState, cloneGameState, type GameState } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
@@ -92,7 +91,7 @@
         authoritativeState = initGameState();
         interpolatedState = cloneGameState(authoritativeState);
 
-        let cancelled = false;
+        let cancelledWebsocket = false;
         (async () => { 
 
             // websocket setup, also set up clientIdx
@@ -100,7 +99,7 @@
             if (result) { ({ ws, teamIdx, nextRoundTime } = result); }
 
             // user navigated away, do not continue
-            if (cancelled) return;
+            if (cancelledWebsocket) return;
 
             // get the game state
             if (!ws) return;
@@ -113,7 +112,7 @@
 
         // cleanup on unmount
         return () => {
-            cancelled = true;
+            cancelledWebsocket = true;
 
             cancelAnimationFrame(animationID); // cancel animation loop
             stopPing(); // stop networking ping
