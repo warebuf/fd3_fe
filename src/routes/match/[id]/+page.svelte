@@ -9,6 +9,9 @@
     import { initGameState, cloneGameState, type GameState } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
+    import { drawBoard } from './ui/indiv/drawBoard';
+
+
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
     let ctx: CanvasRenderingContext2D;
     let animationID: number; // saved for easy cleanup
@@ -55,6 +58,7 @@
         const width = canvasEl.clientWidth;
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
+        drawBoard(ctx, interpolatedState, teamIdx);
         
         // schedule next frame
         animationID = requestAnimationFrame(loop);

@@ -2,8 +2,9 @@
 import { get } from "svelte/store";
 
 import type { GameState, Timestamp } from "./gameState"
-import { initGameState, cloneGameState } from "./gameState"
+import { cloneGameState } from "./gameState"
 import { MinHeap } from "./stateMinHeap"
+import { applyEffect } from "../effects/ApplyEffect"
 import { serverClockOffset } from "../networking/ping";
 
 export type EventLog = Timestamp & {
@@ -36,8 +37,8 @@ export class StateManager {
             if( currentTime >= eventTime ) { // an event has passed
                 this.scheduled.pop();
                 if("Type" in nextEvent) { // EventResult
+                    applyEffect(currentState, nextEvent);
                     significantEvent = true;
-                    console.log("processing EventLog", nextEvent)
                 } else { // GameState
                     currentState = cloneGameState(nextEvent);
                     significantEvent = true;
