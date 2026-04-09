@@ -10,7 +10,7 @@ type EventResults = Timestamp & {
 
     // extends the interface, actually redunant semantically, but left here as a reminder
     Timestamp: number;
-    GameStateID: number;
+    UpdateID: number;
     
     str: string;
 }

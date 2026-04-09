@@ -1,13 +1,13 @@
 
 export interface Timestamp {
     Timestamp: number;   
-    GameStateID: number;
+    UpdateID: number;
 }
 
 export type GameState = Timestamp & {
   
     // extends the interface, just reminding myself, harmless but redundant
-    GameStateID: number;
+    UpdateID: number;
     Timestamp: number; 
 
     Phase: number;
@@ -57,7 +57,7 @@ export interface Permanent {
 export function initGameState(): GameState {
     return {
         Timestamp: Date.now(),
-        GameStateID: 0,
+        UpdateID: 0,
         Phase: 0,
 
         Cards: [],
@@ -75,7 +75,7 @@ export function initGameState(): GameState {
 export function cloneGameState(src: GameState): GameState {
     return {
         Timestamp: src.Timestamp,
-        GameStateID: src.GameStateID,
+        UpdateID: src.UpdateID,
         Phase: src.Phase,
 
         Cards: src.Cards.map(card => ({ ...card })),

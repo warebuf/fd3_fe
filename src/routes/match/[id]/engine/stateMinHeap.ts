@@ -31,7 +31,7 @@ export class MinHeap<T extends Timestamp> {
   private heapUp(index: number): void {
     while (index > 0) {
       const parent = (index - 1) >> 1;
-      if (this.data[parent].GameStateID <= this.data[index].GameStateID) break;
+      if (this.data[parent].UpdateID <= this.data[index].UpdateID) break;
       this.swap(index, parent);
       index = parent;
     }
@@ -47,14 +47,14 @@ export class MinHeap<T extends Timestamp> {
 
       if (
         left < n &&
-        this.data[left].GameStateID < this.data[smallest].GameStateID
+        this.data[left].UpdateID < this.data[smallest].UpdateID
       ) {
         smallest = left;
       }
 
       if (
         right < n &&
-        this.data[right].GameStateID < this.data[smallest].GameStateID
+        this.data[right].UpdateID < this.data[smallest].UpdateID
       ) {
         smallest = right;
       }
