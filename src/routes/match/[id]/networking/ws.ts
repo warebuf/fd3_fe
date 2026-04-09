@@ -34,7 +34,6 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
         calculateOffset(msg.t1, msg.t2, clientReceive);
         break;
       case "fullState":
-        console.log("fullState",msg.data)
         const newState: GameState = {
           ...msg.data,
           Timestamp: new Date(msg.data.Timestamp).getTime()
