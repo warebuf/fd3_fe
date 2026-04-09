@@ -9,83 +9,89 @@ export type GameState = Timestamp & {
     // extends the interface, just reminding myself, harmless but redundant
     GameStateID: number;
     Timestamp: number; 
-    Round: number;
 
-    StructureHP : number[];
-    StructureTeam : number[];
+    Phase: number;
 
-    // team sets: index (unitID) -> team index
-    Team: number[];
-    Zone: number[]; // 0: Bench, 1: Field, 2: Dead, 3: queuedSummon
+    Cards: Card[];
+    Deck: number[][];
+    Hand: number[][];
+    Field: number[][];
+    Grave: number[][];
 
-    // model set
-    ModelNo: number[];
-
-    // core unit stats
-    HP: number[];
-    EXP: number[];
-
-    // functions
-	Functions:       number[]; // functions are flattened for each unit
-	FunctionType: number[];
-    FunctionStartIdx: number[]; // the starting index in Functions[] for this unit
-	FunctionCount:    number[]; // how many functions belong to each unit
-	FunctionCharge:   number[];
-	FunctionSPD:      number[];
-    FunctionTarget: number[];
+    Permanents: Permanent[];
+    Mana: number[];
+    ActiveTriggers: TriggerEffect[];
 
 };
 
-export function initGameState() : GameState {
+export interface Card {
+    CardID: number;
+    DefNo: number;
+    Team: number;
+    Type: number;
+    Zone: number; // 0: deck, 1: hand, 2: field, 3: grave
+    Armed: boolean;
+}
+
+export interface Effect {
+    Type: number;
+    A: number;
+    B: number;
+    C: number;
+}
+  
+export interface TriggerEffect {
+    Condition: number;
+    Effect: Effect;
+}
+  
+export interface Permanent {
+    PermanentID: number;
+    SourceCard: number;
+    Type: number;
+    HP: number;
+    Team: number;
+    Master: boolean;
+}
+
+export function initGameState(): GameState {
     return {
-        // timestamp fields
         Timestamp: Date.now(),
         GameStateID: 0,
-        Round: 0,
+        Phase: 0,
 
-        StructureHP: [],
-        StructureTeam: [],
+        Cards: [],
+        Deck: [],
+        Hand: [],
+        Field: [],
+        Grave: [],
 
-        // metadata per unitID
-        Team: [],
-        Zone: [],
-        ModelNo: [],
-        HP: [],
-        EXP: [],
-        Functions: [],
-        FunctionType: [],
-        FunctionStartIdx: [],
-        FunctionCount: [],
-        FunctionCharge: [],
-        FunctionSPD: [],
-        FunctionTarget: [],
+        Permanents: [],
+        Mana: [],
+        ActiveTriggers: [],
     };
 }
 
-export function cloneGameState(src: GameState) : GameState {
+export function cloneGameState(src: GameState): GameState {
     return {
-        // timestamp fields
         Timestamp: src.Timestamp,
         GameStateID: src.GameStateID,
-        Round: src.Round,
+        Phase: src.Phase,
 
-        StructureHP: [...src.StructureHP],
-        StructureTeam: [...src.StructureTeam],
+        Cards: src.Cards.map(card => ({ ...card })),
 
-        // metadata per unitID
-        Team: [...src.Team],
-        Zone: [...src.Zone],
-        ModelNo: [...src.ModelNo],
-        HP: [...src.HP],
-        EXP: [...src.EXP],
+        Deck: src.Deck.map(teamDeck => [...teamDeck]),
+        Hand: src.Hand.map(teamHand => [...teamHand]),
+        Field: src.Field.map(teamField => [...teamField]),
+        Grave: src.Grave.map(teamGrave => [...teamGrave]),
 
-        // functions
-        Functions: [...src.Functions],
-        FunctionType: [...src.FunctionType],
-        FunctionStartIdx: [...src.FunctionStartIdx],
-        FunctionCount: [...src.FunctionCount],
-        FunctionCharge: [...src.FunctionCharge],
-        FunctionSPD: [...src.FunctionSPD],
-        FunctionTarget: [...src.FunctionTarget],
+        Permanents: src.Permanents.map(permanent => ({ ...permanent })),
+
+        Mana: [...src.Mana],
+
+        ActiveTriggers: src.ActiveTriggers.map(trigger => ({
+            ...trigger,
+            Effect: { ...trigger.Effect },
+        })),
     };
 }
