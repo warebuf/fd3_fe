@@ -95,7 +95,7 @@
         (async () => { 
 
             // websocket setup, also set up clientIdx
-            const result = await connectWS(matchID, stateManager);
+            const result = await connectWS(matchID, stateManager); // does not stop awaiting until connection is open
             if (result) { ({ ws, teamIdx, nextRoundTime } = result); }
 
             // user navigated away, do not continue

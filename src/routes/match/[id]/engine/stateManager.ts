@@ -6,21 +6,23 @@ import { initGameState, cloneGameState } from "./gameState"
 import { MinHeap } from "./stateMinHeap"
 import { serverClockOffset } from "../networking/ping";
 
-type EventResults = Timestamp & {
+export type EventLog = Timestamp & {
 
     // extends the interface, actually redunant semantically, but left here as a reminder
     Timestamp: number;
     UpdateID: number;
     
-    str: string;
+    Type: number;
+    A: number;
+    B: number;
+    C: number;
 }
 
-type Event = EventResults | GameState;
+type Event = EventLog | GameState;
 
 export class StateManager {
 
     private scheduled = new MinHeap<Event>();
-    private lastState : GameState = initGameState();
     
     // take the last server-sent state, iterpolate the current state based on currentTime
     Update(currentState: GameState, currentTime: number) : [GameState, boolean] {
@@ -33,11 +35,11 @@ export class StateManager {
             const eventTime = nextEvent.Timestamp - get(serverClockOffset); // normalize with clock offset
             if( currentTime >= eventTime ) { // an event has passed
                 this.scheduled.pop();
-                if("str" in nextEvent) { // EventResult
+                if("Type" in nextEvent) { // EventResult
                     significantEvent = true;
+                    console.log("processing EventLog", nextEvent)
                 } else { // GameState
-                    this.lastState = nextEvent;
-                    currentState = cloneGameState(this.lastState);
+                    currentState = cloneGameState(nextEvent);
                     significantEvent = true;
                 }
             } else {
@@ -48,8 +50,12 @@ export class StateManager {
         return [currentState, significantEvent];
     }
 
-    handleFullState(state: GameState) {
+    addFullState(state: GameState) {
         this.scheduled.push(state);
+    }
+
+    addLog(log: EventLog) {
+        this.scheduled.push(log);
     }
 
 }

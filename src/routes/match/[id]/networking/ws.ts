@@ -2,6 +2,7 @@
 
 import { sendPing, calculateOffset } from "./ping";
 import { StateManager } from "../engine/stateManager";
+import type { EventLog } from "../engine/stateManager";
 import type { GameState } from "../engine/gameState";
 
 
@@ -38,11 +39,15 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
           ...msg.data,
           Timestamp: new Date(msg.data.Timestamp).getTime()
         }
-        stateManager.handleFullState(newState);
+        stateManager.addFullState(newState);
         break;
       case "actions":
         for(let i = 0; i < msg.data.length; i++) {
-          console.log("actions", i, msg.data[i]);
+          const newLog: EventLog = {
+            ...msg.data[i],
+            Timestamp: new Date(msg.data[i].Timestamp).getTime()
+          }
+          stateManager.addLog(newLog);
         }
         break;
       default:
