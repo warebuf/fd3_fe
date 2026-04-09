@@ -11,23 +11,6 @@ export function interpolate( authoritativeState : GameState, interpolatedState: 
     const localizedTimestamp = authoritativeState.Timestamp - get(serverClockOffset);
     const millisecondsPassed = Math.floor(currentTime - localizedTimestamp); 
 
-    for(let i = 0; i < authoritativeState.HP.length; i++) {
-
-        // for now just update charge of on field units, obviously amendable in the ufture
-
-        if( authoritativeState.HP[i] > 0 && authoritativeState.Zone[i] === 1) {
-            for( let j = authoritativeState.FunctionStartIdx[i]; j < authoritativeState.FunctionStartIdx[i] + authoritativeState.FunctionCount[i]; j++ ) {
-                if(authoritativeState.FunctionType[j] === 0) {
-                    interpolatedState.FunctionCharge[j] = authoritativeState.FunctionCharge[j] + millisecondsPassed;
-                    if(interpolatedState.FunctionCharge[j] > interpolatedState.FunctionSPD[j]) {
-                        interpolatedState.FunctionCharge[j] = interpolatedState.FunctionSPD[j];
-                    }
-                }
-                
-                
-            }
-        }
-
-    }
+    // placeholder: update all fields in the interpolated state based on our new time
 
 }

@@ -8,12 +8,6 @@ export class MinHeap<T extends Timestamp> {
     return this.data.length;
   }
 
-  print(): void {
-    for (let i = 0; i < this.data.length; i++) {
-      console.log(this.data[i]);
-    }
-  }
-
   peek(): T {
     return this.data[0];
   }

@@ -8,7 +8,7 @@ import { serverClockOffset } from "../networking/ping";
 
 type EventResults = Timestamp & {
 
-    // extends the interface, just here to remind myself, harmless but redundant
+    // extends the interface, actually redunant semantically, but left here as a reminder
     Timestamp: number;
     GameStateID: number;
     
