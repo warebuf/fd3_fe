@@ -7,13 +7,11 @@ const CARD_RADIUS = 6;
 const CARD_GAP = 10;
 const ZONE_PAD = 10;
 const ZONE_H = CARD_H + ZONE_PAD * 2;
-const FIELD_COLOR = "#1a1a2e";
 const CARD_BACK_COLOR = "#3C3489";
 const CARD_FACE_COLOR = "#ffffff";
 const CARD_BORDER = "#5DCAA5";
 const LABEL_COLOR = "#888780";
 const TEXT_COLOR = "#2C2C2A";
-const BG_COLOR = "#f8f8f6";
 const DIVIDER_COLOR = "#D3D1C7";
 
 function roundRect(
@@ -175,10 +173,6 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     const W = ctx.canvas.width;
     const H = ctx.canvas.height;
     const opponentIndex = userIndex === 0 ? 1 : 0;
-
-    // background
-    ctx.fillStyle = BG_COLOR;
-    ctx.fillRect(0, 0, W, H);
 
     const DECK_W = CARD_W + 8 + CARD_GAP; // deck stack + gap
     const ZONE_W = W - DECK_W - 32;       // remaining width for hand/field
