@@ -88,8 +88,7 @@ function drawZoneLabel( ctx: CanvasRenderingContext2D, label: string, x: number,
     ctx.fillText(label.toUpperCase(), x, y);
 }
 
-function drawZone( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, cardIds: number[], faceDown: boolean
-) {
+function drawZone( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, cardIds: number[], faceDown: boolean ) {
     // zone background
     roundRect(ctx, x, y, w, ZONE_H, 6);
     ctx.fillStyle = "rgba(0,0,0,0.03)";
@@ -106,25 +105,7 @@ function drawZone( ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
     }
 }
 
-function drawDivider( ctx: CanvasRenderingContext2D, y: number, canvasW: number ) {
-    ctx.strokeStyle = DIVIDER_COLOR;
-    ctx.lineWidth = 0.5;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.moveTo(20, y);
-    ctx.lineTo(canvasW - 20, y);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    ctx.fillStyle = LABEL_COLOR;
-    ctx.font = "10px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("battlefield", canvasW / 2, y);
-}
-
 function drawPlayerTag( ctx: CanvasRenderingContext2D, label: string, x: number, y: number, isUser: boolean ) {
-    const pad = 8;
     const tagW = 80;
     const tagH = 20;
     roundRect(ctx, x, y, tagW, tagH, 4);
@@ -145,66 +126,62 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     const H = ctx.canvas.height;
     const opponentIndex = userIndex === 0 ? 1 : 0;
 
-    // Dot grid
-    const spacing = 8;
-    const dotRadius = 0.5;
-    const dotColor = "white";
+    if(false){ // Dot grid
+        const spacing = 8;
+        const dotRadius = 0.5;
+        const dotColor = "white";
 
-    const cols = Math.ceil(W / spacing);
-    const rows = Math.ceil(H / spacing);
-    
-    ctx.fillStyle = dotColor;
-    for (let row = 0; row <= rows; row++) {
-        for (let col = 0; col <= cols; col++) {
-        const x = col * spacing;
-        const y = row * spacing;
-        ctx.beginPath();
-        ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
-        ctx.fill();
+        const cols = Math.ceil(W / spacing);
+        const rows = Math.ceil(H / spacing);
+        
+        ctx.fillStyle = dotColor;
+        for (let row = 0; row <= rows; row++) {
+            for (let col = 0; col <= cols; col++) {
+            const x = col * spacing;
+            const y = row * spacing;
+            ctx.beginPath();
+            ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
+            ctx.fill();
+            }
         }
     }
-
-
 
     const DECK_W = CARD_W + 8 + CARD_GAP; // deck stack + gap
     const ZONE_W = W - DECK_W - 32;       // remaining width for hand/field
     const LEFT_X = 16;
     const ZONE_X = LEFT_X + DECK_W;
 
-    let y = 10;
+    let y = 16;
 
     // --- Opponent ---
     drawPlayerTag(ctx, "Opponent", LEFT_X, y, false);
     y += 40;
 
     // Opponent deck + hand
-    drawZoneLabel(ctx, "Deck", LEFT_X, y - 2);
+    drawZoneLabel(ctx, "Deck", LEFT_X, y - 2 + 8);
     drawZoneLabel(ctx, "Hand", ZONE_X, y - 2);
-    drawDeckStack(ctx, LEFT_X, y, state.Deck[opponentIndex].length);
+    drawDeckStack(ctx, LEFT_X, y + 8, state.Deck[opponentIndex].length);
     drawZone(ctx, ZONE_X, y, ZONE_W, state.Hand[opponentIndex], true); // face down
-    y += ZONE_H + 12;
+    y += ZONE_H + 16;
 
     // Opponent field
     drawZoneLabel(ctx, "Field", ZONE_X, y - 2);
     drawZone(ctx, ZONE_X, y, ZONE_W, state.Field[opponentIndex], false);
     y += ZONE_H + 16;
 
-    // --- Divider ---
-    drawDivider(ctx, y, W);
     y += 16;
 
-    // --- Player ---
     // Player field
     drawZoneLabel(ctx, "Your field", ZONE_X, y - 2);
     drawZone(ctx, ZONE_X, y, ZONE_W, state.Field[userIndex], false);
-    y += ZONE_H + 12;
+    y += ZONE_H + 16;
 
     // Player deck + hand
-    drawZoneLabel(ctx, "Deck", LEFT_X, y - 2);
+    drawZoneLabel(ctx, "Deck", LEFT_X, y - 2 + 8);
     drawZoneLabel(ctx, "Your hand", ZONE_X, y - 2);
-    drawDeckStack(ctx, LEFT_X, y, state.Deck[userIndex].length);
+    drawDeckStack(ctx, LEFT_X, y + 8, state.Deck[userIndex].length);
     drawZone(ctx, ZONE_X, y, ZONE_W, state.Hand[userIndex], false); // face up
-    y += ZONE_H + 8;
+    y += ZONE_H + 16;
 
     drawPlayerTag(ctx, "You", LEFT_X, y, true);
 }
