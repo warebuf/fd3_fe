@@ -4,8 +4,8 @@ import type { GameState } from "../../engine/gameState"
 const CARD_W = 56;
 const CARD_H = 80;
 const CARD_RADIUS = 6;
-const CARD_GAP = 10;
-const ZONE_PAD = 10;
+const CARD_GAP = 8;
+const ZONE_PAD = 8;
 const ZONE_H = CARD_H + ZONE_PAD * 2;
 const CARD_BACK_COLOR = "#2C2C2A";
 const CARD_FACE_COLOR = "#2C2C2A";
@@ -146,7 +146,7 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     const opponentIndex = userIndex === 0 ? 1 : 0;
 
     // Dot grid
-    const spacing = 10;
+    const spacing = 8;
     const dotRadius = 0.5;
     const dotColor = "white";
 
