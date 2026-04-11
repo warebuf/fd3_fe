@@ -1,5 +1,5 @@
 
-import type { GameState, Card } from "../../engine/gameState"
+import type { GameState, Card } from "../engine/gameState"
 
 const CARD_W = 56;
 const CARD_H = 80;

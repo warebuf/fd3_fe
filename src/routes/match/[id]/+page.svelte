@@ -9,7 +9,7 @@
     import { initGameState, cloneGameState, type GameState } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
-    import { drawBoard } from './ui/v2/drawBoard';
+    import { drawBoard } from './ui/drawBoard';
 
 
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
