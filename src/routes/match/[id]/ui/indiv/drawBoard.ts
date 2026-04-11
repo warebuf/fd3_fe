@@ -109,12 +109,12 @@ function drawPlayerTag( ctx: CanvasRenderingContext2D, label: string, x: number,
     const tagW = 80;
     const tagH = 20;
     roundRect(ctx, x, y, tagW, tagH, 4);
-    ctx.fillStyle = isUser ? "#E1F5EE" : "rgba(0,0,0,0.04)";
+    ctx.fillStyle = "rgba(255,255,255,0.08)";
     ctx.fill();
-    ctx.strokeStyle = isUser ? "#5DCAA5" : DIVIDER_COLOR;
+    ctx.strokeStyle = "rgba(255,255,255,0.18)";
     ctx.lineWidth = 0.5;
     ctx.stroke();
-    ctx.fillStyle = isUser ? "#085041" : LABEL_COLOR;
+    ctx.fillStyle = "#D3D1C7";
     ctx.font = "11px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -126,7 +126,8 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     const H = ctx.canvas.height;
     const opponentIndex = userIndex === 0 ? 1 : 0;
 
-    if(false){ // Dot grid
+    // draw dot grid
+    if(false){ 
         const spacing = 8;
         const dotRadius = 0.5;
         const dotColor = "white";
@@ -158,27 +159,27 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     y += 40;
 
     // Opponent deck + hand
-    drawZoneLabel(ctx, "Deck", LEFT_X, y - 2 + 8);
-    drawZoneLabel(ctx, "Hand", ZONE_X, y - 2);
+    drawZoneLabel(ctx, "Deck", LEFT_X, y - 3 + 8);
+    drawZoneLabel(ctx, "Hand", ZONE_X, y - 3);
     drawDeckStack(ctx, LEFT_X, y + 8, state.Deck[opponentIndex].length);
     drawZone(ctx, ZONE_X, y, ZONE_W, state.Hand[opponentIndex], true); // face down
     y += ZONE_H + 16;
 
     // Opponent field
-    drawZoneLabel(ctx, "Field", ZONE_X, y - 2);
+    drawZoneLabel(ctx, "Field", ZONE_X, y - 3);
     drawZone(ctx, ZONE_X, y, ZONE_W, state.Field[opponentIndex], false);
     y += ZONE_H + 16;
 
     y += 16;
 
     // Player field
-    drawZoneLabel(ctx, "Your field", ZONE_X, y - 2);
+    drawZoneLabel(ctx, "Your field", ZONE_X, y - 3);
     drawZone(ctx, ZONE_X, y, ZONE_W, state.Field[userIndex], false);
     y += ZONE_H + 16;
 
     // Player deck + hand
-    drawZoneLabel(ctx, "Deck", LEFT_X, y - 2 + 8);
-    drawZoneLabel(ctx, "Your hand", ZONE_X, y - 2);
+    drawZoneLabel(ctx, "Deck", LEFT_X, y - 3 + 8);
+    drawZoneLabel(ctx, "Your hand", ZONE_X, y - 3);
     drawDeckStack(ctx, LEFT_X, y + 8, state.Deck[userIndex].length);
     drawZone(ctx, ZONE_X, y, ZONE_W, state.Hand[userIndex], false); // face up
     y += ZONE_H + 16;

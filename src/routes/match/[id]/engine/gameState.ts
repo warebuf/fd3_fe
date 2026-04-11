@@ -61,10 +61,10 @@ export function initGameState(): GameState {
         Phase: 0,
 
         Cards: [],
-        Deck: [],
-        Hand: [],
-        Field: [],
-        Grave: [],
+        Deck: [[],[]],
+        Hand: [[],[]],
+        Field: [[],[]],
+        Grave: [[],[]],
 
         Permanents: [],
         Mana: [],
