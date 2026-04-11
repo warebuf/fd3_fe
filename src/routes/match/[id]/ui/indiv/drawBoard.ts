@@ -1,5 +1,5 @@
 
-import type { GameState } from "../../engine/gameState"
+import type { GameState, Card } from "../../engine/gameState"
 
 const CARD_W = 56;
 const CARD_H = 80;
@@ -88,7 +88,7 @@ function drawZoneLabel( ctx: CanvasRenderingContext2D, label: string, x: number,
     ctx.fillText(label.toUpperCase(), x, y);
 }
 
-function drawZone( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, cardIds: number[], faceDown: boolean ) {
+function drawZone( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, cardIndices: number[], cards: Card[], faceDown: boolean ) {
     // zone background
     roundRect(ctx, x, y, w, ZONE_H, 6);
     ctx.fillStyle = "rgba(0,0,0,0.03)";
@@ -97,11 +97,15 @@ function drawZone( ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
     ctx.lineWidth = 0.5;
     ctx.stroke();
 
-    // cards
-    for (let i = 0; i < cardIds.length; i++) {
-        const cx = x + ZONE_PAD + i * (CARD_W + CARD_GAP);
-        const cy = y + ZONE_PAD;
-        drawCard(ctx, cx, cy, cardIds[i], faceDown);
+    // calculate center
+    const totalW = cardIndices.length * CARD_W + (cardIndices.length - 1) * CARD_GAP;
+    const startX = (ctx.canvas.width - totalW) / 2;
+
+    // draw cards
+    for (let i = 0; i < cardIndices.length; i++) {
+        const cx = startX + i * (CARD_W + CARD_GAP);
+        const cy = y + (ZONE_H - CARD_H) / 2;
+        drawCard(ctx, cx, cy, cards[cardIndices[i]].DefNo, faceDown);
     }
 }
 
@@ -162,26 +166,26 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     drawZoneLabel(ctx, "Deck", LEFT_X, y - 3 + 8);
     drawZoneLabel(ctx, "Hand", ZONE_X, y - 3);
     drawDeckStack(ctx, LEFT_X, y + 8, state.Deck[opponentIndex].length);
-    drawZone(ctx, ZONE_X, y, ZONE_W, state.Hand[opponentIndex], true); // face down
+    drawZone(ctx, ZONE_X, y, ZONE_W, state.Hand[opponentIndex], state.Cards, true); // face down
     y += ZONE_H + 16;
 
     // Opponent field
     drawZoneLabel(ctx, "Field", ZONE_X, y - 3);
-    drawZone(ctx, ZONE_X, y, ZONE_W, state.Field[opponentIndex], false);
+    drawZone(ctx, ZONE_X, y, ZONE_W, state.Field[opponentIndex], state.Cards, false);
     y += ZONE_H + 16;
 
     y += 16;
 
     // Player field
     drawZoneLabel(ctx, "Your field", ZONE_X, y - 3);
-    drawZone(ctx, ZONE_X, y, ZONE_W, state.Field[userIndex], false);
+    drawZone(ctx, ZONE_X, y, ZONE_W, state.Field[userIndex], state.Cards, false);
     y += ZONE_H + 16;
 
     // Player deck + hand
     drawZoneLabel(ctx, "Deck", LEFT_X, y - 3 + 8);
     drawZoneLabel(ctx, "Your hand", ZONE_X, y - 3);
     drawDeckStack(ctx, LEFT_X, y + 8, state.Deck[userIndex].length);
-    drawZone(ctx, ZONE_X, y, ZONE_W, state.Hand[userIndex], false); // face up
+    drawZone(ctx, ZONE_X, y, ZONE_W, state.Hand[userIndex], state.Cards, false); // face up
     y += ZONE_H + 16;
 
     drawPlayerTag(ctx, "You", LEFT_X, y, true);
