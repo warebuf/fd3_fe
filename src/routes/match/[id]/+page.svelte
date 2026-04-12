@@ -10,7 +10,7 @@
     import { interpolate } from './engine/interpolate';
 
     import { drawBoard } from './ui/drawBoard';
-    import { calcCoordinates, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
+    import { calcCoordinates, getClickedCard, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
 
     // drawing related
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
@@ -32,7 +32,7 @@
     let interpolatedState: GameState;
 
     // ui
-    let hoverIdx: number = -1; // is unitIdx
+    let clickedIndex: number = -1; // is unitIdx
     let handOrder: number[][] = [];
     let handCoords: coordinate[][] = [];
 
@@ -43,6 +43,9 @@
         canvasEl.width  = Math.max(1, Math.round(width  * dpr));
         canvasEl.height = Math.max(1, Math.round(height * dpr));
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        // recalculate hand coordinates
+        handCoords = calcCoordinates(handOrder, ctx.canvas.clientWidth, teamIdx);
     }
 
     function loop(now: number) { // now is current time relative to page load
@@ -61,14 +64,13 @@
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
             handCoords = calcCoordinates(handOrder, ctx.canvas.clientWidth, teamIdx);
-            console.log("handCoords", handCoords)
         }
 
         // draw
         const width = canvasEl.clientWidth;
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
-        drawBoard(ctx, interpolatedState, teamIdx, handOrder, handCoords);
+        drawBoard(ctx, interpolatedState, teamIdx, handOrder, handCoords, clickedIndex);
         
         // schedule next frame
         animationID = requestAnimationFrame(loop);
@@ -95,6 +97,8 @@
             const r = canvasEl.getBoundingClientRect();
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
+
+            clickedIndex = getClickedCard(x, y, handCoords, handOrder);
 
         };
 

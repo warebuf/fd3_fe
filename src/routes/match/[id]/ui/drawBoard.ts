@@ -15,6 +15,10 @@ const LABEL_COLOR = "#888780";
 const TEXT_COLOR = "#D3D1C7";
 const DIVIDER_COLOR = "#D3D1C7";
 
+const CROSSHAIR_COLOR = "#D3D1C7";
+const CROSSHAIR_BORDER = "rgba(211,209,199,0.5)";
+const CROSSHAIR_BG = "rgba(211,209,199,0.06)";
+
 function roundRect( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number ) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -29,41 +33,76 @@ function roundRect( ctx: CanvasRenderingContext2D, x: number, y: number, w: numb
     ctx.closePath();
 }
 
-// cardID: null = face down
-function drawCard( ctx: CanvasRenderingContext2D, x: number, y: number, cardId: number, facedown: boolean ) {
-    // shadow
+function drawCrosshair(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  const ARM = 12;
+  const GAP = 2;
+  const x0 = x - GAP;
+  const y0 = y - GAP;
+  const x1 = x + CARD_W + GAP;
+  const y1 = y + CARD_H + GAP;
+
+  ctx.save();
+  ctx.strokeStyle = CROSSHAIR_COLOR;
+  ctx.lineWidth = 0.5;
+  ctx.lineCap = "square";
+  ctx.beginPath();
+
+  // top-left
+  ctx.moveTo(x0, y0 + ARM);
+  ctx.lineTo(x0, y0);
+  ctx.lineTo(x0 + ARM, y0);
+
+  // top-right
+  ctx.moveTo(x1 - ARM, y0);
+  ctx.lineTo(x1, y0);
+  ctx.lineTo(x1, y0 + ARM);
+
+  // bottom-left
+  ctx.moveTo(x0, y1 - ARM);
+  ctx.lineTo(x0, y1);
+  ctx.lineTo(x0 + ARM, y1);
+
+  // bottom-right
+  ctx.moveTo(x1 - ARM, y1);
+  ctx.lineTo(x1, y1);
+  ctx.lineTo(x1, y1 - ARM);
+
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawCard( ctx: CanvasRenderingContext2D, x: number, y: number, cardId: number, facedown: boolean, selected: boolean ) {
     ctx.save();
     ctx.shadowColor = "rgba(0,0,0,0.12)";
     ctx.shadowBlur = 6;
     ctx.shadowOffsetY = 2;
 
-    if (facedown) { // face down
+    if (facedown) {
         roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
         ctx.fillStyle = CARD_BACK_COLOR;
         ctx.fill();
-        // subtle pattern
         ctx.restore();
         ctx.strokeStyle = "#E24B4A";
         ctx.lineWidth = 0.5;
         roundRect(ctx, x + 4, y + 4, CARD_W - 8, CARD_H - 8, CARD_RADIUS - 2);
         ctx.stroke();
     } else {
-        // face up
         roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
-        ctx.fillStyle = CARD_FACE_COLOR;
+        ctx.fillStyle = selected ? CROSSHAIR_BG : CARD_FACE_COLOR;
         ctx.fill();
         ctx.restore();
-        ctx.strokeStyle = CARD_BORDER;
-        ctx.lineWidth = 0.5;
+        ctx.strokeStyle = selected ? CROSSHAIR_BORDER : CARD_BORDER;
+        ctx.lineWidth = selected ? 1 : 0.5;
         roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
         ctx.stroke();
 
-        // card ID label
         ctx.fillStyle = TEXT_COLOR;
         ctx.font = "10px monospace";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(String(cardId), x + CARD_W / 2, y + CARD_H / 2);
+
+        if (selected) drawCrosshair(ctx, x, y);
     }
 }
 
@@ -71,7 +110,7 @@ function drawDeckStack( ctx: CanvasRenderingContext2D, x: number, y: number, cou
     // draw 3 stacked offset cards
     const offsets = [4, 2, 0];
     for (const o of offsets) {
-        drawCard(ctx, x + o, y + o, -1, true);
+        drawCard(ctx, x + o, y + o, -1, true, false);
     }
     // count badge
     ctx.fillStyle = "#AFA9EC";
@@ -90,9 +129,6 @@ function drawZoneLabel( ctx: CanvasRenderingContext2D, label: string, x: number,
 }
 
 function drawZone( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, handOrder: number[], cards: Card[], faceDown: boolean ) {
-    
-    console.log("y", y)
-    
     // zone background
     roundRect(ctx, x, y, w, ZONE_H, 6);
     ctx.fillStyle = "rgba(0,0,0,0.03)";
@@ -109,11 +145,11 @@ function drawZone( ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
     for (let i = 0; i < handOrder.length; i++) {
         const cx = startX + i * (CARD_W + CARD_GAP);
         const cy = y + (ZONE_H - CARD_H) / 2;
-        drawCard(ctx, cx, cy, cards[handOrder[i]].DefNo, faceDown);
+        drawCard(ctx, cx, cy, cards[handOrder[i]].DefNo, faceDown, false);
     }
 }
 
-function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean ) {
+function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean, selectedIndex: number ) {
     // zone background
     roundRect(ctx, x, y, w, ZONE_H, 6);
     ctx.fillStyle = "rgba(0,0,0,0.03)";
@@ -124,7 +160,7 @@ function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
 
     // draw cards
     for (let i = 0; i < handOrder.length; i++) {
-        drawCard(ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]].DefNo, faceDown);
+        drawCard(ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]].DefNo, faceDown, selectedIndex == handOrder[i]);
     }
 }
 function drawPlayerTag( ctx: CanvasRenderingContext2D, label: string, x: number, y: number, isUser: boolean ) {
@@ -143,7 +179,7 @@ function drawPlayerTag( ctx: CanvasRenderingContext2D, label: string, x: number,
     ctx.fillText(label, x + tagW / 2, y + tagH / 2);
 }
 
-export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][]) {
+export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number) {
     const W = ctx.canvas.width;
     const H = ctx.canvas.height;
     const opponentIndex = userIndex === 0 ? 1 : 0;
@@ -184,7 +220,7 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     drawZoneLabel(ctx, "Deck", LEFT_X, y - 3 + 8);
     drawZoneLabel(ctx, "Hand", ZONE_X, y - 3);
     drawDeckStack(ctx, LEFT_X, y + 8, state.Deck[opponentIndex].length);
-    drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[opponentIndex], state.Cards, handCoords[opponentIndex], true); // face down
+    drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[opponentIndex], state.Cards, handCoords[opponentIndex], true, selectedIndex); // face down
     y += ZONE_H + 16;
 
     // Opponent field
@@ -203,7 +239,7 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     drawZoneLabel(ctx, "Deck", LEFT_X, y - 3 + 8);
     drawZoneLabel(ctx, "Your hand", ZONE_X, y - 3);
     drawDeckStack(ctx, LEFT_X, y + 8, state.Deck[userIndex].length);
-    drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[userIndex], state.Cards, handCoords[userIndex], false); // face up
+    drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[userIndex], state.Cards, handCoords[userIndex], false, selectedIndex); // face up
     y += ZONE_H + 16;
 
     drawPlayerTag(ctx, "You", LEFT_X, y, true);

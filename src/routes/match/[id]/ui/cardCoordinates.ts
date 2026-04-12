@@ -62,3 +62,16 @@ export function calcCoordinates(order: number[][], canvasWidth: number, playerNu
 
   return result;
 }
+
+export function getClickedCard(mouseX: number, mouseY: number, coords: coordinate[][], order: number[][]) : number {
+  for(let i = 0; i < coords.length; i++) {
+    for(let j = 0; j < coords[i].length; j++) {
+      const x = coords[i][j].x;
+      const y = coords[i][j].y;
+      if( (mouseX >= x && mouseX <= x + CARD_W) && (mouseY >= y && mouseY <= y + CARD_H) ) {
+        return order[i][j];
+      }
+    }
+  }
+  return -1;
+}
