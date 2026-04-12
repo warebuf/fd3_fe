@@ -17,8 +17,8 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
   }
 
   const resJSON = await res.json();
+  console.log("resJSON", resJSON)
   const teamIdx = resJSON.teamIdx;
-  const nextRoundTime = new Date(resJSON.nextRoundTime);
 
   const ws = new WebSocket( `${window.location.origin.replace(/^http/, "ws")}/backend/ws?matchID=${encodeURIComponent(matchID)}` );
 
@@ -70,6 +70,6 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
     // stopPing();
   });
 
-  return {ws, teamIdx, nextRoundTime};
+  return {ws, teamIdx};
 
 }

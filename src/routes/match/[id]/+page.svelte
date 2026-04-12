@@ -10,25 +10,30 @@
     import { interpolate } from './engine/interpolate';
 
     import { drawBoard } from './ui/drawBoard';
+    import type { cardCoordinates } from './ui/cardCoordinates';
 
-
+    // drawing related
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
     let ctx: CanvasRenderingContext2D;
     let animationID: number; // saved for easy cleanup
     let lastTime = performance.now(); // tracks frame time
 
+    // misc info
     let matchID: string;
     $: matchID = $page.params.id!;
     let teamIdx: number;
 
-    let hoverIdx: number = -1; // is unitIdx
-
+    // networking related
     let ws: WebSocket | undefined;
     let stateManager: StateManager = new StateManager();
-    let nextRoundTime : Date;
     
+    // game state related
     let authoritativeState: GameState;
     let interpolatedState: GameState;
+
+    // ui
+    let hoverIdx: number = -1; // is unitIdx
+
 
     function resizeCanvas() {
         const dpr = window.devicePixelRatio || 1;
@@ -52,6 +57,7 @@
 
         // update derived states
         if(significantEvent) {
+            console.log("significantEvent", significantEvent)
         }
 
         // draw
@@ -100,7 +106,7 @@
 
             // websocket setup, also set up clientIdx
             const result = await connectWS(matchID, stateManager); // does not stop awaiting until connection is open
-            if (result) { ({ ws, teamIdx, nextRoundTime } = result); }
+            if (result) { ({ ws, teamIdx } = result); }
 
             // user navigated away, do not continue
             if (cancelledWebsocket) return;
