@@ -1,12 +1,13 @@
 
 import type { GameState, Card } from "../engine/gameState"
+import type { coordinate } from "./cardCoordinates";
 
-const CARD_W = 56;
-const CARD_H = 80;
+export const CARD_W = 56;
+export const CARD_H = 80;
 const CARD_RADIUS = 6;
-const CARD_GAP = 8;
+export const CARD_GAP = 8;
 const ZONE_PAD = 8;
-const ZONE_H = CARD_H + ZONE_PAD * 2;
+export const ZONE_H = CARD_H + ZONE_PAD * 2;
 const CARD_BACK_COLOR = "#2C2C2A";
 const CARD_FACE_COLOR = "#2C2C2A";
 const CARD_BORDER = "#6E6D69";
@@ -88,7 +89,10 @@ function drawZoneLabel( ctx: CanvasRenderingContext2D, label: string, x: number,
     ctx.fillText(label.toUpperCase(), x, y);
 }
 
-function drawZone( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, cardIndices: number[], cards: Card[], faceDown: boolean ) {
+function drawZone( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, handOrder: number[], cards: Card[], faceDown: boolean ) {
+    
+    console.log("y", y)
+    
     // zone background
     roundRect(ctx, x, y, w, ZONE_H, 6);
     ctx.fillStyle = "rgba(0,0,0,0.03)";
@@ -98,17 +102,31 @@ function drawZone( ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
     ctx.stroke();
 
     // calculate center
-    const totalW = cardIndices.length * CARD_W + (cardIndices.length - 1) * CARD_GAP;
+    const totalW = handOrder.length * CARD_W + (handOrder.length - 1) * CARD_GAP;
     const startX = (ctx.canvas.width - totalW) / 2;
 
     // draw cards
-    for (let i = 0; i < cardIndices.length; i++) {
+    for (let i = 0; i < handOrder.length; i++) {
         const cx = startX + i * (CARD_W + CARD_GAP);
         const cy = y + (ZONE_H - CARD_H) / 2;
-        drawCard(ctx, cx, cy, cards[cardIndices[i]].DefNo, faceDown);
+        drawCard(ctx, cx, cy, cards[handOrder[i]].DefNo, faceDown);
     }
 }
 
+function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean ) {
+    // zone background
+    roundRect(ctx, x, y, w, ZONE_H, 6);
+    ctx.fillStyle = "rgba(0,0,0,0.03)";
+    ctx.fill();
+    ctx.strokeStyle = DIVIDER_COLOR;
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    // draw cards
+    for (let i = 0; i < handOrder.length; i++) {
+        drawCard(ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]].DefNo, faceDown);
+    }
+}
 function drawPlayerTag( ctx: CanvasRenderingContext2D, label: string, x: number, y: number, isUser: boolean ) {
     const tagW = 80;
     const tagH = 20;
@@ -125,7 +143,7 @@ function drawPlayerTag( ctx: CanvasRenderingContext2D, label: string, x: number,
     ctx.fillText(label, x + tagW / 2, y + tagH / 2);
 }
 
-export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number) {
+export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][]) {
     const W = ctx.canvas.width;
     const H = ctx.canvas.height;
     const opponentIndex = userIndex === 0 ? 1 : 0;
@@ -166,7 +184,7 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     drawZoneLabel(ctx, "Deck", LEFT_X, y - 3 + 8);
     drawZoneLabel(ctx, "Hand", ZONE_X, y - 3);
     drawDeckStack(ctx, LEFT_X, y + 8, state.Deck[opponentIndex].length);
-    drawZone(ctx, ZONE_X, y, ZONE_W, state.Hand[opponentIndex], state.Cards, true); // face down
+    drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[opponentIndex], state.Cards, handCoords[opponentIndex], true); // face down
     y += ZONE_H + 16;
 
     // Opponent field
@@ -185,7 +203,7 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     drawZoneLabel(ctx, "Deck", LEFT_X, y - 3 + 8);
     drawZoneLabel(ctx, "Your hand", ZONE_X, y - 3);
     drawDeckStack(ctx, LEFT_X, y + 8, state.Deck[userIndex].length);
-    drawZone(ctx, ZONE_X, y, ZONE_W, state.Hand[userIndex], state.Cards, false); // face up
+    drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[userIndex], state.Cards, handCoords[userIndex], false); // face up
     y += ZONE_H + 16;
 
     drawPlayerTag(ctx, "You", LEFT_X, y, true);

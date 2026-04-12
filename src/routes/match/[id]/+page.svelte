@@ -10,7 +10,7 @@
     import { interpolate } from './engine/interpolate';
 
     import { drawBoard } from './ui/drawBoard';
-    import type { cardCoordinates } from './ui/cardCoordinates';
+    import { calcCoordinates, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
 
     // drawing related
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
@@ -33,6 +33,8 @@
 
     // ui
     let hoverIdx: number = -1; // is unitIdx
+    let handOrder: number[][] = [];
+    let handCoords: coordinate[][] = [];
 
 
     function resizeCanvas() {
@@ -57,14 +59,16 @@
 
         // update derived states
         if(significantEvent) {
-            console.log("significantEvent", significantEvent)
+            handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
+            handCoords = calcCoordinates(handOrder, ctx.canvas.clientWidth, teamIdx);
+            console.log("handCoords", handCoords)
         }
 
         // draw
         const width = canvasEl.clientWidth;
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
-        drawBoard(ctx, interpolatedState, teamIdx);
+        drawBoard(ctx, interpolatedState, teamIdx, handOrder, handCoords);
         
         // schedule next frame
         animationID = requestAnimationFrame(loop);
