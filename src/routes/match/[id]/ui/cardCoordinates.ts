@@ -37,8 +37,6 @@ const oppY = 56;
 
 export function calcCoordinates(order: number[][], canvasWidth: number, playerNum: number): coordinate[][] {
 
-  console.log("canvasWidth", canvasWidth)
-
   const result: coordinate[][] = [];
 
   for (let i = 0; i < order.length; i++) {

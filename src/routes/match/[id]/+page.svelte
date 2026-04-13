@@ -99,12 +99,22 @@
             const y = e.clientY - r.top;
 
             clickedIndex = getClickedCard(x, y, handCoords, handOrder);
+        };
 
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.code === 'Space') {
+                e.preventDefault(); // prevent page scroll
+                if (clickedIndex !== -1) {
+                    ws?.send(JSON.stringify( { Type: "hand", CardIndex: clickedIndex } ));
+                    clickedIndex = -1; // deselect after playing
+                }
+            }
         };
 
         canvasEl.addEventListener('mousemove', onMove);
         canvasEl.addEventListener('mouseleave', onLeave);
         canvasEl.addEventListener('click', onClick);
+        window.addEventListener('keydown', onKeyDown);
 
         authoritativeState = initGameState();
         interpolatedState = cloneGameState(authoritativeState);

@@ -220,7 +220,7 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     drawZoneLabel(ctx, "Deck", LEFT_X, y - 3 + 8);
     drawZoneLabel(ctx, "Hand", ZONE_X, y - 3);
     drawDeckStack(ctx, LEFT_X, y + 8, state.Deck[opponentIndex].length);
-    drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[opponentIndex], state.Cards, handCoords[opponentIndex], true, selectedIndex); // face down
+    drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[opponentIndex] ?? [], state.Cards, handCoords[opponentIndex] ?? [], true, selectedIndex); // face down
     y += ZONE_H + 16;
 
     // Opponent field
@@ -239,7 +239,7 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     drawZoneLabel(ctx, "Deck", LEFT_X, y - 3 + 8);
     drawZoneLabel(ctx, "Your hand", ZONE_X, y - 3);
     drawDeckStack(ctx, LEFT_X, y + 8, state.Deck[userIndex].length);
-    drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[userIndex], state.Cards, handCoords[userIndex], false, selectedIndex); // face up
+    drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[userIndex] ?? [], state.Cards, handCoords[userIndex] ?? [], false, selectedIndex); // face up
     y += ZONE_H + 16;
 
     drawPlayerTag(ctx, "You", LEFT_X, y, true);

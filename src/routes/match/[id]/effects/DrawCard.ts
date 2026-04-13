@@ -5,8 +5,6 @@ import type { GameState } from "../engine/gameState"
 // A: team index, B: num of cards
 export function drawCard(state: GameState, log: EventLog ) {
 
-    console.log("called drawCard")
-
     let teamIndex = log.A;
     let numCards = log.B;
 

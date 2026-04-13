@@ -14,7 +14,6 @@ export function applyEffect(state: GameState, log: EventLog) {
             drawCard(state, log);
             break;
         default:
-            console.log("unknown log type");
             break;
     }
 }
