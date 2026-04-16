@@ -29,6 +29,7 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
     
     const clientReceive = Date.now(); 
     const msg = JSON.parse(event.data);
+    console.log("msg",msg)
     switch (msg.type) {
       case "p":
         calculateOffset(msg.t1, msg.t2, clientReceive);
