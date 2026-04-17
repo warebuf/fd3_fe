@@ -37,11 +37,9 @@ export class StateManager {
             if( currentTime >= eventTime ) { // an event has passed
                 this.scheduled.pop();
                 if("Type" in nextEvent) { // EventResult
-                    console.log( "applying effect for", nextEvent.Timestamp% 1000000, "adjusted to", eventTime % 1000000, "changed on", Date.now() % 1000000 )
                     applyEffect(currentState, nextEvent);
                     significantEvent = true;
                 } else { // GameState
-                    console.log( "applying fullstate for", nextEvent.Timestamp% 1000000, "adjusted to", eventTime % 1000000, "changed on", Date.now() % 1000000 )
                     currentState = cloneGameState(nextEvent);
                     significantEvent = true;
                 }

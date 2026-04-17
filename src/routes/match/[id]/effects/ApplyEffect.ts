@@ -13,7 +13,16 @@ export function applyEffect(state: GameState, log: EventLog) {
         case 1:
             drawCard(state, log);
             break;
+        case 2:
+            console.log("TO IMPLEMENT: declare card", log);
+            console.log(state.Cards[log.B]);
+
+            break;
+        case 3:
+            console.log("TO IMPLEMENT: summon unit", log);
+            break;
         default:
+            console.log("could not apply log", log);
             break;
     }
 }
