@@ -14,9 +14,7 @@ export function applyEffect(state: GameState, log: EventLog) {
             drawCard(state, log);
             break;
         case 2:
-            console.log("TO IMPLEMENT: declare card", log);
-            console.log(state.Cards[log.B]);
-
+            state.Cards[log.B].Zone = 4;
             break;
         case 3:
             console.log("TO IMPLEMENT: summon unit", log);
