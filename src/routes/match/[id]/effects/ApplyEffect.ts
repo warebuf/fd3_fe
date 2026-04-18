@@ -14,13 +14,12 @@ export function applyEffect(state: GameState, log: EventLog) {
             drawCard(state, log);
             break;
         case 2:
-            state.Cards[log.B].Zone = 4;
-            // remove card from hand
-            // send card to grave
+            
             break;
         case 3:
-            // create the permanent
             console.log("TO IMPLEMENT: summon unit", log);
+            // create the permanent
+            
             break;
         default:
             console.log("could not apply log", log);
