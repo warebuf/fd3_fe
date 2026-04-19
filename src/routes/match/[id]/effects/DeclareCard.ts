@@ -8,16 +8,19 @@ export function declareCard(state: GameState, log: EventLog ) {
     let teamIndex = log.A;
     let cardIndex = log.B;
 
-    // update card to pending state
-    state.Cards[cardIndex].Zone = 4;
+    // update card's state
+    state.Cards[cardIndex].Zone = 2;
+    state.Cards[cardIndex].Pending = true;
 
     // remove card from hand
+    for(let i = 0; i < state.Hand[teamIndex].length; i++) {
+        if(cardIndex == state.Hand[teamIndex][i]) {
+            state.Hand[teamIndex].splice(i, 1);
+        }
+    }
     
-    
-    // send card to grave
-
-    
-
+    // send card to field
+    state.Field[teamIndex].push(cardIndex);
 
     // update GameState UpdateID (i don't think it really matters tbh)
     state.UpdateID = log.UpdateID + 1;

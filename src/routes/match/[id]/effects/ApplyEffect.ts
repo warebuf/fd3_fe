@@ -4,6 +4,7 @@ import type { GameState } from "../engine/gameState"
 
 import { drawCard } from "./DrawCard";
 import { incrementPhase } from "./IncrementPhase";
+import { declareCard } from "./DeclareCard";
 
 export function applyEffect(state: GameState, log: EventLog) {
     switch(log.Type) {
@@ -14,8 +15,7 @@ export function applyEffect(state: GameState, log: EventLog) {
             drawCard(state, log);
             break;
         case 2:
-            console.log("TO IMPLEMENT: declare card", log);    
-
+            declareCard(state, log);
             break;
         case 3:
             console.log("TO IMPLEMENT: summon unit", log);
