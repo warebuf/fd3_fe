@@ -15,7 +15,6 @@ export function declareCard(state: GameState, log: EventLog ) {
     
     
     // send card to grave
-    // add permanent loading UI
 
     
 

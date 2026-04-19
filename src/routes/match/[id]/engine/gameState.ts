@@ -18,7 +18,6 @@ export type GameState = Timestamp & {
     Field: number[][];
     Grave: number[][];
 
-    Permanents: Permanent[];
     Mana: number[];
     ActiveTriggers: TriggerEffect[];
 
@@ -30,6 +29,7 @@ export interface Card {
     Team: number;
     Type: number;
     Zone: number; // 0: deck, 1: hand, 2: field, 3: grave
+    Pending: boolean;
     Armed: boolean;
 }
 
@@ -44,15 +44,6 @@ export interface TriggerEffect {
     Condition: number;
     Effect: Effect;
 }
-  
-export interface Permanent {
-    PermanentID: number;
-    SourceCard: number;
-    Type: number;
-    HP: number;
-    Team: number;
-    Master: boolean;
-}
 
 export function initGameState(): GameState {
     return {
@@ -66,7 +57,6 @@ export function initGameState(): GameState {
         Field: [[],[]],
         Grave: [[],[]],
 
-        Permanents: [],
         Mana: [],
         ActiveTriggers: [],
     };
@@ -84,8 +74,6 @@ export function cloneGameState(src: GameState): GameState {
         Hand: src.Hand.map(teamHand => [...teamHand]),
         Field: src.Field.map(teamField => [...teamField]),
         Grave: src.Grave.map(teamGrave => [...teamGrave]),
-
-        Permanents: src.Permanents.map(permanent => ({ ...permanent })),
 
         Mana: [...src.Mana],
 

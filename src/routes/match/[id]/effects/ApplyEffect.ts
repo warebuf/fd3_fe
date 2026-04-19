@@ -14,11 +14,11 @@ export function applyEffect(state: GameState, log: EventLog) {
             drawCard(state, log);
             break;
         case 2:
-            
+            console.log("TO IMPLEMENT: declare card", log);    
+
             break;
         case 3:
             console.log("TO IMPLEMENT: summon unit", log);
-            // create the permanent
             
             break;
         default:
