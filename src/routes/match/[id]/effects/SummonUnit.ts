@@ -3,7 +3,7 @@ import type { EventLog } from "../engine/stateManager";
 import type { GameState } from "../engine/gameState"
 
 // A: team index, B: card index
-export function declareCard(state: GameState, log: EventLog ) {
+export function summonUnit(state: GameState, log: EventLog ) {
 
     let teamIndex = log.A;
     let cardIndex = log.B;

@@ -5,6 +5,7 @@ import type { GameState } from "../engine/gameState"
 import { drawCard } from "./DrawCard";
 import { incrementPhase } from "./IncrementPhase";
 import { declareCard } from "./DeclareCard";
+import { summonUnit } from "./SummonUnit";
 
 export function applyEffect(state: GameState, log: EventLog) {
     switch(log.Type) {
@@ -18,8 +19,7 @@ export function applyEffect(state: GameState, log: EventLog) {
             declareCard(state, log);
             break;
         case 3:
-            console.log("TO IMPLEMENT: summon unit", log);
-            
+            summonUnit(state, log);
             break;
         default:
             console.log("could not apply log", log);

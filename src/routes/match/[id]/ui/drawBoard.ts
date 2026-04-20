@@ -171,11 +171,21 @@ function drawPermanentCard( ctx: CanvasRenderingContext2D, x: number, y: number,
     ctx.font = "9px sans-serif";
     ctx.fillText("Permanent", tx, ty);
   
-    // draw test status
+    // TODO: write description
 
+    // determine status
+    let statusColor = "";
+    let statusText = "";
+    if(card.Pending == true) {
+        statusText = "Pending Summon";
+        statusColor = "#BFA43A";
+    } else {
+        statusText = "Available";
+        statusColor = "#3A8F5A";
+    }
 
     // draw status at footer
-    const statusText = "Pending Summon";
+    
     const statusX = x + (PCARD_W/2);
     const statusY = y + PCARD_H - P_PAD_H;
     ctx.fillStyle = SUBTEXT_COLOR;
@@ -187,10 +197,10 @@ function drawPermanentCard( ctx: CanvasRenderingContext2D, x: number, y: number,
     // draw status indicator
     const textW = ctx.measureText(statusText).width;
     const indicatorX = statusX - (textW/2) - 8;
-    const indicatorY = statusY - (9/2);
+    const indicatorY = statusY - 6;
     ctx.beginPath();
     ctx.arc(indicatorX, indicatorY, 2, 0, Math.PI * 2);
-    ctx.fillStyle = "#BFA43A";
+    ctx.fillStyle = statusColor;
     ctx.fill();
 
     // draw footer divider
