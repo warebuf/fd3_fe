@@ -138,7 +138,7 @@ function drawZoneLabel( ctx: CanvasRenderingContext2D, label: string, x: number,
     ctx.fillText(label.toUpperCase(), x, y);
 }
 
-function drawPermanentCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card ) {
+function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card ) {
     ctx.save();
 
     // adjust for blurry half pixel borders
@@ -217,7 +217,7 @@ function drawPermanentCard( ctx: CanvasRenderingContext2D, x: number, y: number,
     ctx.restore();
 }
 
-export function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card[], field: number[], canvasWidth: number): void {
+function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card[], field: number[], canvasWidth: number): void {
     const n = field.length;
     if (n === 0) return;
 
@@ -229,15 +229,26 @@ export function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card
 
     for (let i = 0; i < n; i++) {
         const cardX = startX + i * (PCARD_W + CARD_GAP);
-        drawPermanentCard(ctx, cardX, y, cards[field[i]]);
+        drawFieldCard(ctx, cardX, y, cards[field[i]]);
     }
+}
+
+// returns how much to increment y by
+function drawReactionZone(ctx: CanvasRenderingContext2D, x:number, y: number) : number {
+
+    const height = 300;
+    const margin = 10;
+
+
+
+    return height + (2*margin);
 }
 
 function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean, selectedIndex: number ) {
     // zone background
     roundRect(ctx, x, y, w, ZONE_H, 6);
-    ctx.fillStyle = "rgba(0,0,0,0.03)";
-    ctx.fill();
+    // ctx.fillStyle = "rgba(0,0,0,0.03)";
+    // ctx.fill();
     ctx.strokeStyle = TEXT_COLOR;
     ctx.lineWidth = 0.5;
     ctx.stroke();
@@ -312,7 +323,8 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     drawField(ctx, y, state.Cards, state.Field[opponentIndex], W);
     y += ZONE_H + 16;
 
-    y += 16;
+    // Chain/Stack/Reaction Zone
+    y += drawReactionZone(ctx, ZONE_X, y);
 
     // Player field
     drawField(ctx, y, state.Cards, state.Field[userIndex], W);
@@ -326,4 +338,51 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     y += ZONE_H + 16;
 
     drawPlayerTag(ctx, "You", LEFT_X, y, true);
+}
+
+// this is definitely a work in progress
+export function drawPlayMat(ctx: CanvasRenderingContext2D) {
+
+    const totalWidth = ctx.canvas.width;
+    const totalHeight = ctx.canvas.height;
+
+
+
+    const margin = 20;
+    const numberOfHeightMargins = 6;
+
+    // drawing opponent hand
+    const handWidth = totalWidth - (margin * 2);
+    const handHeight = (totalHeight - (numberOfHeightMargins * margin)) * 0.10;
+    roundRect(ctx, margin, margin, handWidth, handHeight, 10);
+    ctx.strokeStyle = TEXT_COLOR;
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    // drawing opponent field
+    const fieldHeight = (totalHeight - (numberOfHeightMargins * margin)) * 0.15;
+    roundRect(ctx, margin, (margin * 2) + handHeight, handWidth, fieldHeight, 10);
+    ctx.strokeStyle = TEXT_COLOR;
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    // drawing reaction zone
+    const reactionHeight = (totalHeight - (numberOfHeightMargins * margin)) * 0.30;
+    //roundRect(ctx, margin, (margin * 3) + handHeight + fieldHeight, handWidth, reactionHeight, 10);
+    ctx.strokeStyle = TEXT_COLOR;
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    // drawing field
+    roundRect(ctx, margin, (margin * 4) + handHeight + fieldHeight + reactionHeight, handWidth, fieldHeight, 10);
+    ctx.strokeStyle = TEXT_COLOR;
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    // drawing hand
+    roundRect(ctx, margin, (margin * 5) + handHeight + (fieldHeight * 2) + reactionHeight, handWidth, handHeight, 10);
+    ctx.strokeStyle = TEXT_COLOR;
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
 }
