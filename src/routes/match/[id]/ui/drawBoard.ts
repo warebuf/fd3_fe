@@ -8,8 +8,7 @@ const CARD_RADIUS = 6;
 export const CARD_GAP = 8;
 const ZONE_PAD = 8;
 export const ZONE_H = CARD_H + ZONE_PAD * 2;
-const CARD_BACK_COLOR = "#2C2C2A";
-const CARD_FACE_COLOR = "#2C2C2A";
+const CARD_COLOR = "#2C2C2A";
 const CARD_BORDER = "#6E6D69";
 const TEXT_COLOR = "#D3D1C7";
 const SUBTEXT_COLOR = "#888780";
@@ -86,7 +85,7 @@ function drawCard( ctx: CanvasRenderingContext2D, x: number, y: number, cardId: 
     if (facedown) {
         ctx.save();
         roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
-        ctx.fillStyle = CARD_BACK_COLOR;
+        ctx.fillStyle = CARD_COLOR;
         ctx.fill();
         ctx.restore();
         ctx.strokeStyle = "#E24B4A";
@@ -96,7 +95,7 @@ function drawCard( ctx: CanvasRenderingContext2D, x: number, y: number, cardId: 
     } else {
         ctx.save();
         roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
-        ctx.fillStyle = selected ? CROSSHAIR_BG : CARD_FACE_COLOR;
+        ctx.fillStyle = selected ? CROSSHAIR_BG : CARD_COLOR;
         ctx.fill();
         ctx.restore();
 
@@ -147,7 +146,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
 
     // draw card background
     roundRect(ctx, x, y, PCARD_W, PCARD_H, CARD_RADIUS);
-    ctx.fillStyle = CARD_FACE_COLOR;
+    ctx.fillStyle = CARD_COLOR;
     ctx.fill();
 
     // draw the border
@@ -234,14 +233,55 @@ function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card[], fie
 }
 
 // returns how much to increment y by
-function drawReactionZone(ctx: CanvasRenderingContext2D, x:number, y: number) : number {
+function drawReactionZone( ctx: CanvasRenderingContext2D, x:number, y: number ) : number {
 
-    const height = 300;
     const margin = 10;
+    const height = 300;
+    const width = ctx.canvas.width - (margin * 2);
 
+    // draw area
+    roundRect(ctx, margin + 0.5, y + 0.5, width, height, 10); // shift to handle the subpixel thing
+    ctx.strokeStyle = "#6F6E68";
+    ctx.lineWidth = 0.5;
+    ctx.stroke(); 
+    
+    // draw center of area
+    const centerX = ctx.canvas.width / 2;
+    const centerY = y + (height / 2);
+    ctx.fillStyle = "pink"; 
+    ctx.beginPath(); 
+    ctx.arc(centerX, centerY, 3, 0, Math.PI * 2); 
+    ctx.fill();
+
+    drawReactionStacks( ctx, centerX, centerY );
 
 
     return height + (2*margin);
+}
+
+function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX:number, centerY: number ) {
+
+    const stackWidth = 100;
+
+    const itemWidth = PCARD_W;
+    const itemHeight = 80;
+    const itemMargin = 10;
+    const stackPad = 16;
+    
+    // number of items
+    const numItems = 2;
+    let x = centerX - (itemWidth / 2);
+    let y = centerY - (itemHeight / 2);
+
+    // draw an item
+    roundRect(ctx, x + 0.5, y + 0.5, itemWidth, itemHeight, 10); // shift to handle the subpixel thing
+    ctx.fillStyle = CARD_COLOR;
+    ctx.fill();
+    ctx.strokeStyle = CARD_BORDER;
+    ctx.lineWidth = 0.5;
+    ctx.stroke(); 
+
+
 }
 
 function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean, selectedIndex: number ) {

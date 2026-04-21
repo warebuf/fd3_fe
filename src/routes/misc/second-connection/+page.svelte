@@ -5,3 +5,22 @@
         text-align: center;
     }
 </style>
+
+<script>
+    import { onMount } from "svelte";
+
+    onMount(() => {
+        const handler = (e) => {
+            if (e.code === "Space") {
+                e.preventDefault();
+                window.location.href = "/";
+            }
+        };
+
+        document.addEventListener("keydown", handler);
+
+        return () => {
+            document.removeEventListener("keydown", handler);
+        };
+    });
+</script>
