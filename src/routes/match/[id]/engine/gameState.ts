@@ -24,8 +24,13 @@ export type GameState = Timestamp & {
 };
 
 export interface Card {
-    CardID: number;
+    //
     DefNo: number;
+    Name: string;
+    Description: string;
+
+    //
+    CardID: number;
     Team: number;
     Type: number;
     Zone: number; // 0: deck, 1: hand, 2: field, 3: grave

@@ -76,7 +76,7 @@ function drawCrosshair(ctx: CanvasRenderingContext2D, x: number, y: number) {
   ctx.restore();
 }
 
-function drawCard( ctx: CanvasRenderingContext2D, x: number, y: number, cardId: number, facedown: boolean, selected: boolean ) {
+function drawHandCard( ctx: CanvasRenderingContext2D, x: number, y: number, cardId: number, facedown: boolean, selected: boolean ) {
 
     // adjust for blurry half pixel borders
     x = Math.round(x) + 0.5; 
@@ -119,7 +119,7 @@ function drawDeckStack( ctx: CanvasRenderingContext2D, x: number, y: number, cou
     // draw 3 stacked offset cards
     const offsets = [4, 2, 0];
     for (const o of offsets) {
-        drawCard(ctx, x + o, y + o, -1, true, false);
+        drawHandCard(ctx, x + o, y + o, -1, true, false);
     }
     // count badge
     ctx.fillStyle = "#AFA9EC";
@@ -162,13 +162,19 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.font = "11px sans-serif";
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
-    ctx.fillText("Fallen Soldier", tx, ty);
+    ctx.fillText(card.Name, tx, ty);
 
     // draw card type
     ty += 12;
     ctx.fillStyle = SUBTEXT_COLOR;
     ctx.font = "9px sans-serif";
-    ctx.fillText("Permanent", tx, ty);
+    let cardType = "";
+    if(card.Type == 1) {
+        cardType = "Permanent";
+    } else if(card.Type == 3) {
+        cardType = "Spell";
+    }
+    ctx.fillText(cardType, tx, ty);
   
     // TODO: write description
 
@@ -184,7 +190,6 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     }
 
     // draw status at footer
-    
     const statusX = x + (PCARD_W/2);
     const statusY = y + PCARD_H - P_PAD_H;
     ctx.fillStyle = SUBTEXT_COLOR;
@@ -240,21 +245,15 @@ function drawReactionZone( ctx: CanvasRenderingContext2D, x:number, y: number ) 
     const width = ctx.canvas.width - (margin * 2);
 
     // draw area
-    roundRect(ctx, margin + 0.5, y + 0.5, width, height, 10); // shift to handle the subpixel thing
+    roundRect(ctx, margin + 0.5, y + 0.5, width, height, CARD_RADIUS); // shift to handle the subpixel thing
     ctx.strokeStyle = "#6F6E68";
     ctx.lineWidth = 0.5;
     ctx.stroke(); 
     
-    // draw center of area
+    // draw the reaction stacks
     const centerX = ctx.canvas.width / 2;
-    const centerY = y + (height / 2);
-    ctx.fillStyle = "pink"; 
-    ctx.beginPath(); 
-    ctx.arc(centerX, centerY, 3, 0, Math.PI * 2); 
-    ctx.fill();
-
+    const centerY = y + (height / 2);    
     drawReactionStacks( ctx, centerX, centerY );
-
 
     return height + (2*margin);
 }
@@ -264,22 +263,54 @@ function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX:number, cent
     const stackWidth = 100;
 
     const itemWidth = PCARD_W;
-    const itemHeight = 80;
-    const itemMargin = 10;
+    const itemHeight = PCARD_H;
+    const itemMargin = 6;
     const stackPad = 16;
     
     // number of items
-    const numItems = 2;
-    let x = centerX - (itemWidth / 2);
-    let y = centerY - (itemHeight / 2);
+    const numItems = 3;
+    if(numItems <= 0) { return };
 
-    // draw an item
-    roundRect(ctx, x + 0.5, y + 0.5, itemWidth, itemHeight, 10); // shift to handle the subpixel thing
-    ctx.fillStyle = CARD_COLOR;
-    ctx.fill();
-    ctx.strokeStyle = CARD_BORDER;
-    ctx.lineWidth = 0.5;
-    ctx.stroke(); 
+    let totHeight = (numItems * itemHeight) + (itemMargin * (numItems-1));    
+    let startX = centerX - (itemWidth / 2);
+    let startY = centerY - (totHeight / 2);
+
+    for( let i = 0; i < numItems; i++ ) {
+
+        const newY = startY + (i * (itemHeight + itemMargin));
+
+        if( i >= 0 ) {
+            // draw an item
+            roundRect(ctx, startX + 0.5, newY + 0.5, itemWidth, itemHeight, 10); // shift to handle the subpixel thing
+            ctx.fillStyle = CARD_COLOR;
+            ctx.fill();
+            ctx.strokeStyle = CARD_BORDER;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+
+            // draw card name
+            let tx = startX + 0.5 + P_PAD_W;
+            let ty = newY + 0.5 + P_PAD_H + 11;
+            ctx.fillStyle = TEXT_COLOR;
+            ctx.font = "11px sans-serif";
+            ctx.textAlign = "left";
+            ctx.textBaseline = "alphabetic";
+            ctx.fillText("Year Zero", tx, ty);
+
+            // draw effect type
+            ty += 12;
+            ctx.fillStyle = SUBTEXT_COLOR;
+            ctx.font = "9px sans-serif";
+            ctx.fillText("Spell", tx, ty);
+        } else {
+            //drawFieldCard(ctx, startX, startY, )
+        }
+
+        
+    
+
+    }
+ 
 
 
 }
@@ -295,7 +326,7 @@ function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
 
     // draw cards
     for (let i = 0; i < handOrder.length; i++) {
-        drawCard( ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]].DefNo, faceDown, selectedIndex == handOrder[i] );
+        drawHandCard( ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]].DefNo, faceDown, selectedIndex == handOrder[i] );
     }
 }
 

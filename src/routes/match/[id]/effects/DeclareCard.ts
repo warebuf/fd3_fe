@@ -5,14 +5,12 @@ import type { GameState } from "../engine/gameState"
 // A: team index, B: card index
 export function declareCard(state: GameState, log: EventLog ) {
 
-    console.log("HAVE TO PROPERLY HANDLE DIFFERENT DECLARATIONS", log);
-
     let teamIndex = log.A;
     let cardIndex = log.B;
 
     // check card type
     let cardType = state.Cards[cardIndex].Type;
-    if (cardType == 3) { // unit type        
+    if (cardType == 1) { // unit type        
 
         // update card's state
         state.Cards[cardIndex].Zone = 2;
@@ -28,7 +26,7 @@ export function declareCard(state: GameState, log: EventLog ) {
         // send card to field
         state.Field[teamIndex].push(cardIndex);
 
-    } else if (cardType == 1) { // spell type
+    } else if (cardType == 3) { // spell type
 
         // update card's state
         state.Cards[cardIndex].Zone = 4;
@@ -39,6 +37,8 @@ export function declareCard(state: GameState, log: EventLog ) {
                 state.Hand[teamIndex].splice(i, 1);
             }
         }
+
+        // add effect to the stack area
 
     }
 
