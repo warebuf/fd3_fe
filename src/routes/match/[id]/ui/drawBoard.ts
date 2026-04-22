@@ -253,7 +253,6 @@ function drawReactionZone( ctx: CanvasRenderingContext2D, x:number, y: number ) 
 
     const margin = 10;
     const height = 300;
-    const width = ctx.canvas.width - (margin * 2);
     
     // draw the reaction stacks
     const centerX = ctx.canvas.width / 2;
