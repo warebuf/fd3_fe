@@ -254,12 +254,6 @@ function drawReactionZone( ctx: CanvasRenderingContext2D, x:number, y: number ) 
     const margin = 10;
     const height = 300;
     const width = ctx.canvas.width - (margin * 2);
-
-    // draw area
-    roundRect(ctx, margin + 0.5, y + 0.5, width, height, CARD_RADIUS); // shift to handle the subpixel thing
-    ctx.strokeStyle = SUBTEXT_COLOR;
-    ctx.lineWidth = 0.5;
-    ctx.stroke(); 
     
     // draw the reaction stacks
     const centerX = ctx.canvas.width / 2;
@@ -279,7 +273,7 @@ function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX:number, cent
     const titleHeight = 20;
     
     // number of items
-    const numItems = 3;
+    const numItems = 1;
     if(numItems <= 0) { return };
 
     let totHeight = (numItems * itemHeight) + (itemMargin * (numItems-1));    
