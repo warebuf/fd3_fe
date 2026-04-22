@@ -23,7 +23,7 @@ const PCARD_H = 100;
 const P_PAD_W = 8;
 const P_PAD_H = 6;
 
-function roundRectTop(ctx, x, y, w, h, r) {
+function roundRectTop( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
     ctx.lineTo(x + w - r, y);
@@ -257,7 +257,7 @@ function drawReactionZone( ctx: CanvasRenderingContext2D, x:number, y: number ) 
 
     // draw area
     roundRect(ctx, margin + 0.5, y + 0.5, width, height, CARD_RADIUS); // shift to handle the subpixel thing
-    ctx.strokeStyle = "#6F6E68";
+    ctx.strokeStyle = SUBTEXT_COLOR;
     ctx.lineWidth = 0.5;
     ctx.stroke(); 
     
@@ -271,13 +271,14 @@ function drawReactionZone( ctx: CanvasRenderingContext2D, x:number, y: number ) 
 
 function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX:number, centerY: number ) {
 
-    const stackWidth = 100;
-
     const itemWidth = PCARD_W;
     const itemHeight = PCARD_H;
     const itemMargin = 6;
-    const stackPad = 16;
+    const stackPad_W = 10;
+    const stackPad_H = 10;
+    const titleHeight = 20;
     
+
     // number of items
     const numItems = 3;
     if(numItems <= 0) { return };
@@ -286,13 +287,34 @@ function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX:number, cent
     let startX = centerX - (itemWidth / 2);
     let startY = centerY - (totHeight / 2);
 
+    // draw container title
+    roundRectTop(ctx, startX - stackPad_W, startY  - stackPad_H - titleHeight, itemWidth + (2*stackPad_W), titleHeight, CARD_RADIUS);
+    ctx.fillStyle = "#3F3E38";
+    ctx.fill();
+
+    // title text
+    const title = "Stack A";
+    ctx.fillStyle = TEXT_COLOR;
+    ctx.font = "10px sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle"; 
+    ctx.fillText(title, startX - stackPad_W + 6, startY  - stackPad_H - (titleHeight/2) + 1 );
+
+    // draw container
+    roundRect(ctx, startX - stackPad_W  + 0.5, startY  - stackPad_H - titleHeight  + 0.5, itemWidth + (2*stackPad_W), totHeight + (2*stackPad_H) + titleHeight, CARD_RADIUS); 
+    ctx.strokeStyle = CARD_BORDER;
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    
+    // draw items
     for( let i = 0; i < numItems; i++ ) {
 
         const newY = startY + (i * (itemHeight + itemMargin));
 
         if( i >= 0 ) {
-            // draw an item
-            roundRect(ctx, startX + 0.5, newY + 0.5, itemWidth, itemHeight, 10); // shift to handle the subpixel thing
+            // card background
+            roundRect(ctx, startX + 0.5, newY + 0.5, itemWidth, itemHeight, CARD_RADIUS); // shift to handle the subpixel thing
             ctx.fillStyle = CARD_COLOR;
             ctx.fill();
             ctx.strokeStyle = CARD_BORDER;
@@ -317,13 +339,8 @@ function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX:number, cent
             //drawFieldCard(ctx, startX, startY, )
         }
 
-        
-    
-
     }
  
-
-
 }
 
 function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean, selectedIndex: number ) {
