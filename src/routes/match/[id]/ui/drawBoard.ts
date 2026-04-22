@@ -278,7 +278,6 @@ function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX:number, cent
     const stackPad_H = 10;
     const titleHeight = 20;
     
-
     // number of items
     const numItems = 3;
     if(numItems <= 0) { return };
@@ -289,7 +288,7 @@ function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX:number, cent
 
     // draw container title
     roundRectTop(ctx, startX - stackPad_W, startY  - stackPad_H - titleHeight, itemWidth + (2*stackPad_W), titleHeight, CARD_RADIUS);
-    ctx.fillStyle = "#3F3E38";
+    ctx.fillStyle = "#383735"; 
     ctx.fill();
 
     // title text
