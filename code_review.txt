@@ -1,0 +1,55 @@
+CODE REVIEW
+===========
+
+Overall: well-structured WIP code for a networked card game. The architecture is
+genuinely clean. A few real issues worth calling out.
+
+
+ACTUAL BUG
+----------
+The `keydown` listener is never removed in the cleanup function (+page.svelte:144-155).
+All the other listeners are cleaned up, but `window.removeEventListener('keydown',
+onKeyDown)` is missing. This will leak on navigation.
+
+
+HEAP ORDERING VS. POP CONDITION MISMATCH
+-----------------------------------------
+stateMinHeap.ts sorts by UpdateID, but stateManager.ts:37 pops based on Timestamp.
+If a full state snapshot arrives with a lower UpdateID but a later timestamp than a
+pending event log, the heap order and the pop condition disagree. Worth verifying the
+server always sends these in a consistent correlation.
+
+
+get() IN THE HOT LOOP
+----------------------
+get(serverClockOffset) is called every frame in both stateManager.Update() and
+interpolate(). Each call subscribes and immediately unsubscribes. At 60fps that's
+120 subscribe/unsubscribe pairs per second. Better to subscribe once and keep the
+value, or just pass it as a parameter from the loop.
+
+
+HARDCODED LAYOUT CONSTANT
+--------------------------
+cardCoordinates.ts:35 -- `const playerY = 392 + 300 + 20;` is a manual sum of the
+y-offsets accumulated in drawBoard. If the layout changes, this silently breaks. It
+should derive from the same constants drawBoard uses.
+
+
+MINOR THINGS
+------------
+- Magic numbers for effect types (case 0, case 1, etc.) and card types (1 for
+  Permanent, 3 for Spell) -- enums would make these much easier to follow.
+- `if(i >= 0)` in drawReactionStacks:307 is always true.
+- "Year Zero" is hardcoded in drawReactionStacks:323 -- placeholder that needs wiring up.
+- The ping TODO at ping.ts:9 is already resolved by stopPing() in the cleanup.
+
+
+WHAT'S GOOD
+-----------
+- Clean separation into engine / networking / effects / ui.
+- Min-heap for ordering out-of-order server events is the right call.
+- NTP-style rolling-window clock offset is solid.
+- Authoritative + interpolated state pattern is correct for a networked game.
+- Deep clone in cloneGameState is done properly.
+- mirrorUIWithHand preserves card order while syncing to server state.
+- Canvas cleanup on unmount is thorough (modulo the keydown bug above).
