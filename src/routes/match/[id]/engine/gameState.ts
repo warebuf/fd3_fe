@@ -19,7 +19,6 @@ export type GameState = Timestamp & {
     Grave: number[][];
 
     Mana: number[];
-    ActiveTriggers: TriggerEffect[];
 
 };
 
@@ -63,7 +62,6 @@ export function initGameState(): GameState {
         Grave: [[],[]],
 
         Mana: [],
-        ActiveTriggers: [],
     };
 }
 
@@ -81,10 +79,5 @@ export function cloneGameState(src: GameState): GameState {
         Grave: src.Grave.map(teamGrave => [...teamGrave]),
 
         Mana: [...src.Mana],
-
-        ActiveTriggers: src.ActiveTriggers.map(trigger => ({
-            ...trigger,
-            Effect: { ...trigger.Effect },
-        })),
     };
 }

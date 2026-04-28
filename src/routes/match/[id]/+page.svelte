@@ -16,7 +16,6 @@
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
     let ctx: CanvasRenderingContext2D;
     let animationID: number; // saved for easy cleanup
-    let lastTime = performance.now(); // tracks frame time
 
     // misc info
     let matchID: string;
@@ -49,8 +48,6 @@
     }
 
     function loop(now: number) { // now is current time relative to page load
-        const dt = now - lastTime; // ms since last frame
-        lastTime = now;
 
         // update with any scheduled events
         let significantEvent = false;
@@ -71,8 +68,6 @@
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
         drawBoard(ctx, interpolatedState, teamIdx, handOrder, handCoords, clickedIndex);
-        
-
 
         // schedule next frame
         animationID = requestAnimationFrame(loop);
