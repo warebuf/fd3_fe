@@ -8,7 +8,7 @@ export function scheduleStack(state: GameState, log: ScheduleStackLog) {
         if(log.StackID === state.ReactionPQ.Items[i].StackID) {
             state.ReactionPQ.Items[i].StackEntries.push( log.StackEntry );
             state.ReactionPQ.Items[i].PopTime = log.StackEntry.PopTime;
-            console.log("scheduleStack", log, state.ReactionPQ.Items);
+            console.log("scheduleStack", state.ReactionPQ.Items);
             return;
         }
     }
@@ -19,6 +19,6 @@ export function scheduleStack(state: GameState, log: ScheduleStackLog) {
         PopTime: log.StackEntry.PopTime,
         StackEntries: [log.StackEntry],
     });
-    console.log("scheduleStack (new)", log, state.ReactionPQ.Items);
+    console.log("scheduleStack (new)", state.ReactionPQ.Items);
 
 }
