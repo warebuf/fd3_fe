@@ -1,23 +1,12 @@
 
 import { get } from "svelte/store";
 
-import type { GameState, Timestamp } from "./gameState"
+import type { GameState } from "./gameState"
 import { cloneGameState } from "./gameState"
 import { MinHeap } from "./stateMinHeap"
 import { applyEffect } from "../effects/ApplyEffect"
 import { serverClockOffset } from "../networking/ping";
-
-export type EventLog = Timestamp & {
-
-    // extends the interface, actually redunant semantically, but left here as a reminder
-    Timestamp: number;
-    UpdateID: number;
-    
-    Type: number;
-    A: number;
-    B: number;
-    C: number;
-}
+import type { EventLog } from "./logs";
 
 type Event = EventLog | GameState;
 
@@ -31,9 +20,10 @@ export class StateManager {
         let significantEvent = false;
 
         // update
+        const clockOffset = get(serverClockOffset);
         for(;this.scheduled.size > 0;) {
             const nextEvent = this.scheduled.peek();
-            const eventTime = nextEvent.Timestamp - get(serverClockOffset); // normalize with clock offset
+            const eventTime = nextEvent.Timestamp - clockOffset;
             if( currentTime >= eventTime ) { // an event has passed
                 this.scheduled.pop();
                 if("Type" in nextEvent) { // EventResult

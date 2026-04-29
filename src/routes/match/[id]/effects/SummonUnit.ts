@@ -1,12 +1,11 @@
 
-import type { EventLog } from "../engine/stateManager";
+import type { SummonUnitEntry } from "../engine/logs";
 import type { GameState } from "../engine/gameState"
 
-// A: team index, B: card index
-export function summonUnit(state: GameState, log: EventLog ) {
+export function summonUnit(state: GameState, log: SummonUnitEntry) {
 
-    let teamIndex = log.A;
-    let cardIndex = log.B;
+    let teamIndex = log.TeamIndex;
+    let cardIndex = log.CardIndex;
 
     // update card's state
     state.Cards[cardIndex].Pending = false;

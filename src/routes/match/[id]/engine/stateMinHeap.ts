@@ -28,10 +28,15 @@ export class MinHeap<T extends Timestamp> {
     return root;
   }
 
+  private less(a: T, b: T): boolean {
+    if (a.Timestamp !== b.Timestamp) return a.Timestamp < b.Timestamp;
+    return a.UpdateID < b.UpdateID;
+  }
+
   private heapUp(index: number): void {
     while (index > 0) {
       const parent = (index - 1) >> 1;
-      if (this.data[parent].UpdateID <= this.data[index].UpdateID) break;
+      if (!this.less(this.data[index], this.data[parent])) break;
       this.swap(index, parent);
       index = parent;
     }
@@ -45,17 +50,11 @@ export class MinHeap<T extends Timestamp> {
       const right = index * 2 + 2;
       let smallest = index;
 
-      if (
-        left < n &&
-        this.data[left].UpdateID < this.data[smallest].UpdateID
-      ) {
+      if (left < n && this.less(this.data[left], this.data[smallest])) {
         smallest = left;
       }
 
-      if (
-        right < n &&
-        this.data[right].UpdateID < this.data[smallest].UpdateID
-      ) {
+      if (right < n && this.less(this.data[right], this.data[smallest])) {
         smallest = right;
       }
 

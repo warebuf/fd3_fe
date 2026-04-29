@@ -1,12 +1,11 @@
 
-import type { EventLog } from "../engine/stateManager";
+import type { DeclareCardEntry } from "../engine/logs";
 import type { GameState } from "../engine/gameState"
 
-// A: team index, B: card index
-export function declareCard(state: GameState, log: EventLog ) {
+export function declareCard(state: GameState, log: DeclareCardEntry) {
 
-    let teamIndex = log.A;
-    let cardIndex = log.B;
+    let teamIndex = log.TeamIndex;
+    let cardIndex = log.CardIndex;
 
     // check card type
     let cardType = state.Cards[cardIndex].Type;

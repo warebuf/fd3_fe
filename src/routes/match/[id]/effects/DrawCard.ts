@@ -1,12 +1,11 @@
 
-import type { EventLog } from "../engine/stateManager";
+import type { DrawExecEntry } from "../engine/logs";
 import type { GameState } from "../engine/gameState"
 
-// A: team index, B: num of cards
-export function drawCard(state: GameState, log: EventLog ) {
+export function drawCard(state: GameState, log: DrawExecEntry) {
 
-    let teamIndex = log.A;
-    let numCards = log.B;
+    let teamIndex = log.TeamIndex;
+    let numCards = log.NumCards;
 
     for( let i = 0; i < numCards; i++ ) {
         if( state.Deck[teamIndex].length <= 0 ) { return; } // TODO: if deck is empty
