@@ -5,10 +5,10 @@ export interface Timestamp {
 }
 
 export type GameState = Timestamp & {
-  
+
     // extends the interface, just reminding myself, harmless but redundant
     UpdateID: number;
-    Timestamp: number; 
+    Timestamp: number;
 
     Phase: number;
 
@@ -17,6 +17,8 @@ export type GameState = Timestamp & {
     Hand: number[][];
     Field: number[][];
     Grave: number[][];
+
+    ReactionPQ: PriorityQueue;
 
     Mana: number[];
 
@@ -43,10 +45,24 @@ export interface Effect {
     B: number;
     C: number;
 }
-  
-export interface TriggerEffect {
-    Condition: number;
-    Effect: Effect;
+
+export interface StackEntry {
+    Type: number;    // 0: card, 1: card eff, 2: ability, 3: other, 4: summon
+    CardID: number;
+    PopTime: number;
+    Effects: Effect[];
+
+    // maybe StackEntry should carry it's EffectIndex
+}
+
+export interface Stack {
+    StackID: number;
+    PopTime: number;
+    StackEntries: StackEntry[];
+}
+
+export interface PriorityQueue {
+    Items: Stack[];
 }
 
 export function initGameState(): GameState {
@@ -60,6 +76,8 @@ export function initGameState(): GameState {
         Hand: [[],[]],
         Field: [[],[]],
         Grave: [[],[]],
+
+        ReactionPQ: { Items: [] },
 
         Mana: [],
     };
@@ -77,6 +95,16 @@ export function cloneGameState(src: GameState): GameState {
         Hand: src.Hand.map(teamHand => [...teamHand]),
         Field: src.Field.map(teamField => [...teamField]),
         Grave: src.Grave.map(teamGrave => [...teamGrave]),
+
+        ReactionPQ: {
+            Items: src.ReactionPQ.Items.map(stack => ({
+                ...stack,
+                StackEntries: stack.StackEntries.map(entry => ({
+                    ...entry,
+                    Effects: [...entry.Effects],
+                })),
+            })),
+        },
 
         Mana: [...src.Mana],
     };
