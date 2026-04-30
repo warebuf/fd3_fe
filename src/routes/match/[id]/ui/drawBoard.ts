@@ -126,26 +126,57 @@ function drawHandCard( ctx: CanvasRenderingContext2D, x: number, y: number, card
     }
 }
 
-function drawDeckStack( ctx: CanvasRenderingContext2D, x: number, y: number, count: number ) {
-    // draw 3 stacked offset cards
-    const offsets = [4, 2, 0];
-    for (const o of offsets) {
-        drawHandCard(ctx, x + o, y + o, -1, true, false);
-    }
-    // count badge
-    ctx.fillStyle = "#AFA9EC";
-    ctx.font = "10px monospace";
+const RESERVES_SIZE = 70;
+const GRAVE_SIZE = 70;
+
+function drawReserves( ctx: CanvasRenderingContext2D, x: number, y: number, count: number ) {
+    const rx = Math.round(x) + 0.5;
+    const ry = Math.round(y) + 0.5;
+    const cx = rx + RESERVES_SIZE / 2;
+
+    roundRect(ctx, rx, ry, RESERVES_SIZE, RESERVES_SIZE, CARD_RADIUS);
+    ctx.fillStyle = CARD_COLOR;
+    ctx.fill();
+    ctx.strokeStyle = CARD_BORDER;
+    ctx.lineWidth = 0.5;
+    roundRect(ctx, rx, ry, RESERVES_SIZE, RESERVES_SIZE, CARD_RADIUS);
+    ctx.stroke();
+
     ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(String(count), x + CARD_W / 2 + 4, y + CARD_H / 2 + 4);
+    ctx.fillStyle = "#AFA9EC";
+    ctx.font = "600 18px monospace";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText(String(count), cx, ry + 34);
+
+    ctx.fillStyle = TEXT_COLOR;
+    ctx.font = "10px sans-serif";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText("RESERVES", cx, ry + 50);
 }
 
-function drawZoneLabel( ctx: CanvasRenderingContext2D, label: string, x: number, y: number ) {
-    ctx.fillStyle = SUBTEXT_COLOR;
-    ctx.font = "10px sans-serif";
-    ctx.textAlign = "left";
+function drawGraveyard( ctx: CanvasRenderingContext2D, x: number, y: number, count: number ) {
+    const rx = Math.round(x) + 0.5;
+    const ry = Math.round(y) + 0.5;
+    const cx = rx + GRAVE_SIZE / 2;
+
+    roundRect(ctx, rx, ry, GRAVE_SIZE, GRAVE_SIZE, CARD_RADIUS);
+    ctx.fillStyle = CARD_COLOR;
+    ctx.fill();
+    ctx.strokeStyle = CARD_BORDER;
+    ctx.lineWidth = 0.5;
+    roundRect(ctx, rx, ry, GRAVE_SIZE, GRAVE_SIZE, CARD_RADIUS);
+    ctx.stroke();
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#AFA9EC";
+    ctx.font = "600 18px monospace";
     ctx.textBaseline = "alphabetic";
-    ctx.fillText(label.toUpperCase(), x, y);
+    ctx.fillText(String(count), cx, ry + 34);
+
+    ctx.fillStyle = TEXT_COLOR;
+    ctx.font = "10px sans-serif";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText("GRAVEYARD", cx, ry + 50);
 }
 
 function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card ) {
@@ -391,10 +422,11 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
         }
     }
 
-    const DECK_W = CARD_W + 8 + CARD_GAP; // deck stack + gap
-    const ZONE_W = W - DECK_W - 32;       // remaining width for hand/field
     const LEFT_X = 16;
-    const ZONE_X = LEFT_X + DECK_W;
+    const RIGHT_X = W - RESERVES_SIZE - LEFT_X;
+    const colCX = RIGHT_X + RESERVES_SIZE / 2;
+    const ZONE_X = LEFT_X;
+    const ZONE_W = RIGHT_X - CARD_GAP - LEFT_X;
 
     let y = 16;
 
@@ -402,9 +434,10 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     drawPlayerTag(ctx, "Opponent", LEFT_X, y, false);
     y += 40;
 
-    // Opponent deck + hand
-    drawZoneLabel(ctx, "Deck", LEFT_X, y - 3 + 8);
-    drawDeckStack(ctx, LEFT_X, y + 8, state.Deck[opponentIndex].length);
+    // Opponent hand + reserves (centered with hand) + graveyard below
+    const oppReservesY = y + (ZONE_H - RESERVES_SIZE) / 2;
+    drawReserves(ctx, RIGHT_X, oppReservesY, state.Deck[opponentIndex].length);
+    drawGraveyard(ctx, RIGHT_X, oppReservesY + RESERVES_SIZE + 8, state.Grave[opponentIndex].length);
     drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[opponentIndex] ?? [], state.Cards, handCoords[opponentIndex] ?? [], true, selectedIndex); // face down
     y += ZONE_H + 16;
 
@@ -419,9 +452,10 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     drawField(ctx, y, state.Cards, state.Field[userIndex], W);
     y += ZONE_H + 16;
 
-    // Player deck + hand
-    drawZoneLabel(ctx, "Deck", LEFT_X, y - 3 + 8);
-    drawDeckStack(ctx, LEFT_X, y + 8, state.Deck[userIndex].length);
+    // Player hand + graveyard above + reserves (centered with hand)
+    const playerReservesY = y + (ZONE_H - RESERVES_SIZE) / 2;
+    drawGraveyard(ctx, RIGHT_X, playerReservesY - GRAVE_SIZE - 8, state.Grave[userIndex].length);
+    drawReserves(ctx, RIGHT_X, playerReservesY, state.Deck[userIndex].length);
     drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[userIndex] ?? [], state.Cards, handCoords[userIndex] ?? [], false, selectedIndex); // face up
     y += ZONE_H + 16;
 
