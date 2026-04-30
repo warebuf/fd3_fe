@@ -143,15 +143,15 @@ function drawReserves( ctx: CanvasRenderingContext2D, x: number, y: number, coun
     ctx.stroke();
 
     ctx.textAlign = "center";
-    ctx.fillStyle = "#AFA9EC";
+    ctx.fillStyle = TEXT_COLOR;
     ctx.font = "600 18px monospace";
     ctx.textBaseline = "alphabetic";
     ctx.fillText(String(count), cx, ry + 34);
 
-    ctx.fillStyle = TEXT_COLOR;
+    ctx.fillStyle = SUBTEXT_COLOR;
     ctx.font = "10px sans-serif";
     ctx.textBaseline = "alphabetic";
-    ctx.fillText("RESERVES", cx, ry + 50);
+    ctx.fillText("RESERVES", cx, ry + 52);
 }
 
 function drawGraveyard( ctx: CanvasRenderingContext2D, x: number, y: number, count: number ) {
@@ -168,15 +168,15 @@ function drawGraveyard( ctx: CanvasRenderingContext2D, x: number, y: number, cou
     ctx.stroke();
 
     ctx.textAlign = "center";
-    ctx.fillStyle = "#AFA9EC";
+    ctx.fillStyle = SUBTEXT_COLOR;
     ctx.font = "600 18px monospace";
     ctx.textBaseline = "alphabetic";
     ctx.fillText(String(count), cx, ry + 34);
 
-    ctx.fillStyle = TEXT_COLOR;
+    ctx.fillStyle = SUBTEXT_COLOR;
     ctx.font = "10px sans-serif";
     ctx.textBaseline = "alphabetic";
-    ctx.fillText("GRAVEYARD", cx, ry + 50);
+    ctx.fillText("GRAVEYARD", cx, ry + 52);
 }
 
 function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card ) {
