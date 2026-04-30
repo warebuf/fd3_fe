@@ -283,14 +283,14 @@ function drawReactionZone( ctx: CanvasRenderingContext2D, x:number, y: number, s
     const height = 300;
 
     // draw the reaction stacks
-    const centerX = ctx.canvas.width / 2;
+    const centerX = ctx.canvas.clientWidth / 2;
     const centerY = y + (height / 2);
     drawReactionStacks( ctx, centerX, centerY, stacks, cards );
 
     return height + (2*margin);
 }
 
-const ENTRY_TYPE_LABELS = ["Card", "Card Effect", "Ability", "Other", "Summon", "Spell"];
+const ENTRY_TYPE_LABELS = ["Card", "Card Effect", "Ability", "Other", "Permanent Summon", "Spell"];
 
 function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX: number, centerY: number, stacks: Stack[], cards: Card[] ) {
 
@@ -397,8 +397,8 @@ function drawPlayerTag( ctx: CanvasRenderingContext2D, label: string, x: number,
 }
 
 export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number) {
-    const W = ctx.canvas.width;
-    const H = ctx.canvas.height;
+    const W = ctx.canvas.clientWidth;
+    const H = ctx.canvas.clientHeight;
     const opponentIndex = userIndex === 0 ? 1 : 0;
 
     // draw dot grid
