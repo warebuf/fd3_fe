@@ -8,7 +8,8 @@ export function summonUnit(state: GameState, log: SummonUnitEntry) {
     let cardIndex = log.CardIndex;
 
     // update card's state
-    state.Cards[cardIndex].Pending = false;
+    state.Cards[cardIndex].Zone = 2;
+    state.Field[teamIndex].push(cardIndex);
 
     // apply any effects
     // apply any triggers

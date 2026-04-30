@@ -12,9 +12,8 @@ export function declareCard(state: GameState, log: DeclareCardEntry) {
     if (cardType == 1) { // unit type        
 
         // update card's state
-        state.Cards[cardIndex].Zone = 2;
-        state.Cards[cardIndex].Pending = true;
-
+        state.Cards[cardIndex].Zone = 4;
+        
         // remove card from hand
         for(let i = 0; i < state.Hand[teamIndex].length; i++) {
             if(cardIndex == state.Hand[teamIndex][i]) {
@@ -22,9 +21,6 @@ export function declareCard(state: GameState, log: DeclareCardEntry) {
             }
         }
         
-        // send card to field
-        state.Field[teamIndex].push(cardIndex);
-
     } else if (cardType == 3) { // spell type
 
         // update card's state

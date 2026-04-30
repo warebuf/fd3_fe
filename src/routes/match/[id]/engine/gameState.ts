@@ -35,7 +35,6 @@ export interface Card {
     Team: number;
     Type: number;
     Zone: number; // 0: deck, 1: hand, 2: field, 3: grave
-    Pending: boolean;
     Armed: boolean;
 }
 
