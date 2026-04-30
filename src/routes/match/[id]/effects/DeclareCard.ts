@@ -33,8 +33,6 @@ export function declareCard(state: GameState, log: DeclareCardEntry) {
             }
         }
 
-        // add effect to the stack area
-
     }
 
     // update GameState UpdateID (i don't think it really matters tbh)

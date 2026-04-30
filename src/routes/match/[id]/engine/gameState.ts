@@ -34,7 +34,7 @@ export interface Card {
     CardID: number;
     Team: number;
     Type: number;
-    Zone: number; // 0: deck, 1: hand, 2: field, 3: grave
+    Zone: number; // 0: deck, 1: hand, 2: field, 3: grave, 4: TemporaryUnaccessible
     Armed: boolean;
 }
 

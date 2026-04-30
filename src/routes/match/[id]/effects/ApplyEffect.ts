@@ -8,6 +8,7 @@ import { declareCard } from "./DeclareCard";
 import { summonUnit } from "./SummonUnit";
 import { scheduleStack } from "./ScheduleStack";
 import { removeStack } from "./RemoveStack";
+import { destroyCard } from "./DestroyCard";
 
 export function applyEffect(state: GameState, log: EventLog) {
 
@@ -18,6 +19,7 @@ export function applyEffect(state: GameState, log: EventLog) {
         case 3: summonUnit(state, log); break;
         case 4: scheduleStack(state, log); break;
         case 5: removeStack(state, log); break;
+        case 6: destroyCard(state, log); break;
         
         default: console.log("could not apply log", log); break;
     }
