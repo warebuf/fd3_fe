@@ -10,6 +10,7 @@ import { scheduleStack } from "./ScheduleStack";
 import { removeStack } from "./RemoveStack";
 
 export function applyEffect(state: GameState, log: EventLog) {
+
     switch(log.Type) {
         case 0: incrementPhase(state, log); break;
         case 1: drawCard(state, log); break;
@@ -20,4 +21,5 @@ export function applyEffect(state: GameState, log: EventLog) {
         
         default: console.log("could not apply log", log); break;
     }
+
 }

@@ -262,7 +262,7 @@ function drawReactionZone( ctx: CanvasRenderingContext2D, x:number, y: number, s
     return height + (2*margin);
 }
 
-const ENTRY_TYPE_LABELS = ["Card", "Card Effect", "Ability", "Other", "Summon"];
+const ENTRY_TYPE_LABELS = ["Card", "Card Effect", "Ability", "Other", "Summon", "Spell"];
 
 function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX: number, centerY: number, stacks: Stack[], cards: Card[] ) {
 
@@ -280,13 +280,17 @@ function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX: number, cen
     const totalWidth = stacks.length * stackContainerW + (stacks.length - 1) * stackMargin;
     const groupStartX = centerX - totalWidth / 2;
 
-    for (let s = 0; s < stacks.length; s++) {
-        const stack = stacks[s];
+    for (let i = 0; i < stacks.length; i++) {
+        const stack = stacks[i];
         const numItems = stack.StackEntries.length;
         if (numItems <= 0) { continue; }
 
+        // we do not want to draw certain items on the stack here
+        if(stack.StackEntries.length == 1 && stack.StackEntries[0].Type === 3) { continue; } // do not draw stacks that are just 'other' type entries
+
+
         const totHeight = numItems * itemHeight + itemMargin * (numItems - 1);
-        const stackX = groupStartX + s * (stackContainerW + stackMargin);
+        const stackX = groupStartX + i * (stackContainerW + stackMargin);
         const stackY = centerY - totHeight / 2;
 
         // container title background
@@ -294,7 +298,7 @@ function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX: number, cen
         ctx.fillStyle = "#383735";
         ctx.fill();
 
-        // title text
+        // container title text
         ctx.fillStyle = TEXT_COLOR;
         ctx.font = "10px sans-serif";
         ctx.textAlign = "left";
@@ -308,10 +312,10 @@ function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX: number, cen
         ctx.stroke();
 
         // entries
-        for (let i = 0; i < numItems; i++) {
-            const entry = stack.StackEntries[i];
+        for (let j = 0; j < numItems; j++) {
+            const entry = stack.StackEntries[j];
             const entryX = stackX + stackPad_W;
-            const entryY = stackY + i * (itemHeight + itemMargin);
+            const entryY = stackY + j * (itemHeight + itemMargin);
 
             roundRect(ctx, entryX + 0.5, entryY + 0.5, itemWidth, itemHeight, CARD_RADIUS);
             ctx.fillStyle = CARD_COLOR;
