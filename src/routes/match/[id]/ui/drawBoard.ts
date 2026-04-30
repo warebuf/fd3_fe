@@ -192,13 +192,10 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     // determine status
     let statusColor = "";
     let statusText = "";
-    if(card.Pending == true) {
-        statusText = "Pending Summon";
-        statusColor = "#BFA43A";
-    } else {
-        statusText = "Available";
-        statusColor = "#3A8F5A";
-    }
+    statusText = "Available";
+    statusColor = "#3A8F5A";
+    //statusText = "Pending Summon";
+    //statusColor = "#BFA43A";
 
     // draw status at footer
     const statusX = x + (PCARD_W/2);
@@ -346,14 +343,6 @@ function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX: number, cen
 }
 
 function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean, selectedIndex: number ) {
-    // zone background
-    roundRect(ctx, x, y, w, ZONE_H, 6);
-    // ctx.fillStyle = "rgba(0,0,0,0.03)";
-    // ctx.fill();
-    ctx.strokeStyle = TEXT_COLOR;
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
-
     // draw cards
     for (let i = 0; i < handOrder.length; i++) {
         drawHandCard( ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]].DefNo, faceDown, selectedIndex == handOrder[i] );
@@ -415,7 +404,6 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
 
     // Opponent deck + hand
     drawZoneLabel(ctx, "Deck", LEFT_X, y - 3 + 8);
-    drawZoneLabel(ctx, "Hand", ZONE_X, y - 3);
     drawDeckStack(ctx, LEFT_X, y + 8, state.Deck[opponentIndex].length);
     drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[opponentIndex] ?? [], state.Cards, handCoords[opponentIndex] ?? [], true, selectedIndex); // face down
     y += ZONE_H + 16;
@@ -433,7 +421,6 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
 
     // Player deck + hand
     drawZoneLabel(ctx, "Deck", LEFT_X, y - 3 + 8);
-    drawZoneLabel(ctx, "Your hand", ZONE_X, y - 3);
     drawDeckStack(ctx, LEFT_X, y + 8, state.Deck[userIndex].length);
     drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[userIndex] ?? [], state.Cards, handCoords[userIndex] ?? [], false, selectedIndex); // face up
     y += ZONE_H + 16;
