@@ -1,5 +1,5 @@
 
-import type { GameState, Card } from "../engine/gameState"
+import type { GameState, Card, Stack } from "../engine/gameState"
 import type { coordinate } from "./cardCoordinates"
 
 export const CARD_W = 56;
@@ -249,20 +249,24 @@ function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card[], fie
 }
 
 // returns how much to increment y by
-function drawReactionZone( ctx: CanvasRenderingContext2D, x:number, y: number ) : number {
+function drawReactionZone( ctx: CanvasRenderingContext2D, x:number, y: number, stacks: Stack[], cards: Card[] ) : number {
 
     const margin = 10;
     const height = 300;
-    
+
     // draw the reaction stacks
     const centerX = ctx.canvas.width / 2;
-    const centerY = y + (height / 2);    
-    drawReactionStacks( ctx, centerX, centerY );
+    const centerY = y + (height / 2);
+    drawReactionStacks( ctx, centerX, centerY, stacks, cards );
 
     return height + (2*margin);
 }
 
-function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX:number, centerY: number ) {
+const ENTRY_TYPE_LABELS = ["Card", "Card Effect", "Ability", "Other", "Summon"];
+
+function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX: number, centerY: number, stacks: Stack[], cards: Card[] ) {
+
+    if (stacks.length <= 0) { return; }
 
     const itemWidth = PCARD_W;
     const itemHeight = PCARD_H;
@@ -270,69 +274,71 @@ function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX:number, cent
     const stackPad_W = 10;
     const stackPad_H = 10;
     const titleHeight = 20;
-    
-    // number of items
-    const numItems = 1;
-    if(numItems <= 0) { return };
+    const stackMargin = 16;
 
-    let totHeight = (numItems * itemHeight) + (itemMargin * (numItems-1));    
-    let startX = centerX - (itemWidth / 2);
-    let startY = centerY - (totHeight / 2);
+    const stackContainerW = itemWidth + 2 * stackPad_W;
+    const totalWidth = stacks.length * stackContainerW + (stacks.length - 1) * stackMargin;
+    const groupStartX = centerX - totalWidth / 2;
 
-    // draw container title
-    roundRectTop(ctx, startX - stackPad_W, startY  - stackPad_H - titleHeight, itemWidth + (2*stackPad_W), titleHeight, CARD_RADIUS);
-    ctx.fillStyle = "#383735"; 
-    ctx.fill();
+    for (let s = 0; s < stacks.length; s++) {
+        const stack = stacks[s];
+        const numItems = stack.StackEntries.length;
+        if (numItems <= 0) { continue; }
 
-    // title text
-    const title = "Stack A";
-    ctx.fillStyle = TEXT_COLOR;
-    ctx.font = "10px sans-serif";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle"; 
-    ctx.fillText(title, startX - stackPad_W + 6, startY  - stackPad_H - (titleHeight/2) + 1 );
+        const totHeight = numItems * itemHeight + itemMargin * (numItems - 1);
+        const stackX = groupStartX + s * (stackContainerW + stackMargin);
+        const stackY = centerY - totHeight / 2;
 
-    // draw container
-    roundRect(ctx, startX - stackPad_W  + 0.5, startY  - stackPad_H - titleHeight  + 0.5, itemWidth + (2*stackPad_W), totHeight + (2*stackPad_H) + titleHeight, CARD_RADIUS); 
-    ctx.strokeStyle = CARD_BORDER;
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
+        // container title background
+        roundRectTop(ctx, stackX, stackY - stackPad_H - titleHeight, stackContainerW, titleHeight, CARD_RADIUS);
+        ctx.fillStyle = "#383735";
+        ctx.fill();
 
-    
-    // draw items
-    for( let i = 0; i < numItems; i++ ) {
+        // title text
+        ctx.fillStyle = TEXT_COLOR;
+        ctx.font = "10px sans-serif";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText("Stack ", stackX + 6, stackY - stackPad_H - titleHeight / 2 + 1);
 
-        const newY = startY + (i * (itemHeight + itemMargin));
+        // container border
+        roundRect(ctx, stackX + 0.5, stackY - stackPad_H - titleHeight + 0.5, stackContainerW, totHeight + 2 * stackPad_H + titleHeight, CARD_RADIUS);
+        ctx.strokeStyle = CARD_BORDER;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
 
-        if( i >= 0 ) {
-            // card background
-            roundRect(ctx, startX + 0.5, newY + 0.5, itemWidth, itemHeight, CARD_RADIUS); // shift to handle the subpixel thing
+        // entries
+        for (let i = 0; i < numItems; i++) {
+            const entry = stack.StackEntries[i];
+            const entryX = stackX + stackPad_W;
+            const entryY = stackY + i * (itemHeight + itemMargin);
+
+            roundRect(ctx, entryX + 0.5, entryY + 0.5, itemWidth, itemHeight, CARD_RADIUS);
             ctx.fillStyle = CARD_COLOR;
             ctx.fill();
             ctx.strokeStyle = CARD_BORDER;
             ctx.lineWidth = 0.5;
             ctx.stroke();
 
-            // draw card name
-            let tx = startX + 0.5 + P_PAD_W;
-            let ty = newY + 0.5 + P_PAD_H + 11;
+            const card = cards.find(c => c.CardID === entry.CardID);
+            const cardName = card?.Name ?? `Card ${entry.CardID}`;
+            const typeLabel = ENTRY_TYPE_LABELS[entry.Type] ?? "Unknown";
+
+            let tx = entryX + 0.5 + P_PAD_W;
+            let ty = entryY + 0.5 + P_PAD_H + 11;
             ctx.fillStyle = TEXT_COLOR;
             ctx.font = "11px sans-serif";
             ctx.textAlign = "left";
             ctx.textBaseline = "alphabetic";
-            ctx.fillText("Year Zero", tx, ty);
+            ctx.fillText(cardName, tx, ty);
 
-            // draw effect type
             ty += 12;
             ctx.fillStyle = SUBTEXT_COLOR;
             ctx.font = "9px sans-serif";
-            ctx.fillText("Spell", tx, ty);
-        } else {
-            //drawFieldCard(ctx, startX, startY, )
+            ctx.fillText(typeLabel, tx, ty);
         }
-
     }
- 
+
 }
 
 function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean, selectedIndex: number ) {
@@ -415,7 +421,7 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     y += ZONE_H + 16;
 
     // Chain/Stack/Reaction Zone
-    y += drawReactionZone(ctx, ZONE_X, y);
+    y += drawReactionZone(ctx, ZONE_X, y, state.ReactionPQ.Items, state.Cards);
 
     // Player field
     drawField(ctx, y, state.Cards, state.Field[userIndex], W);
@@ -429,51 +435,4 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     y += ZONE_H + 16;
 
     drawPlayerTag(ctx, "You", LEFT_X, y, true);
-}
-
-// this is definitely a work in progress
-export function drawPlayMat(ctx: CanvasRenderingContext2D) {
-
-    const totalWidth = ctx.canvas.width;
-    const totalHeight = ctx.canvas.height;
-
-
-
-    const margin = 20;
-    const numberOfHeightMargins = 6;
-
-    // drawing opponent hand
-    const handWidth = totalWidth - (margin * 2);
-    const handHeight = (totalHeight - (numberOfHeightMargins * margin)) * 0.10;
-    roundRect(ctx, margin, margin, handWidth, handHeight, 10);
-    ctx.strokeStyle = TEXT_COLOR;
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
-
-    // drawing opponent field
-    const fieldHeight = (totalHeight - (numberOfHeightMargins * margin)) * 0.15;
-    roundRect(ctx, margin, (margin * 2) + handHeight, handWidth, fieldHeight, 10);
-    ctx.strokeStyle = TEXT_COLOR;
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
-
-    // drawing reaction zone
-    const reactionHeight = (totalHeight - (numberOfHeightMargins * margin)) * 0.30;
-    //roundRect(ctx, margin, (margin * 3) + handHeight + fieldHeight, handWidth, reactionHeight, 10);
-    ctx.strokeStyle = TEXT_COLOR;
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
-
-    // drawing field
-    roundRect(ctx, margin, (margin * 4) + handHeight + fieldHeight + reactionHeight, handWidth, fieldHeight, 10);
-    ctx.strokeStyle = TEXT_COLOR;
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
-
-    // drawing hand
-    roundRect(ctx, margin, (margin * 5) + handHeight + (fieldHeight * 2) + reactionHeight, handWidth, handHeight, 10);
-    ctx.strokeStyle = TEXT_COLOR;
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
-
 }
