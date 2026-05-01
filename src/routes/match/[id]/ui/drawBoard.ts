@@ -128,6 +128,7 @@ function drawHandCard( ctx: CanvasRenderingContext2D, x: number, y: number, card
 
 const RESERVES_SIZE = 70;
 const GRAVE_SIZE = 70;
+const STRUCTURE_SIZE = 70;
 
 function drawReserves( ctx: CanvasRenderingContext2D, x: number, y: number, count: number ) {
     const rx = Math.round(x) + 0.5;
@@ -177,6 +178,31 @@ function drawGraveyard( ctx: CanvasRenderingContext2D, x: number, y: number, cou
     ctx.font = "10px sans-serif";
     ctx.textBaseline = "alphabetic";
     ctx.fillText("GRAVEYARD", cx, ry + 52);
+}
+
+function drawStructure( ctx: CanvasRenderingContext2D, x: number, y: number, hp: number ) {
+    const rx = Math.round(x) + 0.5;
+    const ry = Math.round(y) + 0.5;
+    const cx = rx + STRUCTURE_SIZE / 2;
+
+    roundRect(ctx, rx, ry, STRUCTURE_SIZE, STRUCTURE_SIZE, CARD_RADIUS);
+    ctx.fillStyle = CARD_COLOR;
+    ctx.fill();
+    ctx.strokeStyle = CARD_BORDER;
+    ctx.lineWidth = 0.5;
+    roundRect(ctx, rx, ry, STRUCTURE_SIZE, STRUCTURE_SIZE, CARD_RADIUS);
+    ctx.stroke();
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = TEXT_COLOR;
+    ctx.font = "600 18px monospace";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText(String(hp), cx, ry + 34);
+
+    ctx.fillStyle = SUBTEXT_COLOR;
+    ctx.font = "10px sans-serif";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText("STRUCTURE", cx, ry + 52);
 }
 
 function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card ) {
@@ -438,6 +464,8 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     const oppReservesY = y + (ZONE_H - RESERVES_SIZE) / 2;
     drawReserves(ctx, RIGHT_X, oppReservesY, state.Deck[opponentIndex].length);
     drawGraveyard(ctx, RIGHT_X, oppReservesY + RESERVES_SIZE + 8, state.Grave[opponentIndex].length);
+    if (state.Structures[opponentIndex] !== undefined)
+        drawStructure(ctx, RIGHT_X, oppReservesY + RESERVES_SIZE + 8 + GRAVE_SIZE + 8, state.Structures[opponentIndex].HP);
     drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[opponentIndex] ?? [], state.Cards, handCoords[opponentIndex] ?? [], true, selectedIndex); // face down
     y += ZONE_H + 16;
 
@@ -454,6 +482,8 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
 
     // Player hand + graveyard above + reserves (centered with hand)
     const playerReservesY = y + (ZONE_H - RESERVES_SIZE) / 2;
+    if (state.Structures[userIndex] !== undefined)
+        drawStructure(ctx, RIGHT_X, playerReservesY - GRAVE_SIZE - 8 - STRUCTURE_SIZE - 8, state.Structures[userIndex].HP);
     drawGraveyard(ctx, RIGHT_X, playerReservesY - GRAVE_SIZE - 8, state.Grave[userIndex].length);
     drawReserves(ctx, RIGHT_X, playerReservesY, state.Deck[userIndex].length);
     drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[userIndex] ?? [], state.Cards, handCoords[userIndex] ?? [], false, selectedIndex); // face up

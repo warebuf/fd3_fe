@@ -21,8 +21,14 @@ export type GameState = Timestamp & {
     ReactionPQ: PriorityQueue;
 
     Mana: number[];
+    Structures: Structure[];
 
 };
+
+export interface Structure {
+    DefNo: number;
+    HP: number;
+}
 
 export interface Card {
     //
@@ -79,6 +85,7 @@ export function initGameState(): GameState {
         ReactionPQ: { Items: [] },
 
         Mana: [],
+        Structures: [],
     };
 }
 
@@ -106,5 +113,6 @@ export function cloneGameState(src: GameState): GameState {
         },
 
         Mana: [...src.Mana],
+        Structures: src.Structures.map(s => ({ ...s })),
     };
 }
