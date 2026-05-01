@@ -143,7 +143,7 @@ function drawReserves( ctx: CanvasRenderingContext2D, x: number, y: number, coun
     ctx.stroke();
 
     ctx.textAlign = "center";
-    ctx.fillStyle = TEXT_COLOR;
+    ctx.fillStyle = SUBTEXT_COLOR;
     ctx.font = "600 18px monospace";
     ctx.textBaseline = "alphabetic";
     ctx.fillText(String(count), cx, ry + 34);
