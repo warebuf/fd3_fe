@@ -194,7 +194,7 @@ function drawStructure( ctx: CanvasRenderingContext2D, x: number, y: number, hp:
     ctx.stroke();
 
     ctx.textAlign = "center";
-    ctx.fillStyle = TEXT_COLOR;
+    ctx.fillStyle = SUBTEXT_COLOR;
     ctx.font = "600 18px monospace";
     ctx.textBaseline = "alphabetic";
     ctx.fillText(String(hp), cx, ry + 34);
@@ -202,7 +202,7 @@ function drawStructure( ctx: CanvasRenderingContext2D, x: number, y: number, hp:
     ctx.fillStyle = SUBTEXT_COLOR;
     ctx.font = "10px sans-serif";
     ctx.textBaseline = "alphabetic";
-    ctx.fillText("STRUCTURE", cx, ry + 52);
+    ctx.fillText("HP", cx, ry + 52);
 }
 
 function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card ) {
