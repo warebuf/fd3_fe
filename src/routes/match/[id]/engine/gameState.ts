@@ -54,10 +54,10 @@ export interface Effect {
 export interface StackEntry {
     Type: number;    // 0: card, 1: card eff, 2: ability, 3: other, 4: summon
     CardID: number;
+    StartTime: number;
+    OccurTime: number;
     PopTime: number;
     Effects: Effect[];
-
-    // maybe StackEntry should carry it's EffectIndex
 }
 
 export interface Stack {

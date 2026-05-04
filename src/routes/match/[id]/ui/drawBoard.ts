@@ -341,7 +341,7 @@ function drawReactionZone( ctx: CanvasRenderingContext2D, x:number, y: number, s
     return height + (2*margin);
 }
 
-const ENTRY_TYPE_LABELS = ["Card", "Card Effect", "Ability", "Other", "Permanent Summon", "Spell"];
+const ENTRY_TYPE_LABELS = ["Card", "Card Effect", "Ability", "Other", "Permanent Summon", "Spell", "Recurring Ability"];
 
 function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX: number, centerY: number, stacks: Stack[], cards: Card[] ) {
 
@@ -419,6 +419,10 @@ function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX: number, cen
             ctx.fillStyle = SUBTEXT_COLOR;
             ctx.font = "9px sans-serif";
             ctx.fillText(typeLabel, tx, ty);
+
+            const barX = entryX + P_PAD_W;
+            const barY = entryY + itemHeight - P_PAD_H - 6;
+            drawBlockProgress(ctx, barX, barY, itemWidth - P_PAD_W * 2, entry.StartTime, entry.OccurTime);
         }
     }
 
@@ -429,6 +433,67 @@ function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
     for (let i = 0; i < handOrder.length; i++) {
         drawHandCard( ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]].DefNo, faceDown, selectedIndex == handOrder[i] );
     }
+}
+
+function drawBlockProgress( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, startMs: number, endMs: number ) {
+    const NUM_BLOCKS = 8;
+    const BLOCK_H = 6;
+    const GAP = 2;
+    const LABEL_W = 44;
+    const blocksW = w - GAP - LABEL_W;
+    const blockW = (blocksW - GAP * (NUM_BLOCKS - 1)) / NUM_BLOCKS;
+    const progress = Math.min(Math.max((Date.now() - startMs) / (endMs - startMs), 0), 1);
+    const filled = Math.floor(progress * NUM_BLOCKS);
+    const remainingMs = Math.max(endMs - Date.now(), 0);
+    const label = (remainingMs / 1000).toFixed(1);
+
+    for (let i = 0; i < NUM_BLOCKS; i++) {
+        const bx = x + i * (blockW + GAP);
+        ctx.fillStyle = i < filled ? TEXT_COLOR : CARD_BORDER;
+        ctx.fillRect(Math.round(bx), y, Math.floor(blockW), BLOCK_H);
+    }
+
+    ctx.fillStyle = SUBTEXT_COLOR;
+    ctx.font = "8px monospace";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, x + w, y + BLOCK_H / 2);
+
+}
+
+function drawTimer( ctx: CanvasRenderingContext2D, total: number, cx: number, cy: number, startMs?: number ) {
+    const RADIUS = 18;
+    const TRACK_W = 3;
+    const START = -Math.PI / 2;
+
+    const elapsed = startMs !== undefined
+        ? Math.min((Date.now() - startMs) / 1000, total)
+        : (Date.now() / 1000) % total;
+    const remaining = total - elapsed;
+    const progress = elapsed / total;
+    const end = START + progress * Math.PI * 2;
+
+    // track
+    ctx.beginPath();
+    ctx.arc(cx, cy, RADIUS, 0, Math.PI * 2);
+    ctx.strokeStyle = CARD_COLOR;
+    ctx.lineWidth = TRACK_W + 1;
+    ctx.stroke();
+
+    // arc
+    ctx.beginPath();
+    ctx.arc(cx, cy, RADIUS, START, end);
+    ctx.strokeStyle = TEXT_COLOR;
+    ctx.lineWidth = TRACK_W;
+    ctx.lineCap = "round";
+    ctx.stroke();
+
+    // label
+    ctx.fillStyle = TEXT_COLOR;
+    ctx.font = "600 11px monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(String(Math.ceil(remaining)), cx, cy);
 }
 
 function drawPlayerTag( ctx: CanvasRenderingContext2D, label: string, x: number, y: number, isUser: boolean ) {
@@ -479,6 +544,8 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     const ZONE_W = RIGHT_X - CARD_GAP - LEFT_X;
 
     let y = 16;
+
+    drawTimer(ctx, 60, W / 2, y + 20);
 
     // --- Opponent ---
     drawPlayerTag(ctx, "Opponent", LEFT_X, y, false);
