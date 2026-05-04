@@ -461,40 +461,6 @@ function drawBlockProgress( ctx: CanvasRenderingContext2D, x: number, y: number,
 
 }
 
-function drawTimer( ctx: CanvasRenderingContext2D, total: number, cx: number, cy: number, startMs?: number ) {
-    const RADIUS = 18;
-    const TRACK_W = 3;
-    const START = -Math.PI / 2;
-
-    const elapsed = startMs !== undefined
-        ? Math.min((Date.now() - startMs) / 1000, total)
-        : (Date.now() / 1000) % total;
-    const remaining = total - elapsed;
-    const progress = elapsed / total;
-    const end = START + progress * Math.PI * 2;
-
-    // track
-    ctx.beginPath();
-    ctx.arc(cx, cy, RADIUS, 0, Math.PI * 2);
-    ctx.strokeStyle = CARD_COLOR;
-    ctx.lineWidth = TRACK_W + 1;
-    ctx.stroke();
-
-    // arc
-    ctx.beginPath();
-    ctx.arc(cx, cy, RADIUS, START, end);
-    ctx.strokeStyle = TEXT_COLOR;
-    ctx.lineWidth = TRACK_W;
-    ctx.lineCap = "round";
-    ctx.stroke();
-
-    // label
-    ctx.fillStyle = TEXT_COLOR;
-    ctx.font = "600 11px monospace";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(String(Math.ceil(remaining)), cx, cy);
-}
 
 function drawPlayerTag( ctx: CanvasRenderingContext2D, label: string, x: number, y: number, isUser: boolean ) {
     const tagW = 80;
@@ -544,8 +510,6 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     const ZONE_W = RIGHT_X - CARD_GAP - LEFT_X;
 
     let y = 16;
-
-    drawTimer(ctx, 60, W / 2, y + 20);
 
     // --- Opponent ---
     drawPlayerTag(ctx, "Opponent", LEFT_X, y, false);
