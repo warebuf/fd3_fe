@@ -1,10 +1,10 @@
 
 import type { GameState } from "../engine/gameState";
-import type { RemoveStackLog } from "../engine/logs";
+import type { RemoveChainLog } from "../engine/logs";
 
-export function removeStack(state: GameState, log: RemoveStackLog) {
+export function removeChain(state: GameState, log: RemoveChainLog) {
     for(let i = 0; i < state.ReactionPQ.Items.length; i++) {
-        if(state.ReactionPQ.Items[i].StackID === log.StackID) {
+        if(state.ReactionPQ.Items[i].ChainID === log.ChainID) {
             state.ReactionPQ.Items.splice(i, 1);
             return;
         }

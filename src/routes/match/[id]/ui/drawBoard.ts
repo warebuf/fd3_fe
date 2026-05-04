@@ -1,5 +1,6 @@
 
-import type { GameState, Card, Stack } from "../engine/gameState"
+import type { GameState, Card, Chain } from "../engine/gameState"
+import { ChainStepType } from "../engine/gameState"
 import type { coordinate } from "./cardCoordinates"
 
 export const CARD_W = 56;
@@ -328,7 +329,7 @@ function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card[], fie
 }
 
 // returns how much to increment y by
-function drawReactionZone( ctx: CanvasRenderingContext2D, x:number, y: number, stacks: Stack[], cards: Card[] ) : number {
+function drawReactionZone( ctx: CanvasRenderingContext2D, x:number, y: number, stacks: Chain[], cards: Card[] ) : number {
 
     const margin = 10;
     const height = 300;
@@ -343,7 +344,7 @@ function drawReactionZone( ctx: CanvasRenderingContext2D, x:number, y: number, s
 
 const ENTRY_TYPE_LABELS = ["Card", "Card Effect", "Ability", "Other", "Permanent Summon", "Spell", "Recurring Ability"];
 
-function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX: number, centerY: number, stacks: Stack[], cards: Card[] ) {
+function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX: number, centerY: number, stacks: Chain[], cards: Card[] ) {
 
     if (stacks.length <= 0) { return; }
 
@@ -361,11 +362,11 @@ function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX: number, cen
 
     for (let i = 0; i < stacks.length; i++) {
         const stack = stacks[i];
-        const numItems = stack.StackEntries.length;
+        const numItems = stack.Steps.length;
         if (numItems <= 0) { continue; }
 
         // we do not want to draw certain items on the stack here
-        if(stack.StackEntries.length == 1 && stack.StackEntries[0].Type === 3) { continue; } // do not draw stacks that are just 'other' type entries
+        if(stack.Steps.length == 1 && stack.Steps[0].Type === ChainStepType.Other) { continue; } // do not draw stacks that are just 'other' type entries
 
 
         const totHeight = numItems * itemHeight + itemMargin * (numItems - 1);
@@ -392,7 +393,7 @@ function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX: number, cen
 
         // entries
         for (let j = 0; j < numItems; j++) {
-            const entry = stack.StackEntries[j];
+            const entry = stack.Steps[j];
             const entryX = stackX + stackPad_W;
             const entryY = stackY + j * (itemHeight + itemMargin);
 

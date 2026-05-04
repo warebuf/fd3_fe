@@ -51,8 +51,16 @@ export interface Effect {
     C: number;
 }
 
-export interface StackEntry {
-    Type: number;    // 0: card, 1: card eff, 2: ability, 3: other, 4: summon
+export const ChainStepType = {
+    Card: 0,
+    CardEffect: 1,
+    Ability: 2,
+    Other: 3,
+    Summon: 4,
+} as const;
+
+export interface ChainStep {
+    Type: number;
     CardID: number;
     StartTime: number;
     OccurTime: number;
@@ -60,14 +68,14 @@ export interface StackEntry {
     Effects: Effect[];
 }
 
-export interface Stack {
-    StackID: number;
+export interface Chain {
+    ChainID: number;
     PopTime: number;
-    StackEntries: StackEntry[];
+    Steps: ChainStep[];
 }
 
 export interface PriorityQueue {
-    Items: Stack[];
+    Items: Chain[];
 }
 
 export function initGameState(): GameState {
@@ -105,7 +113,7 @@ export function cloneGameState(src: GameState): GameState {
         ReactionPQ: {
             Items: src.ReactionPQ.Items.map(stack => ({
                 ...stack,
-                StackEntries: stack.StackEntries.map(entry => ({
+                Steps: stack.Steps.map(entry => ({
                     ...entry,
                     Effects: [...entry.Effects],
                 })),
