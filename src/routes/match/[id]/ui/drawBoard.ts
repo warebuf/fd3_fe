@@ -475,7 +475,6 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
 
     const LEFT_X = 16;
     const RIGHT_X = W - RESERVES_SIZE - LEFT_X;
-    const colCX = RIGHT_X + RESERVES_SIZE / 2;
     const ZONE_X = LEFT_X;
     const ZONE_W = RIGHT_X - CARD_GAP - LEFT_X;
 
