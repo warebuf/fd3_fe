@@ -12,7 +12,7 @@ import { destroyCard } from "./DestroyCard";
 import { gainMana } from "./GainMana";
 
 export function applyEffect(state: GameState, log: EventLog) {
-
+    
     switch(log.Type) {
         case 0: incrementPhase(state, log); break;
         case 1: drawCard(state, log); break;
