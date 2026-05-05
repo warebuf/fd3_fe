@@ -1,8 +1,8 @@
 
-import type { DrawExecEntry } from "../engine/logs";
+import type { DrawLog } from "../engine/logs";
 import type { GameState } from "../engine/gameState"
 
-export function drawCard(state: GameState, log: DrawExecEntry) {
+export function drawCard(state: GameState, log: DrawLog) {
 
     let teamIndex = log.TeamIndex;
     let numCards = log.NumCards;

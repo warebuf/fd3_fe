@@ -1,8 +1,8 @@
 
-import type { DeclareCardEntry } from "../engine/logs";
+import type { DeclareCardLog } from "../engine/logs";
 import type { GameState } from "../engine/gameState"
 
-export function declareCard(state: GameState, log: DeclareCardEntry) {
+export function declareCard(state: GameState, log: DeclareCardLog) {
 
     let teamIndex = log.TeamIndex;
     let cardIndex = log.CardIndex;

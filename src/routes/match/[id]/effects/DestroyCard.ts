@@ -1,8 +1,8 @@
 
-import type { DestroyCardEntry } from "../engine/logs";
+import type { DestroyCardLog } from "../engine/logs";
 import type { GameState } from "../engine/gameState"
 
-export function destroyCard(state: GameState, log: DestroyCardEntry) {
+export function destroyCard(state: GameState, log: DestroyCardLog) {
 
     let teamIndex = log.TeamIndex;
     let cardIndex = log.CardIndex;
