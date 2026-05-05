@@ -362,11 +362,11 @@ function drawReactionChains( ctx: CanvasRenderingContext2D, centerX: number, cen
 
     for (let i = 0; i < chains.length; i++) {
         const chain = chains[i];
-        const numItems = chain.Steps.length;
+        const numItems = chain.ChainSteps.length;
         if (numItems <= 0) { continue; }
 
         // we do not want to draw certain items on the chain here
-        if(chain.Steps.length === 1 && chain.Steps[0].Type === ChainStepType.Other) { continue; } // do not draw chains that are just 'other' type entries
+        if(chain.ChainSteps.length === 1 && chain.ChainSteps[0].Type === ChainStepType.Other) { continue; } // do not draw chains that are just 'other' type entries
 
 
         const totHeight = numItems * itemHeight + itemMargin * (numItems - 1);
@@ -393,7 +393,7 @@ function drawReactionChains( ctx: CanvasRenderingContext2D, centerX: number, cen
 
         // entries
         for (let j = 0; j < numItems; j++) {
-            const entry = chain.Steps[j];
+            const entry = chain.ChainSteps[j];
             const entryX = chainX + chainPad_W;
             const entryY = chainY + j * (itemHeight + itemMargin);
 

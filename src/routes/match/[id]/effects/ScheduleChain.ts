@@ -7,7 +7,7 @@ export function scheduleChain(state: GameState, log: ScheduleChainLog) {
     // check if chain exists, if so add a step
     for( let i = 0; i < state.ReactionPQ.Items.length; i++) {
         if(log.ChainID === state.ReactionPQ.Items[i].ChainID) {
-            state.ReactionPQ.Items[i].Steps.push( log.Step );
+            state.ReactionPQ.Items[i].ChainSteps.push( log.Step );
             state.ReactionPQ.Items[i].PopTime = log.Step.PopTime;
             return;
         }
@@ -17,7 +17,7 @@ export function scheduleChain(state: GameState, log: ScheduleChainLog) {
     state.ReactionPQ.Items.push({
         ChainID: log.ChainID,
         PopTime: log.Step.PopTime,
-        Steps: [log.Step],
+        ChainSteps: [log.Step],
     });
 
 }

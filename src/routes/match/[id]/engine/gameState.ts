@@ -75,7 +75,7 @@ export interface ChainStep {
 export interface Chain {
     ChainID: number;
     PopTime: number;
-    Steps: ChainStep[];
+    ChainSteps: ChainStep[];
 }
 
 export interface PriorityQueue {
@@ -117,7 +117,7 @@ export function cloneGameState(src: GameState): GameState {
         ReactionPQ: {
             Items: src.ReactionPQ.Items.map(chain => ({
                 ...chain,
-                Steps: chain.Steps.map(entry => ({
+                ChainSteps: chain.ChainSteps.map(entry => ({
                     ...entry,
                     Effects: [...entry.Effects],
                 })),
