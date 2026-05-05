@@ -61,8 +61,10 @@ export const ChainStepType = {
     Recurring: 6,
 } as const;
 
+export type ChainStepTypeValue = typeof ChainStepType[keyof typeof ChainStepType];
+
 export interface ChainStep {
-    Type: number;
+    Type: ChainStepTypeValue;
     CardID: number;
     StartTime: number;
     OccurTime: number;
@@ -113,9 +115,9 @@ export function cloneGameState(src: GameState): GameState {
         Grave: src.Grave.map(teamGrave => [...teamGrave]),
 
         ReactionPQ: {
-            Items: src.ReactionPQ.Items.map(stack => ({
-                ...stack,
-                Steps: stack.Steps.map(entry => ({
+            Items: src.ReactionPQ.Items.map(chain => ({
+                ...chain,
+                Steps: chain.Steps.map(entry => ({
                     ...entry,
                     Effects: [...entry.Effects],
                 })),

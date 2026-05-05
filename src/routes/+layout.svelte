@@ -27,7 +27,7 @@
   
 <style>
 
-	/* own the viewport height so we can reliably fill the screen, stacks the top bar and content */
+	/* own the viewport height so we can reliably fill the screen, chains the top bar and content */
 	.shell {
 		height: 100dvh;             
 		display: flex;

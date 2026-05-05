@@ -263,9 +263,9 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.fillStyle = SUBTEXT_COLOR;
     ctx.font = "9px sans-serif";
     let cardType = "";
-    if(card.Type == 1) {
+    if(card.Type === 1) {
         cardType = "Permanent";
-    } else if(card.Type == 3) {
+    } else if(card.Type === 3) {
         cardType = "Spell";
     }
     ctx.fillText(cardType, tx, ty);
@@ -329,52 +329,52 @@ function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card[], fie
 }
 
 // returns how much to increment y by
-function drawReactionZone( ctx: CanvasRenderingContext2D, x:number, y: number, stacks: Chain[], cards: Card[] ) : number {
+function drawReactionZone( ctx: CanvasRenderingContext2D, x:number, y: number, chains: Chain[], cards: Card[] ) : number {
 
     const margin = 10;
     const height = 300;
 
-    // draw the reaction stacks
+    // draw the reaction chain
     const centerX = ctx.canvas.clientWidth / 2;
     const centerY = y + (height / 2);
-    drawReactionStacks( ctx, centerX, centerY, stacks, cards );
+    drawReactionChains( ctx, centerX, centerY, chains, cards );
 
     return height + (2*margin);
 }
 
 const ENTRY_TYPE_LABELS = ["Card", "Card Effect", "Ability", "Other", "Permanent Summon", "Spell", "Recurring Ability"];
 
-function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX: number, centerY: number, stacks: Chain[], cards: Card[] ) {
+function drawReactionChains( ctx: CanvasRenderingContext2D, centerX: number, centerY: number, chains: Chain[], cards: Card[] ) {
 
-    if (stacks.length <= 0) { return; }
+    if (chains.length <= 0) { return; }
 
     const itemWidth = PCARD_W;
     const itemHeight = PCARD_H;
     const itemMargin = 6;
-    const stackPad_W = 10;
-    const stackPad_H = 10;
+    const chainPad_W = 10;
+    const chainPad_H = 10;
     const titleHeight = 20;
-    const stackMargin = 16;
+    const chainMargin = 16;
 
-    const stackContainerW = itemWidth + 2 * stackPad_W;
-    const totalWidth = stacks.length * stackContainerW + (stacks.length - 1) * stackMargin;
+    const chainContainerW = itemWidth + 2 * chainPad_W;
+    const totalWidth = chains.length * chainContainerW + (chains.length - 1) * chainMargin;
     const groupStartX = centerX - totalWidth / 2;
 
-    for (let i = 0; i < stacks.length; i++) {
-        const stack = stacks[i];
-        const numItems = stack.Steps.length;
+    for (let i = 0; i < chains.length; i++) {
+        const chain = chains[i];
+        const numItems = chain.Steps.length;
         if (numItems <= 0) { continue; }
 
-        // we do not want to draw certain items on the stack here
-        if(stack.Steps.length == 1 && stack.Steps[0].Type === ChainStepType.Other) { continue; } // do not draw stacks that are just 'other' type entries
+        // we do not want to draw certain items on the chain here
+        if(chain.Steps.length === 1 && chain.Steps[0].Type === ChainStepType.Other) { continue; } // do not draw chains that are just 'other' type entries
 
 
         const totHeight = numItems * itemHeight + itemMargin * (numItems - 1);
-        const stackX = groupStartX + i * (stackContainerW + stackMargin);
-        const stackY = centerY - totHeight / 2;
+        const chainX = groupStartX + i * (chainContainerW + chainMargin);
+        const chainY = centerY - totHeight / 2;
 
         // container title background
-        roundRectTop(ctx, stackX, stackY - stackPad_H - titleHeight, stackContainerW, titleHeight, CARD_RADIUS);
+        roundRectTop(ctx, chainX, chainY - chainPad_H - titleHeight, chainContainerW, titleHeight, CARD_RADIUS);
         ctx.fillStyle = "#383735";
         ctx.fill();
 
@@ -383,19 +383,19 @@ function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX: number, cen
         ctx.font = "10px sans-serif";
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
-        ctx.fillText("Stack ", stackX + 6, stackY - stackPad_H - titleHeight / 2 + 1);
+        ctx.fillText("Chain ", chainX + 6, chainY - chainPad_H - titleHeight / 2 + 1);
 
         // container border
-        roundRect(ctx, stackX + 0.5, stackY - stackPad_H - titleHeight + 0.5, stackContainerW, totHeight + 2 * stackPad_H + titleHeight, CARD_RADIUS);
+        roundRect(ctx, chainX + 0.5, chainY - chainPad_H - titleHeight + 0.5, chainContainerW, totHeight + 2 * chainPad_H + titleHeight, CARD_RADIUS);
         ctx.strokeStyle = CARD_BORDER;
         ctx.lineWidth = 0.5;
         ctx.stroke();
 
         // entries
         for (let j = 0; j < numItems; j++) {
-            const entry = stack.Steps[j];
-            const entryX = stackX + stackPad_W;
-            const entryY = stackY + j * (itemHeight + itemMargin);
+            const entry = chain.Steps[j];
+            const entryX = chainX + chainPad_W;
+            const entryY = chainY + j * (itemHeight + itemMargin);
 
             roundRect(ctx, entryX + 0.5, entryY + 0.5, itemWidth, itemHeight, CARD_RADIUS);
             ctx.fillStyle = CARD_COLOR;
@@ -431,7 +431,7 @@ function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX: number, cen
 
 function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean, selectedIndex: number ) {
     for (let i = 0; i < handOrder.length; i++) {
-        drawHandCard( ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]].DefNo, faceDown, selectedIndex == handOrder[i] );
+        drawHandCard( ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]].DefNo, faceDown, selectedIndex === handOrder[i] );
     }
 }
 
@@ -530,7 +530,7 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     drawField(ctx, y, state.Cards, state.Field[opponentIndex], W);
     y += ZONE_H + 16;
 
-    // Chain/Stack/Reaction Zone
+    // Chain Zone
     y += drawReactionZone(ctx, ZONE_X, y, state.ReactionPQ.Items, state.Cards);
 
     // Player field
