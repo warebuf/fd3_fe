@@ -102,7 +102,7 @@
             if (e.code === 'Space') {
                 e.preventDefault(); // prevent page scroll
                 if (clickedIndex !== -1) {
-                    ws?.send(JSON.stringify( { Type: "hand", CardIndex: clickedIndex } ));
+                    ws?.send(JSON.stringify( { type: "hand", CardIndex: clickedIndex } ));
                     clickedIndex = -1; // deselect after playing
                 }
             }
