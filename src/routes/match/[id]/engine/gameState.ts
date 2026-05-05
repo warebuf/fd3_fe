@@ -70,6 +70,7 @@ export interface ChainStep {
     OccurTime: number;
     PopTime: number;
     Effects: Effect[];
+    Persistent: boolean;
 }
 
 export interface Chain {
