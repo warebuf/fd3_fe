@@ -1,6 +1,7 @@
 
-import type { GameState, Card, Chain } from "../engine/gameState"
+import type { GameState, Card, Chain, ChainStep } from "../engine/gameState"
 import { ChainStepType } from "../engine/gameState"
+import type { CardIDToChainStepIndex } from "../engine/buildRecurringMap"
 import type { coordinate } from "./cardCoordinates"
 
 export const CARD_W = 56;
@@ -231,7 +232,7 @@ function drawStructure( ctx: CanvasRenderingContext2D, x: number, y: number, hp:
     ctx.fillText("HP", cx, ry + 52);
 }
 
-function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card ) {
+function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, recurringStep?: ChainStep ) {
     ctx.save();
 
     // adjust for blurry half pixel borders
@@ -270,7 +271,12 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     }
     ctx.fillText(cardType, tx, ty);
   
-    // TODO: write description
+    // draw recurring ability progress in content space
+    if (recurringStep) {
+        const barX = x + P_PAD_W;
+        const barY = y + P_PAD_H + 11 + 12 + 8;
+        drawBlockProgress(ctx, barX, barY, PCARD_W - P_PAD_W * 2, recurringStep.StartTime, recurringStep.OccurTime);
+    }
 
     // determine status
     let statusColor = "";
@@ -312,7 +318,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.restore();
 }
 
-function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card[], field: number[], canvasWidth: number): void {
+function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card[], field: number[], canvasWidth: number, recurringMap: Map<number, CardIDToChainStepIndex>, chains: Chain[]): void {
     const n = field.length;
     if (n === 0) return;
 
@@ -323,8 +329,13 @@ function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card[], fie
     const startX = (canvasWidth - totalW) / 2;
 
     for (let i = 0; i < n; i++) {
+        const card = cards[field[i]];
         const cardX = startX + i * (PCARD_W + CARD_GAP);
-        drawFieldCard(ctx, cardX, y, cards[field[i]]);
+        const loc = recurringMap.get(card.CardID);
+        const recurringStep = loc
+            ? chains.find(c => c.ChainID === loc.ChainID)?.ChainSteps[loc.Index]
+            : undefined;
+        drawFieldCard(ctx, cardX, y, card, recurringStep);
     }
 }
 
@@ -362,14 +373,15 @@ function drawReactionChains( ctx: CanvasRenderingContext2D, centerX: number, cen
 
     for (let i = 0; i < chains.length; i++) {
         const chain = chains[i];
-        const numItems = chain.ChainSteps.length;
-        if (numItems <= 0) { continue; }
+        if (chain.ChainSteps.length <= 0) { continue; }
 
         // we do not want to draw certain items on the chain here
         if(chain.ChainSteps.length === 1 && chain.ChainSteps[0].Type === ChainStepType.Other) { continue; } // do not draw chains that are just 'other' type entries
 
+        const visibleSteps = chain.ChainSteps.filter(s => s.Type !== ChainStepType.Recurring); // recurring abilities are drawn on the permanent card instead
+        if(visibleSteps.length === 0) { continue; }
 
-        const totHeight = numItems * itemHeight + itemMargin * (numItems - 1);
+        const totHeight = visibleSteps.length * itemHeight + itemMargin * (visibleSteps.length - 1);
         const chainX = groupStartX + i * (chainContainerW + chainMargin);
         const chainY = centerY - totHeight / 2;
 
@@ -392,8 +404,8 @@ function drawReactionChains( ctx: CanvasRenderingContext2D, centerX: number, cen
         ctx.stroke();
 
         // entries
-        for (let j = 0; j < numItems; j++) {
-            const entry = chain.ChainSteps[j];
+        for (let j = 0; j < visibleSteps.length; j++) {
+            const entry = visibleSteps[j];
             const entryX = chainX + chainPad_W;
             const entryY = chainY + j * (itemHeight + itemMargin);
 
@@ -478,7 +490,7 @@ function drawPlayerTag( ctx: CanvasRenderingContext2D, label: string, x: number,
     ctx.fillText(label, x + tagW / 2, y + tagH / 2);
 }
 
-export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number) {
+export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number, recurringMap: Map<number, CardIDToChainStepIndex>) {
     const W = ctx.canvas.clientWidth;
     const H = ctx.canvas.clientHeight;
     const opponentIndex = userIndex === 0 ? 1 : 0;
@@ -527,14 +539,14 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     y += ZONE_H + 16;
 
     // Opponent field
-    drawField(ctx, y, state.Cards, state.Field[opponentIndex], W);
+    drawField(ctx, y, state.Cards, state.Field[opponentIndex], W, recurringMap, state.ReactionPQ.Items);
     y += ZONE_H + 16;
 
     // Chain Zone
     y += drawReactionZone(ctx, ZONE_X, y, state.ReactionPQ.Items, state.Cards);
 
     // Player field
-    drawField(ctx, y, state.Cards, state.Field[userIndex], W);
+    drawField(ctx, y, state.Cards, state.Field[userIndex], W, recurringMap, state.ReactionPQ.Items);
     y += ZONE_H + 16;
 
     // Player hand + graveyard above + reserves (centered with hand)

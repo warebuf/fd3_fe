@@ -10,6 +10,7 @@
     import { interpolate } from './engine/interpolate';
 
     import { drawBoard } from './ui/drawBoard';
+    import { buildRecurringMap, type CardIDToChainStepIndex } from './engine/buildRecurringMap';
     import { calcCoordinates, getClickedCard, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
 
     // drawing related
@@ -34,6 +35,7 @@
     let clickedIndex: number = -1; // is unitIdx
     let handOrder: number[][] = [];
     let handCoords: coordinate[][] = [];
+    let recurringMap = new Map<number, CardIDToChainStepIndex>();
 
 
     function resizeCanvas() {
@@ -61,13 +63,14 @@
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
             handCoords = calcCoordinates(handOrder, ctx.canvas.clientWidth, teamIdx);
+            recurringMap = buildRecurringMap(interpolatedState.ReactionPQ.Items);
         }
 
         // draw
         const width = canvasEl.clientWidth;
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
-        drawBoard(ctx, interpolatedState, teamIdx, handOrder, handCoords, clickedIndex);
+        drawBoard(ctx, interpolatedState, teamIdx, handOrder, handCoords, clickedIndex, recurringMap);
 
         // schedule next frame
         animationID = requestAnimationFrame(loop);
