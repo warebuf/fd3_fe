@@ -271,10 +271,12 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     }
     ctx.fillText(cardType, tx, ty);
   
-    // draw recurring ability progress in content space
+    // draw recurring ability progress centered in the content area (between type text and footer divider)
     if (recurringStep) {
         const barX = x + P_PAD_W;
-        const barY = y + P_PAD_H + 11 + 12 + 8;
+        const contentTop = y + P_PAD_H + 11 + 12; // bottom of type subtext
+        const contentBot = y + PCARD_H - P_PAD_H - 12 - P_PAD_H; // top of footer divider
+        const barY = Math.round((contentTop + contentBot) / 2) - 3; // 3 = BLOCK_H / 2
         drawBlockProgress(ctx, barX, barY, PCARD_W - P_PAD_W * 2, recurringStep.StartTime, recurringStep.OccurTime);
     }
 
@@ -436,7 +438,9 @@ function drawReactionChains( ctx: CanvasRenderingContext2D, centerX: number, cen
             ctx.fillText(typeLabel, tx, ty);
 
             const barX = entryX + P_PAD_W;
-            const barY = entryY + itemHeight - P_PAD_H - 6;
+            const entryContentTop = entryY + P_PAD_H + 11 + 12;
+            const entryContentBot = entryY + itemHeight - P_PAD_H;
+            const barY = Math.round((entryContentTop + entryContentBot) / 2) - 3;
             drawBlockProgress(ctx, barX, barY, itemWidth - P_PAD_W * 2, entry.StartTime, entry.OccurTime);
         }
     }
