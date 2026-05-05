@@ -430,7 +430,6 @@ function drawReactionStacks( ctx: CanvasRenderingContext2D, centerX: number, cen
 }
 
 function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean, selectedIndex: number ) {
-    // draw cards
     for (let i = 0; i < handOrder.length; i++) {
         drawHandCard( ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]].DefNo, faceDown, selectedIndex == handOrder[i] );
     }
@@ -540,10 +539,12 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
 
     // Player hand + graveyard above + reserves (centered with hand)
     const playerReservesY = y + (ZONE_H - RESERVES_SIZE) / 2;
-    if (state.Mana[userIndex] !== undefined)
+    if (state.Mana[userIndex] !== undefined) {
         drawMana(ctx, RIGHT_X, playerReservesY - GRAVE_SIZE - 8 - STRUCTURE_SIZE - 8 - STRUCTURE_SIZE - 8, state.Mana[userIndex]);
-    if (state.Structures[userIndex] !== undefined)
+    }
+    if (state.Structures[userIndex] !== undefined) {
         drawStructure(ctx, RIGHT_X, playerReservesY - GRAVE_SIZE - 8 - STRUCTURE_SIZE - 8, state.Structures[userIndex].HP);
+    }
     drawGraveyard(ctx, RIGHT_X, playerReservesY - GRAVE_SIZE - 8, state.Grave[userIndex].length);
     drawReserves(ctx, RIGHT_X, playerReservesY, state.Deck[userIndex].length);
     drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[userIndex] ?? [], state.Cards, handCoords[userIndex] ?? [], false, selectedIndex); // face up

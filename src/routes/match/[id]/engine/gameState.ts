@@ -57,6 +57,8 @@ export const ChainStepType = {
     Ability: 2,
     Other: 3,
     Summon: 4,
+    Spell: 5,
+    Recurring: 6,
 } as const;
 
 export interface ChainStep {
