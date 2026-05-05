@@ -368,18 +368,20 @@ function drawReactionChains( ctx: CanvasRenderingContext2D, centerX: number, cen
     const chainMargin = 16;
 
     const chainContainerW = itemWidth + 2 * chainPad_W;
-    const totalWidth = chains.length * chainContainerW + (chains.length - 1) * chainMargin;
+
+    const drawableChains = chains
+        .filter(c => c.ChainSteps.length > 0)
+        .filter(c => !(c.ChainSteps.length === 1 && c.ChainSteps[0].Type === ChainStepType.Other))
+        .map(c => ({ chain: c, visibleSteps: c.ChainSteps.filter(s => s.Type !== ChainStepType.Recurring) }))
+        .filter(({ visibleSteps }) => visibleSteps.length > 0);
+
+    if (drawableChains.length === 0) { return; }
+
+    const totalWidth = drawableChains.length * chainContainerW + (drawableChains.length - 1) * chainMargin;
     const groupStartX = centerX - totalWidth / 2;
 
-    for (let i = 0; i < chains.length; i++) {
-        const chain = chains[i];
-        if (chain.ChainSteps.length <= 0) { continue; }
-
-        // we do not want to draw certain items on the chain here
-        if(chain.ChainSteps.length === 1 && chain.ChainSteps[0].Type === ChainStepType.Other) { continue; } // do not draw chains that are just 'other' type entries
-
-        const visibleSteps = chain.ChainSteps.filter(s => s.Type !== ChainStepType.Recurring); // recurring abilities are drawn on the permanent card instead
-        if(visibleSteps.length === 0) { continue; }
+    for (let i = 0; i < drawableChains.length; i++) {
+        const { chain, visibleSteps } = drawableChains[i];
 
         const totHeight = visibleSteps.length * itemHeight + itemMargin * (visibleSteps.length - 1);
         const chainX = groupStartX + i * (chainContainerW + chainMargin);
