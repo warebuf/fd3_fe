@@ -1,8 +1,10 @@
 
+import { get } from "svelte/store";
 import type { GameState, Card, Chain, ChainStep } from "../engine/gameState"
 import { ChainStepType } from "../engine/gameState"
 import type { CardIDToChainStepIndex } from "../engine/buildRecurringMap"
 import type { coordinate } from "./cardCoordinates"
+import { serverClockOffset } from "../networking/ping";
 
 export const CARD_W = 56;
 export const CARD_H = 80;
@@ -274,9 +276,8 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     // draw recurring ability progress centered in the content area (between type text and footer divider)
     if (recurringStep) {
         const barX = x + P_PAD_W;
-        const contentTop = y + P_PAD_H + 11 + 12; // bottom of type subtext
         const contentBot = y + PCARD_H - P_PAD_H - 12 - P_PAD_H; // top of footer divider
-        const barY = Math.round((contentTop + contentBot) / 2) - 3; // 3 = BLOCK_H / 2
+        const barY = contentBot - 6 - P_PAD_H; // 6 = BLOCK_H, pinned near footer to leave room for description
         drawBlockProgress(ctx, barX, barY, PCARD_W - P_PAD_W * 2, recurringStep.StartTime, recurringStep.OccurTime);
     }
 
@@ -460,9 +461,11 @@ function drawBlockProgress( ctx: CanvasRenderingContext2D, x: number, y: number,
     const LABEL_W = 44;
     const blocksW = w - GAP - LABEL_W;
     const blockW = (blocksW - GAP * (NUM_BLOCKS - 1)) / NUM_BLOCKS;
-    const progress = Math.min(Math.max((Date.now() - startMs) / (endMs - startMs), 0), 1);
+    const clockOffset = get(serverClockOffset);
+    const now = Date.now() + clockOffset; // convert client time to server time for comparison
+    const progress = Math.min(Math.max((now - startMs) / (endMs - startMs), 0), 1);
     const filled = Math.floor(progress * NUM_BLOCKS);
-    const remainingMs = Math.max(endMs - Date.now(), 0);
+    const remainingMs = Math.max(endMs - now, 0);
     const label = (remainingMs / 1000).toFixed(1);
 
     for (let i = 0; i < NUM_BLOCKS; i++) {
