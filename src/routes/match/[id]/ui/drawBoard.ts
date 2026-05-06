@@ -234,11 +234,34 @@ function drawStructure( ctx: CanvasRenderingContext2D, x: number, y: number, hp:
     ctx.fillText("HP", cx, ry + 52);
 }
 
+function drawWrappedText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number, maxY: number): number {
+    if (!text) return y;
+    const words = text.split(' ');
+    let line = '';
+    let currentY = y;
+    for (let i = 0; i < words.length; i++) {
+        const testLine = line ? line + ' ' + words[i] : words[i];
+        if (ctx.measureText(testLine).width > maxWidth && line !== '') {
+            if (currentY > maxY) break;
+            ctx.fillText(line, x, currentY);
+            line = words[i];
+            currentY += lineHeight;
+        } else {
+            line = testLine;
+        }
+    }
+    if (line && currentY <= maxY) {
+        ctx.fillText(line, x, currentY);
+        currentY += lineHeight;
+    }
+    return currentY;
+}
+
 function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, recurringStep?: ChainStep ) {
     ctx.save();
 
     // adjust for blurry half pixel borders
-    x = Math.round(x) + 0.5; 
+    x = Math.round(x) + 0.5;
     y = Math.round(y) + 0.5;
 
     // draw card background
@@ -272,8 +295,20 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
         cardType = "Spell";
     }
     ctx.fillText(cardType, tx, ty);
-  
-    // draw recurring ability progress centered in the content area (between type text and footer divider)
+
+    const contentBot = y + PCARD_H - P_PAD_H - 12 - P_PAD_H; // top of footer divider
+
+    // draw description
+    const divY = ty + 8;
+    let descBottom = divY + 10;
+    if (card.Description) {
+        ctx.fillStyle = SUBTEXT_COLOR;
+        ctx.font = "italic 9px sans-serif";
+        ctx.textBaseline = "alphabetic";
+        descBottom = drawWrappedText(ctx, card.Description, tx, divY + 10, PCARD_W - P_PAD_W * 2, 11, contentBot - 4);
+    }
+
+    // draw recurring ability progress below description
     if (recurringStep) {
         const barX = x + P_PAD_W;
         const contentBot = y + PCARD_H - P_PAD_H - 12 - P_PAD_H; // top of footer divider
