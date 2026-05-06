@@ -35,6 +35,8 @@ export interface Card {
     DefNo: number;
     Name: string;
     Description: string;
+    Cost: number;
+    HP: number;
 
     //
     CardID: number;

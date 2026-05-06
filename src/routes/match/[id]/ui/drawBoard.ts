@@ -353,6 +353,12 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.lineWidth = 0.5;
     ctx.stroke();
 
+    // draw cost (bottom-left) and hp (bottom-right)
+    const footerH = y + PCARD_H - lineY;
+    const boxY = lineY + (footerH - STAT_BOX_H) / 2;
+    drawStatBox(ctx, x + P_PAD_W, boxY, card.Cost, "#0E1E30", "#7AADDF");
+    drawStatBox(ctx, x + PCARD_W - P_PAD_W - STAT_BOX_W, boxY, card.HP, "#2E0E0E", "#D46B6B");
+
     ctx.restore();
 }
 
@@ -487,6 +493,21 @@ function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
     for (let i = 0; i < handOrder.length; i++) {
         drawHandCard( ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]].DefNo, faceDown, selectedIndex === handOrder[i] );
     }
+}
+
+const STAT_BOX_W = 22;
+const STAT_BOX_H = 14;
+const STAT_BOX_R = 3;
+
+function drawStatBox(ctx: CanvasRenderingContext2D, x: number, y: number, value: number, bgColor: string, textColor: string) {
+    roundRect(ctx, x, y, STAT_BOX_W, STAT_BOX_H, STAT_BOX_R);
+    ctx.fillStyle = bgColor;
+    ctx.fill();
+    ctx.fillStyle = textColor;
+    ctx.font = "bold 9px monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(String(value), x + STAT_BOX_W / 2, y + STAT_BOX_H / 2);
 }
 
 function drawBlockProgress( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, startMs: number, endMs: number ) {
