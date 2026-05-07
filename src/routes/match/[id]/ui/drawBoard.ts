@@ -22,8 +22,8 @@ const CROSSHAIR_COLOR = "#D3D1C7";
 const CROSSHAIR_BORDER = "rgba(211,209,199,0.5)";
 const CROSSHAIR_BG = "rgba(211,209,199,0.06)";
 
-const PCARD_W = 120;
-const PCARD_H = 100;
+export const PCARD_W = 120;
+export const PCARD_H = 100;
 const P_PAD_W = 8;
 const P_PAD_H = 6;
 
@@ -54,12 +54,14 @@ function roundRect( ctx: CanvasRenderingContext2D, x: number, y: number, w: numb
 }
 
 function drawCrosshair(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  const w = PCARD_W;
+  const h = PCARD_H;
   const ARM = 12;
   const GAP = 2;
   const x0 = x - GAP;
   const y0 = y - GAP;
-  const x1 = x + CARD_W + GAP;
-  const y1 = y + CARD_H + GAP;
+  const x1 = x + w + GAP;
+  const y1 = y + h + GAP;
 
   ctx.save();
   ctx.strokeStyle = CROSSHAIR_COLOR;
@@ -91,44 +93,6 @@ function drawCrosshair(ctx: CanvasRenderingContext2D, x: number, y: number) {
   ctx.restore();
 }
 
-function drawHandCard( ctx: CanvasRenderingContext2D, x: number, y: number, cardId: number, facedown: boolean, selected: boolean ) {
-
-    // adjust for blurry half pixel borders
-    x = Math.round(x) + 0.5; 
-    y = Math.round(y) + 0.5;
-
-    if (facedown) {
-        ctx.save();
-        roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
-        ctx.fillStyle = CARD_COLOR;
-        ctx.fill();
-        ctx.restore();
-        ctx.strokeStyle = "#E24B4A";
-        ctx.lineWidth = 0.5;
-        roundRect(ctx, x + 4, y + 4, CARD_W - 8, CARD_H - 8, CARD_RADIUS - 2);
-        ctx.stroke();
-    } else {
-        ctx.save();
-        roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
-        ctx.fillStyle = selected ? CROSSHAIR_BG : CARD_COLOR;
-        ctx.fill();
-        ctx.restore();
-
-        // draw the border
-        ctx.strokeStyle = selected ? CROSSHAIR_BORDER : CARD_BORDER;
-        ctx.lineWidth = selected ? 1 : 0.5;
-        roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
-        ctx.stroke();
-
-        ctx.fillStyle = TEXT_COLOR;
-        ctx.font = "10px monospace";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(String(cardId), x + CARD_W / 2, y + CARD_H / 2);
-
-        if (selected) drawCrosshair(ctx, x, y);
-    }
-}
 
 const RESERVES_SIZE = 70;
 
@@ -155,21 +119,38 @@ function drawWrappedText(ctx: CanvasRenderingContext2D, text: string, x: number,
     return currentY;
 }
 
-function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, recurringStep?: ChainStep ) {
+function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, recurringStep?: ChainStep, faceDown?: boolean, selected?: boolean ) {
     ctx.save();
 
     // adjust for blurry half pixel borders
     x = Math.round(x) + 0.5;
     y = Math.round(y) + 0.5;
 
+    if (faceDown) {
+        roundRect(ctx, x, y, PCARD_W, PCARD_H, CARD_RADIUS);
+        ctx.fillStyle = "#141414";
+        ctx.fill();
+        ctx.strokeStyle = CARD_BORDER;
+        ctx.lineWidth = 0.5;
+        roundRect(ctx, x, y, PCARD_W, PCARD_H, CARD_RADIUS);
+        ctx.stroke();
+        ctx.fillStyle = TEXT_COLOR;
+        ctx.font = "bold italic 9px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("FD", x + PCARD_W / 2, y + PCARD_H / 2);
+        ctx.restore();
+        return;
+    }
+
     // draw card background
     roundRect(ctx, x, y, PCARD_W, PCARD_H, CARD_RADIUS);
-    ctx.fillStyle = CARD_COLOR;
+    ctx.fillStyle = selected ? CROSSHAIR_BG : CARD_COLOR;
     ctx.fill();
 
     // draw the border
-    ctx.strokeStyle = CARD_BORDER;
-    ctx.lineWidth = 0.5;
+    ctx.strokeStyle = selected ? CROSSHAIR_BORDER : CARD_BORDER;
+    ctx.lineWidth = selected ? 1 : 0.5;
     roundRect(ctx, x, y, PCARD_W, PCARD_H, CARD_RADIUS);
     ctx.stroke();
 
@@ -256,6 +237,8 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     const boxY = lineY + (footerH - STAT_BOX_H) / 2;
     drawStatBox(ctx, x + PCARD_W - 4 - STAT_BOX_W, y + 4, card.Cost, "#0E1E30", "#7AADDF");
     drawStatBox(ctx, x + PCARD_W - 4 - STAT_BOX_W, y + PCARD_H - 4 - STAT_BOX_H, card.HP, "#2E0E0E", "#D46B6B");
+
+    if (selected) drawCrosshair(ctx, x, y);
 
     ctx.restore();
 }
@@ -389,7 +372,7 @@ function drawReactionChains( ctx: CanvasRenderingContext2D, centerX: number, cen
 
 function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean, selectedIndex: number ) {
     for (let i = 0; i < handOrder.length; i++) {
-        drawHandCard( ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]].DefNo, faceDown, selectedIndex === handOrder[i] );
+        drawFieldCard( ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]], undefined, faceDown, selectedIndex === handOrder[i] );
     }
 }
 

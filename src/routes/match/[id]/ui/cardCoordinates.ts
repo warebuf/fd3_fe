@@ -1,6 +1,6 @@
 
 
-import { CARD_W, CARD_H, CARD_GAP, ZONE_H } from "./drawBoard"
+import { CARD_GAP, ZONE_H, PCARD_W, PCARD_H } from "./drawBoard"
 
 export type coordinate = {
   x: number
@@ -45,13 +45,13 @@ export function calcCoordinates(order: number[][], canvasWidth: number, playerNu
     const isPlayer : boolean = (playerNum === i);
     
     // calculate center
-    const totalW = order[i].length * CARD_W + (order[i].length - 1) * CARD_GAP;
+    const totalW = order[i].length * PCARD_W + (order[i].length - 1) * CARD_GAP;
     const startX = (canvasWidth - totalW) / 2;
 
     // calc coords
     for (let j = 0; j < order[i].length; j++) {
-        const cx = startX + j * (CARD_W + CARD_GAP);
-        const cy = (isPlayer ? playerY : oppY) + (ZONE_H - CARD_H) / 2;
+        const cx = startX + j * (PCARD_W + CARD_GAP);
+        const cy = (isPlayer ? playerY : oppY) + (ZONE_H - PCARD_H) / 2;
         row.push({x:cx,y:cy});
     }
 
@@ -66,7 +66,7 @@ export function getClickedCard(mouseX: number, mouseY: number, coords: coordinat
     for(let j = 0; j < coords[i].length; j++) {
       const x = coords[i][j].x;
       const y = coords[i][j].y;
-      if( (mouseX >= x && mouseX <= x + CARD_W) && (mouseY >= y && mouseY <= y + CARD_H) ) {
+      if( (mouseX >= x && mouseX <= x + PCARD_W) && (mouseY >= y && mouseY <= y + PCARD_H) ) {
         return order[i][j];
       }
     }
