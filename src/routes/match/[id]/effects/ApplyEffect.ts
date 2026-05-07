@@ -10,6 +10,7 @@ import { scheduleChain } from "./ScheduleChain";
 import { removeChain } from "./RemoveChain";
 import { destroyCard } from "./DestroyCard";
 import { gainMana } from "./GainMana";
+import { spendMana } from "./SpendMana";
 import { attack } from "./Attack";
 
 export function applyEffect(state: GameState, log: EventLog) {
@@ -23,7 +24,8 @@ export function applyEffect(state: GameState, log: EventLog) {
         case 5: removeChain(state, log); break;
         case 6: destroyCard(state, log); break;
         case 7: gainMana(state, log); break;
-        case 8: attack(state, log); break;
+        case 8: spendMana(state, log); break;
+        case 9: attack(state, log); break;
 
         default: console.log("could not apply log", log); break;
     }

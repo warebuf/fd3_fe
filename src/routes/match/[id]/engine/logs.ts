@@ -8,7 +8,8 @@ export type ScheduleChainLog = Timestamp & { Type: 4; ChainID: number; Step: Cha
 export type RemoveChainLog  = Timestamp & { Type: 5; ChainID: number; }
 export type DestroyCardLog  = Timestamp & { Type: 6; TeamIndex: number; CardIndex: number; TargetAll: boolean; TargetTeamIndex: number; TargetCardIndex: number; }
 export type GainManaLog     = Timestamp & { Type: 7; TeamIndex: number; Amount: number; }
-export type AttackLog       = Timestamp & { Type: 8; AttackerIndex: number; TargetIsUnit: boolean; TargetTeamIndex: number; TargetCardIndex: number; Damage: number; }
+export type SpendManaLog    = Timestamp & { Type: 8; TeamIndex: number; Amount: number; }
+export type AttackLog       = Timestamp & { Type: 9; AttackerIndex: number; TargetIsUnit: boolean; TargetTeamIndex: number; TargetCardIndex: number; Damage: number; }
 
 export type EventLog =
     | PhaseLog
@@ -19,4 +20,5 @@ export type EventLog =
     | RemoveChainLog
     | DestroyCardLog
     | GainManaLog
+    | SpendManaLog
     | AttackLog;
