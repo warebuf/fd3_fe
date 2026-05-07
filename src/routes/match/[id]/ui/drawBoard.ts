@@ -131,108 +131,6 @@ function drawHandCard( ctx: CanvasRenderingContext2D, x: number, y: number, card
 }
 
 const RESERVES_SIZE = 70;
-const GRAVE_SIZE = 70;
-const STRUCTURE_SIZE = 70;
-
-function drawReserves( ctx: CanvasRenderingContext2D, x: number, y: number, count: number ) {
-    const rx = Math.round(x) + 0.5;
-    const ry = Math.round(y) + 0.5;
-    const cx = rx + RESERVES_SIZE / 2;
-
-    roundRect(ctx, rx, ry, RESERVES_SIZE, RESERVES_SIZE, CARD_RADIUS);
-    ctx.fillStyle = CARD_COLOR;
-    ctx.fill();
-    ctx.strokeStyle = CARD_BORDER;
-    ctx.lineWidth = 0.5;
-    roundRect(ctx, rx, ry, RESERVES_SIZE, RESERVES_SIZE, CARD_RADIUS);
-    ctx.stroke();
-
-    ctx.textAlign = "center";
-    ctx.fillStyle = SUBTEXT_COLOR;
-    ctx.font = "600 18px monospace";
-    ctx.textBaseline = "alphabetic";
-    ctx.fillText(String(count), cx, ry + 34);
-
-    ctx.fillStyle = SUBTEXT_COLOR;
-    ctx.font = "10px sans-serif";
-    ctx.textBaseline = "alphabetic";
-    ctx.fillText("RESERVES", cx, ry + 52);
-}
-
-function drawGraveyard( ctx: CanvasRenderingContext2D, x: number, y: number, count: number ) {
-    const rx = Math.round(x) + 0.5;
-    const ry = Math.round(y) + 0.5;
-    const cx = rx + GRAVE_SIZE / 2;
-
-    roundRect(ctx, rx, ry, GRAVE_SIZE, GRAVE_SIZE, CARD_RADIUS);
-    ctx.fillStyle = CARD_COLOR;
-    ctx.fill();
-    ctx.strokeStyle = CARD_BORDER;
-    ctx.lineWidth = 0.5;
-    roundRect(ctx, rx, ry, GRAVE_SIZE, GRAVE_SIZE, CARD_RADIUS);
-    ctx.stroke();
-
-    ctx.textAlign = "center";
-    ctx.fillStyle = SUBTEXT_COLOR;
-    ctx.font = "600 18px monospace";
-    ctx.textBaseline = "alphabetic";
-    ctx.fillText(String(count), cx, ry + 34);
-
-    ctx.fillStyle = SUBTEXT_COLOR;
-    ctx.font = "10px sans-serif";
-    ctx.textBaseline = "alphabetic";
-    ctx.fillText("GRAVEYARD", cx, ry + 52);
-}
-
-function drawMana( ctx: CanvasRenderingContext2D, x: number, y: number, mana: number ) {
-    const rx = Math.round(x) + 0.5;
-    const ry = Math.round(y) + 0.5;
-    const cx = rx + STRUCTURE_SIZE / 2;
-
-    roundRect(ctx, rx, ry, STRUCTURE_SIZE, STRUCTURE_SIZE, CARD_RADIUS);
-    ctx.fillStyle = CARD_COLOR;
-    ctx.fill();
-    ctx.strokeStyle = "#4A7FBF";
-    ctx.lineWidth = 0.5;
-    roundRect(ctx, rx, ry, STRUCTURE_SIZE, STRUCTURE_SIZE, CARD_RADIUS);
-    ctx.stroke();
-
-    ctx.textAlign = "center";
-    ctx.fillStyle = "#7AADDF";
-    ctx.font = "600 18px monospace";
-    ctx.textBaseline = "alphabetic";
-    ctx.fillText(String(mana), cx, ry + 34);
-
-    ctx.fillStyle = "#7AADDF";
-    ctx.font = "10px sans-serif";
-    ctx.textBaseline = "alphabetic";
-    ctx.fillText("MANA", cx, ry + 52);
-}
-
-function drawStructure( ctx: CanvasRenderingContext2D, x: number, y: number, hp: number ) {
-    const rx = Math.round(x) + 0.5;
-    const ry = Math.round(y) + 0.5;
-    const cx = rx + STRUCTURE_SIZE / 2;
-
-    roundRect(ctx, rx, ry, STRUCTURE_SIZE, STRUCTURE_SIZE, CARD_RADIUS);
-    ctx.fillStyle = CARD_COLOR;
-    ctx.fill();
-    ctx.strokeStyle = CARD_BORDER;
-    ctx.lineWidth = 0.5;
-    roundRect(ctx, rx, ry, STRUCTURE_SIZE, STRUCTURE_SIZE, CARD_RADIUS);
-    ctx.stroke();
-
-    ctx.textAlign = "center";
-    ctx.fillStyle = SUBTEXT_COLOR;
-    ctx.font = "600 18px monospace";
-    ctx.textBaseline = "alphabetic";
-    ctx.fillText(String(hp), cx, ry + 34);
-
-    ctx.fillStyle = SUBTEXT_COLOR;
-    ctx.font = "10px sans-serif";
-    ctx.textBaseline = "alphabetic";
-    ctx.fillText("HP", cx, ry + 52);
-}
 
 function drawWrappedText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number, maxY: number): number {
     if (!text) return y;
@@ -539,29 +437,49 @@ function drawBlockProgress( ctx: CanvasRenderingContext2D, x: number, y: number,
 }
 
 
-function drawPlayerTag( ctx: CanvasRenderingContext2D, label: string, x: number, y: number, isUser: boolean ) {
-    const tagW = 80;
-    const tagH = 20;
-    roundRect(ctx, x, y, tagW, tagH, 4);
-    ctx.fillStyle = "rgba(255,255,255,0.08)";
-    ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,0.18)";
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
-    ctx.fillStyle = "#D3D1C7";
-    ctx.font = "11px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(label, x + tagW / 2, y + tagH / 2);
-}
+function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, opponentIndex: number, userIndex: number) {
+    const x = 6;
+    let y = 6;
+    const LINE_H = 14;
 
-function drawPhaseTag(ctx: CanvasRenderingContext2D, phase: number, x: number, y: number) {
     ctx.font = "10px sans-serif";
-    ctx.fillStyle = SUBTEXT_COLOR;
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText(`Phase ${phase}`, x, y);
-    ctx.fillText(`${get(ping)} ms`, x, y + 14);
+
+    ctx.fillStyle = SUBTEXT_COLOR;
+    ctx.fillText(`Phase ${state.Phase}`, x, y);
+    y += LINE_H;
+    ctx.fillText(`${get(ping)} ms`, x, y);
+    y += LINE_H * 2;
+
+    ctx.fillStyle = SUBTEXT_COLOR;
+    ctx.fillText("Opponent:", x, y);
+    y += LINE_H;
+    ctx.fillStyle = "#D46B6B";
+    ctx.fillText(`HP ${state.Structures[opponentIndex]?.HP ?? 0}`, x, y);
+    y += LINE_H;
+    ctx.fillStyle = "#7AADDF";
+    ctx.fillText(`Mana ${state.Mana[opponentIndex] ?? 0}`, x, y);
+    y += LINE_H;
+    ctx.fillStyle = SUBTEXT_COLOR;
+    ctx.fillText(`Reserves ${state.Deck[opponentIndex].length}`, x, y);
+    y += LINE_H;
+    ctx.fillText(`Graveyard ${state.Grave[opponentIndex].length}`, x, y);
+    y += LINE_H * 2;
+
+    ctx.fillStyle = SUBTEXT_COLOR;
+    ctx.fillText("You:", x, y);
+    y += LINE_H;
+    ctx.fillStyle = "#D46B6B";
+    ctx.fillText(`HP ${state.Structures[userIndex]?.HP ?? 0}`, x, y);
+    y += LINE_H;
+    ctx.fillStyle = "#7AADDF";
+    ctx.fillText(`Mana ${state.Mana[userIndex] ?? 0}`, x, y);
+    y += LINE_H;
+    ctx.fillStyle = SUBTEXT_COLOR;
+    ctx.fillText(`Reserves ${state.Deck[userIndex].length}`, x, y);
+    y += LINE_H;
+    ctx.fillText(`Graveyard ${state.Grave[userIndex].length}`, x, y);
 }
 
 export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number, recurringMap: Map<number, CardIDToChainStepIndex>) {
@@ -597,15 +515,7 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
 
     let y = 16;
 
-    // Opponent hand + reserves (centered with hand) + graveyard below
-    const oppReservesY = y + (ZONE_H - RESERVES_SIZE) / 2;
-    drawPlayerTag(ctx, "Opponent", RIGHT_X + RESERVES_SIZE / 2 - 40, oppReservesY - 28, false);
-    drawReserves(ctx, RIGHT_X, oppReservesY, state.Deck[opponentIndex].length);
-    drawGraveyard(ctx, RIGHT_X, oppReservesY + RESERVES_SIZE + 8, state.Grave[opponentIndex].length);
-    if (state.Structures[opponentIndex] !== undefined)
-        drawStructure(ctx, RIGHT_X, oppReservesY + RESERVES_SIZE + 8 + GRAVE_SIZE + 8, state.Structures[opponentIndex].HP);
-    if (state.Mana[opponentIndex] !== undefined)
-        drawMana(ctx, RIGHT_X, oppReservesY + RESERVES_SIZE + 8 + GRAVE_SIZE + 8 + STRUCTURE_SIZE + 8, state.Mana[opponentIndex]);
+    // Opponent hand
     drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[opponentIndex] ?? [], state.Cards, handCoords[opponentIndex] ?? [], true, selectedIndex); // face down
     y += ZONE_H + 16;
 
@@ -620,18 +530,8 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     drawField(ctx, y, state.Cards, state.Field[userIndex], W, recurringMap, state.ReactionPQ.Items);
     y += ZONE_H + 16;
 
-    // Player hand + graveyard above + reserves (centered with hand)
-    const playerReservesY = y + (ZONE_H - RESERVES_SIZE) / 2;
-    if (state.Mana[userIndex] !== undefined) {
-        drawMana(ctx, RIGHT_X, playerReservesY - GRAVE_SIZE - 8 - STRUCTURE_SIZE - 8 - STRUCTURE_SIZE - 8, state.Mana[userIndex]);
-    }
-    if (state.Structures[userIndex] !== undefined) {
-        drawStructure(ctx, RIGHT_X, playerReservesY - GRAVE_SIZE - 8 - STRUCTURE_SIZE - 8, state.Structures[userIndex].HP);
-    }
-    drawGraveyard(ctx, RIGHT_X, playerReservesY - GRAVE_SIZE - 8, state.Grave[userIndex].length);
-    drawReserves(ctx, RIGHT_X, playerReservesY, state.Deck[userIndex].length);
-    drawPlayerTag(ctx, "You", RIGHT_X + RESERVES_SIZE / 2 - 40, playerReservesY + RESERVES_SIZE + 8, true);
+    // Player hand
     drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[userIndex] ?? [], state.Cards, handCoords[userIndex] ?? [], false, selectedIndex); // face up
 
-    drawPhaseTag(ctx, state.Phase, 6, 6);
+    drawInfoPanel(ctx, state, opponentIndex, userIndex);
 }
