@@ -32,8 +32,8 @@ export function mirrorUIWithHand(order: number[][], hand: number[][]): number[][
     return result;
 }
 
-const playerY = 392 + 300 + 20;
-const oppY = 56;
+const playerY = 700;
+const oppY = 44;
 
 export function calcCoordinates(order: number[][], canvasWidth: number, playerNum: number): coordinate[][] {
 
