@@ -278,7 +278,6 @@ function drawReactionZone( ctx: CanvasRenderingContext2D, x:number, y: number, c
     return height + (2*margin);
 }
 
-const ENTRY_TYPE_LABELS = ["Card", "Card Effect", "Ability", "Other", "Permanent Summon", "Spell", "Recurring Ability"];
 
 function drawReactionChains( ctx: CanvasRenderingContext2D, centerX: number, centerY: number, chains: Chain[], cards: Card[] ) {
 
@@ -336,35 +335,10 @@ function drawReactionChains( ctx: CanvasRenderingContext2D, centerX: number, cen
             const entryX = chainX + chainPad_W;
             const entryY = chainY + j * (itemHeight + itemMargin);
 
-            roundRect(ctx, entryX + 0.5, entryY + 0.5, itemWidth, itemHeight, CARD_RADIUS);
-            ctx.fillStyle = CARD_COLOR;
-            ctx.fill();
-            ctx.strokeStyle = CARD_BORDER;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-
             const card = cards.find(c => c.CardID === entry.CardID);
-            const cardName = card?.Name ?? `Card ${entry.CardID}`;
-            const typeLabel = ENTRY_TYPE_LABELS[entry.Type] ?? "Unknown";
-
-            let tx = entryX + 0.5 + P_PAD_W;
-            let ty = entryY + 0.5 + P_PAD_H + 11;
-            ctx.fillStyle = TEXT_COLOR;
-            ctx.font = "11px sans-serif";
-            ctx.textAlign = "left";
-            ctx.textBaseline = "alphabetic";
-            ctx.fillText(cardName, tx, ty);
-
-            ty += 12;
-            ctx.fillStyle = SUBTEXT_COLOR;
-            ctx.font = "9px sans-serif";
-            ctx.fillText(typeLabel, tx, ty);
-
-            const barX = entryX + P_PAD_W;
-            const entryContentTop = entryY + P_PAD_H + 11 + 12;
-            const entryContentBot = entryY + itemHeight - P_PAD_H;
-            const barY = Math.round((entryContentTop + entryContentBot) / 2) - 3;
-            drawBlockProgress(ctx, barX, barY, itemWidth - P_PAD_W * 2, entry.StartTime, entry.OccurTime);
+            if (card) {
+                drawFieldCard(ctx, entryX, entryY, card, entry);
+            }
         }
     }
 
