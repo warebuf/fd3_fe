@@ -3,7 +3,7 @@
     import { page } from '$app/stores';
     import { onMount } from 'svelte';
     import { connectWS } from "./networking/ws";
-    import { ping, stopPing } from "./networking/ping";
+    import { stopPing } from "./networking/ping";
 
     import { StateManager } from "./engine/stateManager"
     import { initGameState, cloneGameState, type GameState } from './engine/gameState';
@@ -156,26 +156,11 @@
 
 </script>
 
-<div class="ping" aria-live="polite">{$ping} ms</div>
-
 <div class="wrap">
     <canvas bind:this={canvasEl}></canvas>
 </div>
 
 <style>
-    .ping {
-        position: fixed;
-        top: 20px;
-        right: 12px;
-        padding: 6px 10px;
-        border-radius: 999px;
-        background: rgba(0,0,0,0.7);
-        backdrop-filter: blur(6px);
-        color: #fff;
-        font: 600 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-        pointer-events: none; /* don't block clicks underneath */
-    }
-
     .wrap {
         flex: 1;
         min-height: 0;

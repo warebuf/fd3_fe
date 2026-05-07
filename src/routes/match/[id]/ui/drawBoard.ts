@@ -4,7 +4,7 @@ import type { GameState, Card, Chain, ChainStep } from "../engine/gameState"
 import { ChainStepType } from "../engine/gameState"
 import type { CardIDToChainStepIndex } from "../engine/buildRecurringMap"
 import type { coordinate } from "./cardCoordinates"
-import { serverClockOffset } from "../networking/ping";
+import { serverClockOffset, ping } from "../networking/ping";
 
 export const CARD_W = 56;
 export const CARD_H = 80;
@@ -561,6 +561,7 @@ function drawPhaseTag(ctx: CanvasRenderingContext2D, phase: number, x: number, y
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
     ctx.fillText(`Phase ${phase}`, x, y);
+    ctx.fillText(`${get(ping)} ms`, x, y + 14);
 }
 
 export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number, recurringMap: Map<number, CardIDToChainStepIndex>) {
@@ -596,12 +597,9 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
 
     let y = 16;
 
-    // --- Opponent ---
-    drawPlayerTag(ctx, "Opponent", LEFT_X, y, false);
-    y += 40;
-
     // Opponent hand + reserves (centered with hand) + graveyard below
     const oppReservesY = y + (ZONE_H - RESERVES_SIZE) / 2;
+    drawPlayerTag(ctx, "Opponent", RIGHT_X + RESERVES_SIZE / 2 - 40, oppReservesY - 28, false);
     drawReserves(ctx, RIGHT_X, oppReservesY, state.Deck[opponentIndex].length);
     drawGraveyard(ctx, RIGHT_X, oppReservesY + RESERVES_SIZE + 8, state.Grave[opponentIndex].length);
     if (state.Structures[opponentIndex] !== undefined)
@@ -632,10 +630,8 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     }
     drawGraveyard(ctx, RIGHT_X, playerReservesY - GRAVE_SIZE - 8, state.Grave[userIndex].length);
     drawReserves(ctx, RIGHT_X, playerReservesY, state.Deck[userIndex].length);
+    drawPlayerTag(ctx, "You", RIGHT_X + RESERVES_SIZE / 2 - 40, playerReservesY + RESERVES_SIZE + 8, true);
     drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[userIndex] ?? [], state.Cards, handCoords[userIndex] ?? [], false, selectedIndex); // face up
-    y += ZONE_H + 16;
-
-    drawPlayerTag(ctx, "You", LEFT_X, y, true);
 
     drawPhaseTag(ctx, state.Phase, 6, 6);
 }
