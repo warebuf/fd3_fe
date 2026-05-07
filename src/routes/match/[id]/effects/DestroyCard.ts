@@ -20,7 +20,11 @@ export function destroyCard(state: GameState, log: DestroyCardLog) {
             state.Field[i] = [];
         }
     } else {
-        console.log("have not coded destroy card specific");
+        const fieldArr = state.Field[targetTeam];
+        const cardIdx = fieldArr[targetCard];
+        state.Cards[cardIdx].Zone = 3;
+        fieldArr.splice(targetCard, 1);
+        state.Grave[targetTeam].push(cardIdx);
     }
 
     // tbh temporary hack to send casting card to grave, many ways to do this, including adding a field to log data structure, or creating a new effect entirely
