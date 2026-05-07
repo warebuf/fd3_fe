@@ -353,11 +353,11 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.lineWidth = 0.5;
     ctx.stroke();
 
-    // draw cost (bottom-left) and hp (bottom-right)
+    // draw hp (bottom-left) and cost (top-right)
     const footerH = y + PCARD_H - lineY;
     const boxY = lineY + (footerH - STAT_BOX_H) / 2;
-    drawStatBox(ctx, x + P_PAD_W, boxY, card.Cost, "#0E1E30", "#7AADDF");
-    drawStatBox(ctx, x + PCARD_W - P_PAD_W - STAT_BOX_W, boxY, card.HP, "#2E0E0E", "#D46B6B");
+    drawStatBox(ctx, x + PCARD_W - 4 - STAT_BOX_W, y + 4, card.Cost, "#0E1E30", "#7AADDF");
+    drawStatBox(ctx, x + PCARD_W - 4 - STAT_BOX_W, y + PCARD_H - 4 - STAT_BOX_H, card.HP, "#2E0E0E", "#D46B6B");
 
     ctx.restore();
 }
@@ -555,6 +555,14 @@ function drawPlayerTag( ctx: CanvasRenderingContext2D, label: string, x: number,
     ctx.fillText(label, x + tagW / 2, y + tagH / 2);
 }
 
+function drawPhaseTag(ctx: CanvasRenderingContext2D, phase: number, x: number, y: number) {
+    ctx.font = "10px sans-serif";
+    ctx.fillStyle = SUBTEXT_COLOR;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText(`Phase ${phase}`, x, y);
+}
+
 export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number, recurringMap: Map<number, CardIDToChainStepIndex>) {
     const W = ctx.canvas.clientWidth;
     const H = ctx.canvas.clientHeight;
@@ -628,4 +636,6 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     y += ZONE_H + 16;
 
     drawPlayerTag(ctx, "You", LEFT_X, y, true);
+
+    drawPhaseTag(ctx, state.Phase, 6, 6);
 }
