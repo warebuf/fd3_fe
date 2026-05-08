@@ -10,6 +10,7 @@ export type DestroyCardLog  = Timestamp & { Type: 6; TeamIndex: number; CardInde
 export type GainManaLog     = Timestamp & { Type: 7; TeamIndex: number; Amount: number; }
 export type SpendManaLog    = Timestamp & { Type: 8; TeamIndex: number; Amount: number; }
 export type AttackLog       = Timestamp & { Type: 9; AttackerIndex: number; TargetIsUnit: boolean; TargetTeamIndex: number; TargetCardIndex: number; Damage: number; }
+export type ReadyLog        = Timestamp & { Type: 10; TeamIndex: number; }
 
 export type EventLog =
     | PhaseLog
@@ -21,4 +22,5 @@ export type EventLog =
     | DestroyCardLog
     | GainManaLog
     | SpendManaLog
-    | AttackLog;
+    | AttackLog
+    | ReadyLog;
