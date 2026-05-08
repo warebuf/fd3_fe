@@ -242,8 +242,8 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
 
     if (!faceDown && card.AutoSummon > 0) {
         const badgeR = 10;
-        const badgeX = x + badgeR;
-        const badgeY = y + badgeR;
+        const badgeX = x - badgeR * 0.3;
+        const badgeY = y - badgeR * 0.3;
         ctx.beginPath();
         ctx.arc(badgeX, badgeY, badgeR, 0, Math.PI * 2);
         ctx.fillStyle = "#F5C518";

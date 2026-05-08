@@ -104,7 +104,12 @@
             if (e.code === 'Space') {
                 e.preventDefault(); // prevent page scroll
                 if (clickedIndex !== -1) {
-                    ws?.send(JSON.stringify({ type: "hand", CardIndex: clickedIndex }));
+                    const card = interpolatedState?.Cards[clickedIndex];
+                    if (interpolatedState?.Phase === Phase.BoardSetup && card?.AutoSummon > 0) {
+                        ws?.send(JSON.stringify({ type: "clearAutoSummon", CardIndex: clickedIndex }));
+                    } else {
+                        ws?.send(JSON.stringify({ type: "hand", CardIndex: clickedIndex }));
+                    }
                     clickedIndex = -1;
                 }
             }
