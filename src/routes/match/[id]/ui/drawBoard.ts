@@ -451,7 +451,25 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, opponent
     }
 }
 
-export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number, recurringMap: Map<number, CardIDToChainStepIndex>) {
+function drawZoneSetup(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, stagedCoords: coordinate[][]): void {
+    const opponentIndex = userIndex === 0 ? 1 : 0;
+
+    const oppStaged = state.StagedCards[opponentIndex] ?? [];
+    for (let i = 0; i < oppStaged.length; i++) {
+        const card = state.Cards[oppStaged[i]];
+        const coord = stagedCoords[opponentIndex]?.[i];
+        if (card && coord) drawFieldCard(ctx, coord.x, coord.y, card, undefined, true);
+    }
+
+    const playerStaged = state.StagedCards[userIndex] ?? [];
+    for (let i = 0; i < playerStaged.length; i++) {
+        const card = state.Cards[playerStaged[i]];
+        const coord = stagedCoords[userIndex]?.[i];
+        if (card && coord) drawFieldCard(ctx, coord.x, coord.y, card, undefined, false);
+    }
+}
+
+export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number, recurringMap: Map<number, CardIDToChainStepIndex>, stagedCoords: coordinate[][]) {
     const W = ctx.canvas.clientWidth;
     const H = ctx.canvas.clientHeight;
     const opponentIndex = userIndex === 0 ? 1 : 0;
@@ -488,16 +506,20 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[opponentIndex] ?? [], state.Cards, handCoords[opponentIndex] ?? [], true, selectedIndex); // face down
     y += ZONE_H + 16;
 
-    // Opponent field
-    drawField(ctx, y, state.Cards, state.Field[opponentIndex], W, recurringMap, state.ReactionPQ.Items);
-    y += ZONE_H + 16;
+    if (state.Phase === Phase.BoardSetup) {
+        drawZoneSetup(ctx, state, userIndex, stagedCoords);
+    } else {
+        // Opponent field
+        drawField(ctx, y, state.Cards, state.Field[opponentIndex], W, recurringMap, state.ReactionPQ.Items);
+        y += ZONE_H + 16;
 
-    // Chain Zone
-    y += drawReactionZone(ctx, ZONE_X, y, state.ReactionPQ.Items, state.Cards);
+        // Chain Zone
+        y += drawReactionZone(ctx, ZONE_X, y, state.ReactionPQ.Items, state.Cards);
 
-    // Player field
-    drawField(ctx, y, state.Cards, state.Field[userIndex], W, recurringMap, state.ReactionPQ.Items);
-    y += ZONE_H + 16;
+        // Player field
+        drawField(ctx, y, state.Cards, state.Field[userIndex], W, recurringMap, state.ReactionPQ.Items);
+        y += ZONE_H + 16;
+    }
 
     // Player hand
     drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[userIndex] ?? [], state.Cards, handCoords[userIndex] ?? [], false, selectedIndex); // face up
