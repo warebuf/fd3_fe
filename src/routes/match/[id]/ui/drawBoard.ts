@@ -241,15 +241,15 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     if (selected) drawCrosshair(ctx, x, y);
 
     if (!faceDown && card.AutoSummon > 0) {
-        const badgeR = 10;
-        const badgeX = x - badgeR * 0.3;
-        const badgeY = y - badgeR * 0.3;
+        const badgeR = 7;
+        const badgeX = x;
+        const badgeY = y;
         ctx.beginPath();
         ctx.arc(badgeX, badgeY, badgeR, 0, Math.PI * 2);
         ctx.fillStyle = "#F5C518";
         ctx.fill();
         ctx.fillStyle = "#1a1a1a";
-        ctx.font = "bold 10px sans-serif";
+        ctx.font = "bold 7px sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(String(card.AutoSummon), badgeX, badgeY);
