@@ -196,7 +196,7 @@
 
     .ready-overlay {
         position: absolute;
-        bottom: 120px;
+        bottom: 125px;
         left: 50%;
         transform: translateX(-50%);
         pointer-events: none;
