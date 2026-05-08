@@ -169,7 +169,11 @@
                 disabled={interpolatedState?.Ready[teamIdx] ?? false}
                 on:click={() => ws?.send(JSON.stringify({ type: "ready" }))}
             >
-                {interpolatedState?.Ready[teamIdx] ? "Waiting..." : "Ready Up"}
+                {#if interpolatedState?.Ready[teamIdx]}
+                    <span class="ready-icon">✓</span> Waiting...
+                {:else}
+                    <span class="ready-icon">✓</span> Ready Up
+                {/if}
             </button>
         </div>
     {/if}
@@ -192,7 +196,7 @@
 
     .ready-overlay {
         position: absolute;
-        bottom: 32px;
+        bottom: 120px;
         left: 50%;
         transform: translateX(-50%);
         pointer-events: none;
@@ -200,24 +204,37 @@
 
     .ready-btn {
         pointer-events: all;
-        padding: 10px 28px;
-        background: #2C2C2A;
-        border: 0.5px solid #6E6D69;
-        border-radius: 6px;
-        color: #D3D1C7;
-        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        background: #1e1e1c;
+        border: 1px solid #444442;
+        border-radius: 4px;
+        color: #aaa;
+        font-size: 11px;
         cursor: pointer;
-        letter-spacing: 0.04em;
+        transition: border-color 0.15s, color 0.15s;
+        white-space: nowrap;
+    }
+
+    .ready-icon {
+        color: #6abf6a;
+        font-size: 11px;
     }
 
     .ready-btn:hover:not(:disabled) {
-        background: #3a3a38;
-        border-color: #D3D1C7;
+        border-color: #777;
+        color: #D3D1C7;
     }
 
     .ready-btn:disabled {
-        color: #888780;
+        color: #444;
         cursor: default;
-        border-color: #444;
+        border-color: #2a2a28;
+    }
+
+    .ready-btn:disabled .ready-icon {
+        color: #333;
     }
 </style>
