@@ -13,6 +13,7 @@ import { gainMana } from "./GainMana";
 import { spendMana } from "./SpendMana";
 import { attack } from "./Attack";
 import { ready } from "./Ready";
+import { autoSummon } from "./AutoSummon";
 
 export function applyEffect(state: GameState, log: EventLog) {
 
@@ -28,6 +29,7 @@ export function applyEffect(state: GameState, log: EventLog) {
         case 8: spendMana(state, log); break;
         case 9: attack(state, log); break;
         case 10: ready(state, log); break;
+        case 11: autoSummon(state, log); break;
 
         default: console.log("could not apply log", log); break;
     }

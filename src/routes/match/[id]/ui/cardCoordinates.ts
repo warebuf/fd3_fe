@@ -35,27 +35,6 @@ export function mirrorUIWithHand(order: number[][], hand: number[][]): number[][
 const playerY = 700;
 const oppY = 44;
 
-const zoneSetupPlayerY = 540;
-const zoneSetupOppY = 180;
-
-export function calcZoneSetupCoordinates(staged: number[][], canvasWidth: number, playerNum: number): coordinate[][] {
-    const result: coordinate[][] = [];
-    for (let i = 0; i < staged.length; i++) {
-        const row: coordinate[] = [];
-        const isPlayer = (playerNum === i);
-        const n = staged[i].length;
-        const totalW = n * PCARD_W + (n - 1) * CARD_GAP;
-        const startX = (canvasWidth - totalW) / 2;
-        for (let j = 0; j < n; j++) {
-            row.push({
-                x: startX + j * (PCARD_W + CARD_GAP),
-                y: isPlayer ? zoneSetupPlayerY : zoneSetupOppY,
-            });
-        }
-        result.push(row);
-    }
-    return result;
-}
 
 export function calcCoordinates(order: number[][], canvasWidth: number, playerNum: number): coordinate[][] {
 

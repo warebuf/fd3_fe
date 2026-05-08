@@ -11,7 +11,7 @@
 
     import { drawBoard } from './ui/drawBoard';
     import { buildRecurringMap, type CardIDToChainStepIndex } from './engine/buildRecurringMap';
-    import { calcCoordinates, calcZoneSetupCoordinates, getClickedCard, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
+    import { calcCoordinates, getClickedCard, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
 
     // drawing related
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
@@ -35,7 +35,6 @@
     let clickedIndex: number = -1; // is unitIdx
     let handOrder: number[][] = [];
     let handCoords: coordinate[][] = [];
-    let stagedCoords: coordinate[][] = [];
     let recurringMap = new Map<number, CardIDToChainStepIndex>();
 
 
@@ -46,9 +45,7 @@
         canvasEl.height = Math.max(1, Math.round(height * dpr));
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        // recalculate hand and staged coordinates
         handCoords = calcCoordinates(handOrder, ctx.canvas.clientWidth, teamIdx);
-        stagedCoords = calcZoneSetupCoordinates(authoritativeState?.StagedCards ?? [[], []], ctx.canvas.clientWidth, teamIdx);
     }
 
     function loop(now: number) { // now is current time relative to page load
@@ -65,7 +62,6 @@
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
             handCoords = calcCoordinates(handOrder, ctx.canvas.clientWidth, teamIdx);
-            stagedCoords = calcZoneSetupCoordinates(interpolatedState.StagedCards, ctx.canvas.clientWidth, teamIdx);
             recurringMap = buildRecurringMap(interpolatedState.ReactionPQ.Items);
         }
 
@@ -73,7 +69,7 @@
         const width = canvasEl.clientWidth;
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
-        drawBoard(ctx, interpolatedState, teamIdx, handOrder, handCoords, clickedIndex, recurringMap, stagedCoords);
+        drawBoard(ctx, interpolatedState, teamIdx, handOrder, handCoords, clickedIndex, recurringMap);
 
         // schedule next frame
         animationID = requestAnimationFrame(loop);
@@ -108,8 +104,7 @@
             if (e.code === 'Space') {
                 e.preventDefault(); // prevent page scroll
                 if (clickedIndex !== -1) {
-                    const msgType = interpolatedState?.Phase === Phase.BoardSetup ? "stageCard" : "hand";
-                    ws?.send(JSON.stringify({ type: msgType, CardIndex: clickedIndex }));
+                    ws?.send(JSON.stringify({ type: "hand", CardIndex: clickedIndex }));
                     clickedIndex = -1;
                 }
             }

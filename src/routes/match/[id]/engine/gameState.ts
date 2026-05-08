@@ -22,7 +22,6 @@ export type GameState = Timestamp & {
 
     Mana: number[];
     Structures: Structure[];
-    StagedCards: number[][];
     Ready: boolean[];
 
 };
@@ -55,6 +54,7 @@ export interface Card {
     Type: number;
     Zone: number; // 0: deck, 1: hand, 2: field, 3: grave, 4: TemporaryUnaccessible
     Armed: boolean;
+    AutoSummon: number; // 0: not staged; 1+: order in which to autosummon during reveal phase
 }
 
 export interface Effect {
@@ -112,7 +112,6 @@ export function initGameState(): GameState {
 
         Mana: [],
         Structures: [],
-        StagedCards: [[], []],
         Ready: [false, false],
     };
 }
@@ -142,7 +141,6 @@ export function cloneGameState(src: GameState): GameState {
 
         Mana: [...src.Mana],
         Structures: src.Structures.map(s => ({ ...s })),
-        StagedCards: src.StagedCards.map(team => [...team]),
         Ready: [...src.Ready],
     };
 }

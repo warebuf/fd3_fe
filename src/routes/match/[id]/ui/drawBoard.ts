@@ -240,6 +240,21 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
 
     if (selected) drawCrosshair(ctx, x, y);
 
+    if (!faceDown && card.AutoSummon > 0) {
+        const badgeR = 10;
+        const badgeX = x + badgeR;
+        const badgeY = y + badgeR;
+        ctx.beginPath();
+        ctx.arc(badgeX, badgeY, badgeR, 0, Math.PI * 2);
+        ctx.fillStyle = "#F5C518";
+        ctx.fill();
+        ctx.fillStyle = "#1a1a1a";
+        ctx.font = "bold 10px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(String(card.AutoSummon), badgeX, badgeY);
+    }
+
     ctx.restore();
 }
 
@@ -451,25 +466,7 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, opponent
     }
 }
 
-function drawZoneSetup(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, stagedCoords: coordinate[][]): void {
-    const opponentIndex = userIndex === 0 ? 1 : 0;
-
-    const oppStaged = state.StagedCards[opponentIndex] ?? [];
-    for (let i = 0; i < oppStaged.length; i++) {
-        const card = state.Cards[oppStaged[i]];
-        const coord = stagedCoords[opponentIndex]?.[i];
-        if (card && coord) drawFieldCard(ctx, coord.x, coord.y, card, undefined, true);
-    }
-
-    const playerStaged = state.StagedCards[userIndex] ?? [];
-    for (let i = 0; i < playerStaged.length; i++) {
-        const card = state.Cards[playerStaged[i]];
-        const coord = stagedCoords[userIndex]?.[i];
-        if (card && coord) drawFieldCard(ctx, coord.x, coord.y, card, undefined, false);
-    }
-}
-
-export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number, recurringMap: Map<number, CardIDToChainStepIndex>, stagedCoords: coordinate[][]) {
+export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number, recurringMap: Map<number, CardIDToChainStepIndex>) {
     const W = ctx.canvas.clientWidth;
     const H = ctx.canvas.clientHeight;
     const opponentIndex = userIndex === 0 ? 1 : 0;
@@ -506,9 +503,7 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[opponentIndex] ?? [], state.Cards, handCoords[opponentIndex] ?? [], true, selectedIndex); // face down
     y += ZONE_H + 16;
 
-    if (state.Phase === Phase.BoardSetup) {
-        drawZoneSetup(ctx, state, userIndex, stagedCoords);
-    } else {
+    if (state.Phase !== Phase.BoardSetup) {
         // Opponent field
         drawField(ctx, y, state.Cards, state.Field[opponentIndex], W, recurringMap, state.ReactionPQ.Items);
         y += ZONE_H + 16;
