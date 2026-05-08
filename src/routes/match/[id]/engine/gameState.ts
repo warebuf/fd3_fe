@@ -22,8 +22,19 @@ export type GameState = Timestamp & {
 
     Mana: number[];
     Structures: Structure[];
+    StagedCards: number[][];
+    Ready: boolean[];
 
 };
+
+export const Phase = {
+    PreMatch: 0,
+    Draw: 1,
+    BoardSetup: 2,
+    Reveal: 3,
+    Play: 4,
+    GameEnd: 5,
+} as const;
 
 export interface Structure {
     DefNo: number;
@@ -101,6 +112,8 @@ export function initGameState(): GameState {
 
         Mana: [],
         Structures: [],
+        StagedCards: [[], []],
+        Ready: [false, false],
     };
 }
 
@@ -129,5 +142,7 @@ export function cloneGameState(src: GameState): GameState {
 
         Mana: [...src.Mana],
         Structures: src.Structures.map(s => ({ ...s })),
+        StagedCards: src.StagedCards.map(team => [...team]),
+        Ready: [...src.Ready],
     };
 }

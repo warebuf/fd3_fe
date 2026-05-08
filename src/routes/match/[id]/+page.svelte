@@ -6,7 +6,7 @@
     import { stopPing } from "./networking/ping";
 
     import { StateManager } from "./engine/stateManager"
-    import { initGameState, cloneGameState, type GameState } from './engine/gameState';
+    import { initGameState, cloneGameState, type GameState, Phase } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
     import { drawBoard } from './ui/drawBoard';
@@ -158,6 +158,17 @@
 
 <div class="wrap">
     <canvas bind:this={canvasEl}></canvas>
+    {#if interpolatedState?.Phase === Phase.BoardSetup}
+        <div class="ready-overlay">
+            <button
+                class="ready-btn"
+                disabled={interpolatedState?.Ready[teamIdx] ?? false}
+                on:click={() => ws?.send(JSON.stringify({ type: "ready" }))}
+            >
+                {interpolatedState?.Ready[teamIdx] ? "Waiting..." : "Ready Up"}
+            </button>
+        </div>
+    {/if}
 </div>
 
 <style>
@@ -165,6 +176,7 @@
         flex: 1;
         min-height: 0;
         display: flex;
+        position: relative;
     }
 
     canvas {
@@ -172,5 +184,36 @@
         height: 100%;
         display: block;
         background: #1a1a1a;
+    }
+
+    .ready-overlay {
+        position: absolute;
+        bottom: 32px;
+        left: 50%;
+        transform: translateX(-50%);
+        pointer-events: none;
+    }
+
+    .ready-btn {
+        pointer-events: all;
+        padding: 10px 28px;
+        background: #2C2C2A;
+        border: 0.5px solid #6E6D69;
+        border-radius: 6px;
+        color: #D3D1C7;
+        font-size: 13px;
+        cursor: pointer;
+        letter-spacing: 0.04em;
+    }
+
+    .ready-btn:hover:not(:disabled) {
+        background: #3a3a38;
+        border-color: #D3D1C7;
+    }
+
+    .ready-btn:disabled {
+        color: #888780;
+        cursor: default;
+        border-color: #444;
     }
 </style>

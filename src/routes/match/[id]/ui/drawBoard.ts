@@ -1,7 +1,7 @@
 
 import { get } from "svelte/store";
 import type { GameState, Card, Chain, ChainStep } from "../engine/gameState"
-import { ChainStepType } from "../engine/gameState"
+import { ChainStepType, Phase } from "../engine/gameState"
 import type { CardIDToChainStepIndex } from "../engine/buildRecurringMap"
 import type { coordinate } from "./cardCoordinates"
 import { serverClockOffset, ping } from "../networking/ping";
@@ -422,6 +422,12 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, opponent
     ctx.fillText(`Reserves ${state.Deck[opponentIndex].length}`, x, y);
     y += LINE_H;
     ctx.fillText(`Graveyard ${state.Grave[opponentIndex].length}`, x, y);
+    if (state.Phase === Phase.BoardSetup) {
+        y += LINE_H;
+        const oppReady = state.Ready[opponentIndex] ?? false;
+        ctx.fillStyle = oppReady ? "#3A8F5A" : SUBTEXT_COLOR;
+        ctx.fillText(oppReady ? "Ready" : "Not ready", x, y);
+    }
     y += LINE_H * 2;
 
     ctx.fillStyle = SUBTEXT_COLOR;
@@ -437,6 +443,12 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, opponent
     ctx.fillText(`Reserves ${state.Deck[userIndex].length}`, x, y);
     y += LINE_H;
     ctx.fillText(`Graveyard ${state.Grave[userIndex].length}`, x, y);
+    if (state.Phase === Phase.BoardSetup) {
+        y += LINE_H;
+        const userReady = state.Ready[userIndex] ?? false;
+        ctx.fillStyle = userReady ? "#3A8F5A" : SUBTEXT_COLOR;
+        ctx.fillText(userReady ? "Ready" : "Not ready", x, y);
+    }
 }
 
 export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number, recurringMap: Map<number, CardIDToChainStepIndex>) {
