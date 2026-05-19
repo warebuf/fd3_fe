@@ -1,8 +1,7 @@
 
 import { get } from "svelte/store";
-import type { GameState, Card, Chain, ChainStep } from "../engine/gameState"
-import { ChainStepType, Phase } from "../engine/gameState"
-import type { CardIDToChainStepIndex } from "../engine/buildRecurringMap"
+import type { GameState, Card, ChainItem, SimulationItem } from "../engine/gameState"
+import { Phase } from "../engine/gameState"
 import type { coordinate } from "./cardCoordinates"
 import { serverClockOffset, ping } from "../networking/ping";
 
@@ -119,7 +118,7 @@ function drawWrappedText(ctx: CanvasRenderingContext2D, text: string, x: number,
     return currentY;
 }
 
-function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, recurringStep?: ChainStep, faceDown?: boolean, selected?: boolean ) {
+function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, recurringItem?: SimulationItem, faceDown?: boolean, selected?: boolean ) {
     ctx.save();
 
     // adjust for blurry half pixel borders
@@ -188,11 +187,11 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     }
 
     // draw recurring ability progress below description
-    if (recurringStep) {
+    if (recurringItem) {
         const barX = x + P_PAD_W;
         const contentBot = y + PCARD_H - P_PAD_H - 12 - P_PAD_H; // top of footer divider
         const barY = contentBot - 6 - P_PAD_H; // 6 = BLOCK_H, pinned near footer to leave room for description
-        drawBlockProgress(ctx, barX, barY, PCARD_W - P_PAD_W * 2, recurringStep.StartTime, recurringStep.OccurTime);
+        drawBlockProgress(ctx, barX, barY, PCARD_W - P_PAD_W * 2, recurringItem.StartAtSimTime, recurringItem.ExecuteAtSimTime);
     }
 
     // determine status
@@ -258,73 +257,57 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.restore();
 }
 
-function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card[], field: number[], canvasWidth: number, recurringMap: Map<number, CardIDToChainStepIndex>, chains: Chain[]): void {
+function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card[], field: number[], canvasWidth: number, recurringMap: Map<number, SimulationItem>): void {
     const n = field.length;
     if (n === 0) return;
 
-    // total width of all cards + gaps
     const totalW = n * PCARD_W + (n - 1) * CARD_GAP;
-
-    // center within canvas
     const startX = (canvasWidth - totalW) / 2;
 
     for (let i = 0; i < n; i++) {
-        const card = cards[field[i]];
+        const cardIdx = field[i];
+        const card = cards[cardIdx];
         const cardX = startX + i * (PCARD_W + CARD_GAP);
-        const loc = recurringMap.get(card.CardID);
-        const recurringStep = loc
-            ? chains.find(c => c.ChainID === loc.ChainID)?.ChainSteps[loc.Index]
-            : undefined;
-        drawFieldCard(ctx, cardX, y, card, recurringStep);
+        drawFieldCard(ctx, cardX, y, card, recurringMap.get(cardIdx));
     }
 }
 
 // returns how much to increment y by
-function drawReactionZone( ctx: CanvasRenderingContext2D, x:number, y: number, chains: Chain[], cards: Card[] ) : number {
+function drawReactionZone( ctx: CanvasRenderingContext2D, x: number, y: number, chain: ChainItem[], cards: Card[] ) : number {
 
     const margin = 10;
     const height = 300;
 
-    // draw the reaction chain
     const centerX = ctx.canvas.clientWidth / 2;
     const centerY = y + (height / 2);
-    drawReactionChains( ctx, centerX, centerY, chains, cards );
+    drawReactionChains( ctx, centerX, centerY, chain, cards );
 
     return height + (2*margin);
 }
 
 
-function drawReactionChains( ctx: CanvasRenderingContext2D, centerX: number, centerY: number, chains: Chain[], cards: Card[] ) {
+function drawReactionChains( ctx: CanvasRenderingContext2D, centerX: number, centerY: number, chain: ChainItem[], cards: Card[] ) {
 
-    if (chains.length <= 0) { return; }
+    if (chain.length <= 0) { return; }
 
     const itemWidth = PCARD_W;
     const itemHeight = PCARD_H;
-    const itemMargin = 6;
     const chainPad_W = 10;
     const chainPad_H = 10;
     const titleHeight = 20;
     const chainMargin = 16;
 
     const chainContainerW = itemWidth + 2 * chainPad_W;
-
-    const drawableChains = chains
-        .filter(c => c.ChainSteps.length > 0)
-        .filter(c => !(c.ChainSteps.length === 1 && c.ChainSteps[0].Type === ChainStepType.Other))
-        .map(c => ({ chain: c, visibleSteps: c.ChainSteps.filter(s => s.Type !== ChainStepType.Recurring) }))
-        .filter(({ visibleSteps }) => visibleSteps.length > 0);
-
-    if (drawableChains.length === 0) { return; }
-
-    const totalWidth = drawableChains.length * chainContainerW + (drawableChains.length - 1) * chainMargin;
+    const totalWidth = chain.length * chainContainerW + (chain.length - 1) * chainMargin;
     const groupStartX = centerX - totalWidth / 2;
 
-    for (let i = 0; i < drawableChains.length; i++) {
-        const { chain, visibleSteps } = drawableChains[i];
+    for (let i = 0; i < chain.length; i++) {
+        const item = chain[i];
+        const card = cards[item.CardID];
+        if (!card) continue;
 
-        const totHeight = visibleSteps.length * itemHeight + itemMargin * (visibleSteps.length - 1);
         const chainX = groupStartX + i * (chainContainerW + chainMargin);
-        const chainY = centerY - totHeight / 2;
+        const chainY = centerY - itemHeight / 2;
 
         // container title background
         roundRectTop(ctx, chainX, chainY - chainPad_H - titleHeight, chainContainerW, titleHeight, CARD_RADIUS);
@@ -336,32 +319,22 @@ function drawReactionChains( ctx: CanvasRenderingContext2D, centerX: number, cen
         ctx.font = "10px sans-serif";
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
-        ctx.fillText("Chain ", chainX + 6, chainY - chainPad_H - titleHeight / 2 + 1);
+        ctx.fillText("Chain", chainX + 6, chainY - chainPad_H - titleHeight / 2 + 1);
 
         // container border
-        roundRect(ctx, chainX + 0.5, chainY - chainPad_H - titleHeight + 0.5, chainContainerW, totHeight + 2 * chainPad_H + titleHeight, CARD_RADIUS);
+        roundRect(ctx, chainX + 0.5, chainY - chainPad_H - titleHeight + 0.5, chainContainerW, itemHeight + 2 * chainPad_H + titleHeight, CARD_RADIUS);
         ctx.strokeStyle = CARD_BORDER;
         ctx.lineWidth = 0.5;
         ctx.stroke();
 
-        // entries
-        for (let j = 0; j < visibleSteps.length; j++) {
-            const entry = visibleSteps[j];
-            const entryX = chainX + chainPad_W;
-            const entryY = chainY + j * (itemHeight + itemMargin);
-
-            const card = cards.find(c => c.CardID === entry.CardID);
-            if (card) {
-                drawFieldCard(ctx, entryX, entryY, card, entry);
-            }
-        }
+        drawFieldCard(ctx, chainX + chainPad_W, chainY, card);
     }
 
 }
 
 function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean, selectedIndex: number ) {
     for (let i = 0; i < handOrder.length; i++) {
-        drawFieldCard( ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]], undefined, faceDown, selectedIndex === handOrder[i] );
+        drawFieldCard( ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]], undefined, faceDown, selectedIndex === handOrder[i]);
     }
 }
 
@@ -466,7 +439,7 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, opponent
     }
 }
 
-export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number, recurringMap: Map<number, CardIDToChainStepIndex>) {
+export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number, recurringMap: Map<number, SimulationItem>) {
     const W = ctx.canvas.clientWidth;
     const H = ctx.canvas.clientHeight;
     const opponentIndex = userIndex === 0 ? 1 : 0;
@@ -505,14 +478,14 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
 
     if (state.Phase !== Phase.BoardSetup) {
         // Opponent field
-        drawField(ctx, y, state.Cards, state.Field[opponentIndex], W, recurringMap, state.ReactionPQ.Items);
+        drawField(ctx, y, state.Cards, state.Field[opponentIndex], W, recurringMap);
         y += ZONE_H + 16;
 
         // Chain Zone
-        y += drawReactionZone(ctx, ZONE_X, y, state.ReactionPQ.Items, state.Cards);
+        y += drawReactionZone(ctx, ZONE_X, y, state.Chain, state.Cards);
 
         // Player field
-        drawField(ctx, y, state.Cards, state.Field[userIndex], W, recurringMap, state.ReactionPQ.Items);
+        drawField(ctx, y, state.Cards, state.Field[userIndex], W, recurringMap);
         y += ZONE_H + 16;
     }
 

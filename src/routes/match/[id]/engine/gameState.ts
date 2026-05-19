@@ -1,16 +1,21 @@
 
 export interface Timestamp {
-    Timestamp: number;   
+    Timestamp: number;
     UpdateID: number;
 }
 
-export type GameState = Timestamp & {
-
-    // extends the interface, just reminding myself, harmless but redundant
+export type GameState = {
     UpdateID: number;
-    Timestamp: number;
+    WallTimestamp: number;
 
     Phase: number;
+
+    PausePhase: number;
+    PauseStack: [number, number];
+    FullPauseOffset: number;
+    SimPauseOffset: number;
+    TeamPaused: number;
+    TimeBank: number[];
 
     Cards: Card[];
     Deck: number[][];
@@ -18,12 +23,12 @@ export type GameState = Timestamp & {
     Field: number[][];
     Grave: number[][];
 
-    ReactionPQ: PriorityQueue;
+    Chain: ChainItem[];
+    SimulationPQ: SimulationPQ;
 
     Mana: number[];
     Structures: Structure[];
     Ready: boolean[];
-
 };
 
 export const Phase = {
@@ -35,26 +40,37 @@ export const Phase = {
     GameEnd: 5,
 } as const;
 
+export const Zone = {
+    Deck: 0,
+    Hand: 1,
+    Field: 2,
+    Graveyard: 3,
+    Chain: 4,
+} as const;
+
+export const ChainItemType = {
+    Card: 0,
+    Ability: 1,
+    Spell: 2,
+} as const;
+
 export interface Structure {
     DefNo: number;
     HP: number;
 }
 
 export interface Card {
-    //
     DefNo: number;
     Name: string;
     Description: string;
     Cost: number;
     HP: number;
 
-    //
-    CardID: number;
     Team: number;
     Type: number;
-    Zone: number; // 0: deck, 1: hand, 2: field, 3: grave, 4: TemporaryUnaccessible
+    Zone: number;
     Armed: boolean;
-    AutoSummon: number; // 0: not staged; 1+: order in which to autosummon during reveal phase
+    AutoSummon: number;
 }
 
 export interface Effect {
@@ -64,51 +80,50 @@ export interface Effect {
     C: number;
 }
 
-export const ChainStepType = {
-    Card: 0,
-    CardEffect: 1,
-    Ability: 2,
-    Other: 3,
-    Summon: 4,
-    Spell: 5,
-    Recurring: 6,
-} as const;
-
-export type ChainStepTypeValue = typeof ChainStepType[keyof typeof ChainStepType];
-
-export interface ChainStep {
-    Type: ChainStepTypeValue;
+export interface ChainItem {
+    Type: number;
     CardID: number;
     StartTime: number;
+    PopTime: number;
     OccurTime: number;
-    PopTime: number;
     Effects: Effect[];
-    Persistent: boolean;
 }
 
-export interface Chain {
-    ChainID: number;
-    PopTime: number;
-    ChainSteps: ChainStep[];
+export interface SimulationItem {
+    SeqID: number;
+    StartAtSimTime: number;
+    PopAtSimTime: number;
+    ExecuteAtSimTime: number;
+    CardID: number;
+    Type: number;
+    Effects: Effect[];
 }
 
-export interface PriorityQueue {
-    Items: Chain[];
+export interface SimulationPQ {
+    Items: SimulationItem[];
 }
 
 export function initGameState(): GameState {
     return {
-        Timestamp: Date.now(),
         UpdateID: 0,
+        WallTimestamp: Date.now(),
         Phase: 0,
 
-        Cards: [],
-        Deck: [[],[]],
-        Hand: [[],[]],
-        Field: [[],[]],
-        Grave: [[],[]],
+        PausePhase: 0,
+        PauseStack: [0, 0],
+        FullPauseOffset: 0,
+        SimPauseOffset: 0,
+        TeamPaused: 0,
+        TimeBank: [0, 0],
 
-        ReactionPQ: { Items: [] },
+        Cards: [],
+        Deck: [[], []],
+        Hand: [[], []],
+        Field: [[], []],
+        Grave: [[], []],
+
+        Chain: [],
+        SimulationPQ: { Items: [] },
 
         Mana: [],
         Structures: [],
@@ -118,25 +133,26 @@ export function initGameState(): GameState {
 
 export function cloneGameState(src: GameState): GameState {
     return {
-        Timestamp: src.Timestamp,
         UpdateID: src.UpdateID,
+        WallTimestamp: src.WallTimestamp,
         Phase: src.Phase,
 
+        PausePhase: src.PausePhase,
+        PauseStack: [...src.PauseStack] as [number, number],
+        FullPauseOffset: src.FullPauseOffset,
+        SimPauseOffset: src.SimPauseOffset,
+        TeamPaused: src.TeamPaused,
+        TimeBank: [...src.TimeBank],
+
         Cards: src.Cards.map(card => ({ ...card })),
+        Deck: src.Deck.map(d => [...d]),
+        Hand: src.Hand.map(h => [...h]),
+        Field: src.Field.map(f => [...f]),
+        Grave: src.Grave.map(g => [...g]),
 
-        Deck: src.Deck.map(teamDeck => [...teamDeck]),
-        Hand: src.Hand.map(teamHand => [...teamHand]),
-        Field: src.Field.map(teamField => [...teamField]),
-        Grave: src.Grave.map(teamGrave => [...teamGrave]),
-
-        ReactionPQ: {
-            Items: src.ReactionPQ.Items.map(chain => ({
-                ...chain,
-                ChainSteps: chain.ChainSteps.map(entry => ({
-                    ...entry,
-                    Effects: [...entry.Effects],
-                })),
-            })),
+        Chain: src.Chain.map(item => ({ ...item, Effects: [...item.Effects] })),
+        SimulationPQ: {
+            Items: src.SimulationPQ.Items.map(item => ({ ...item, Effects: [...item.Effects] })),
         },
 
         Mana: [...src.Mana],

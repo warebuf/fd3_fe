@@ -10,7 +10,8 @@
     import { interpolate } from './engine/interpolate';
 
     import { drawBoard } from './ui/drawBoard';
-    import { buildRecurringMap, type CardIDToChainStepIndex } from './engine/buildRecurringMap';
+    import { buildRecurringMap } from './engine/buildRecurringMap';
+    import type { SimulationItem } from './engine/gameState';
     import { calcCoordinates, getClickedCard, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
 
     // drawing related
@@ -35,7 +36,7 @@
     let clickedIndex: number = -1; // is unitIdx
     let handOrder: number[][] = [];
     let handCoords: coordinate[][] = [];
-    let recurringMap = new Map<number, CardIDToChainStepIndex>();
+    let recurringMap = new Map<number, SimulationItem>();
 
 
     function resizeCanvas() {
@@ -62,7 +63,7 @@
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
             handCoords = calcCoordinates(handOrder, ctx.canvas.clientWidth, teamIdx);
-            recurringMap = buildRecurringMap(interpolatedState.ReactionPQ.Items);
+            recurringMap = buildRecurringMap(interpolatedState.SimulationPQ.Items);
         }
 
         // draw
