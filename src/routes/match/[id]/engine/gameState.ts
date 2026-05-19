@@ -1,6 +1,6 @@
 
 export interface Timestamp {
-    Timestamp: number;
+    WallTimestamp: number;
     UpdateID: number;
 }
 

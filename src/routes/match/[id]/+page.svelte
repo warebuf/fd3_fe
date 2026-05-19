@@ -6,12 +6,11 @@
     import { stopPing } from "./networking/ping";
 
     import { StateManager } from "./engine/stateManager"
-    import { initGameState, cloneGameState, type GameState, Phase } from './engine/gameState';
+    import { initGameState, cloneGameState, type GameState, type SimulationItem, Phase } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
     import { drawBoard } from './ui/drawBoard';
     import { buildRecurringMap } from './engine/buildRecurringMap';
-    import type { SimulationItem } from './engine/gameState';
     import { calcCoordinates, getClickedCard, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
 
     // drawing related
@@ -151,7 +150,8 @@
             stopPing(); // stop networking ping
             
             // stop listeners
-            window.removeEventListener("resize", resizeCanvas); 
+            window.removeEventListener("resize", resizeCanvas);
+            window.removeEventListener('keydown', onKeyDown);
             canvasEl.removeEventListener('mousemove', onMove);
             canvasEl.removeEventListener('mouseleave', onLeave);
             canvasEl.removeEventListener('click', onClick);

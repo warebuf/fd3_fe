@@ -33,18 +33,19 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
       case "p":
         calculateOffset(msg.t1, msg.t2, clientReceive);
         break;
-      case "fullState":
+      case "fullState": {
         const newState: GameState = {
           ...msg.data,
-          Timestamp: new Date(msg.data.Timestamp).getTime()
+          WallTimestamp: new Date(msg.data.WallTimestamp).getTime()
         }
         stateManager.addFullState(newState);
         break;
+      }
       case "actions":
         for(let i = 0; i < msg.data.length; i++) {
           const newLog: EventLog = {
             ...msg.data[i],
-            Timestamp: new Date(msg.data[i].Timestamp).getTime()
+            WallTimestamp: new Date(msg.data[i].Timestamp).getTime()
           }
           stateManager.addLog(newLog);
         }

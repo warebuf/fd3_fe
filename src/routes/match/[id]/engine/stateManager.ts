@@ -23,7 +23,8 @@ export class StateManager {
         const clockOffset = get(serverClockOffset);
         for(;this.scheduled.size > 0;) {
             const nextEvent = this.scheduled.peek();
-            const eventTime = nextEvent.Timestamp - clockOffset;
+            console.log("nextEvent", nextEvent)
+            const eventTime = nextEvent.WallTimestamp - clockOffset;
             if( currentTime >= eventTime ) { // an event has passed
                 this.scheduled.pop();
                 if("Type" in nextEvent) { // EventResult

@@ -29,7 +29,7 @@ export class MinHeap<T extends Timestamp> {
   }
 
   private less(a: T, b: T): boolean {
-    if (a.Timestamp !== b.Timestamp) return a.Timestamp < b.Timestamp;
+    if (a.WallTimestamp !== b.WallTimestamp) return a.WallTimestamp < b.WallTimestamp;
     return a.UpdateID < b.UpdateID;
   }
 
