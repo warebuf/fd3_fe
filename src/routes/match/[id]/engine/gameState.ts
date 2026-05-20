@@ -24,7 +24,6 @@ export type GameState = {
     Grave: number[][];
 
     Chain: ChainItem[];
-    SimulationPQ: SimulationPQ;
 
     Mana: number[];
     Structures: Structure[];
@@ -59,6 +58,19 @@ export interface Structure {
     HP: number;
 }
 
+export const AbilityTimerType = {
+    Normal: 0,
+    Summon: 1,
+} as const;
+
+export interface AbilityTimer {
+    AbilityID: number;
+    AbilityIdx: number;
+    Type: number;
+    StartAtSimTime: number;
+    ExecuteAtSimTime: number;
+}
+
 export interface Card {
     DefNo: number;
     Name: string;
@@ -71,6 +83,7 @@ export interface Card {
     Zone: number;
     Armed: boolean;
     AutoSummon: number;
+    AbilityTimers: AbilityTimer[];
 }
 
 export interface Effect {
@@ -89,19 +102,6 @@ export interface ChainItem {
     Effects: Effect[];
 }
 
-export interface SimulationItem {
-    SeqID: number;
-    StartAtSimTime: number;
-    PopAtSimTime: number;
-    ExecuteAtSimTime: number;
-    CardID: number;
-    Type: number;
-    Effects: Effect[];
-}
-
-export interface SimulationPQ {
-    Items: SimulationItem[];
-}
 
 export function initGameState(): GameState {
     return {
@@ -123,7 +123,6 @@ export function initGameState(): GameState {
         Grave: [[], []],
 
         Chain: [],
-        SimulationPQ: { Items: [] },
 
         Mana: [],
         Structures: [],
@@ -144,16 +143,13 @@ export function cloneGameState(src: GameState): GameState {
         TeamPaused: src.TeamPaused,
         TimeBank: [...src.TimeBank],
 
-        Cards: src.Cards.map(card => ({ ...card })),
+        Cards: src.Cards.map(card => ({ ...card, AbilityTimers: (card.AbilityTimers ?? []).map(t => ({ ...t })) })),
         Deck: src.Deck.map(d => [...d]),
         Hand: src.Hand.map(h => [...h]),
         Field: src.Field.map(f => [...f]),
         Grave: src.Grave.map(g => [...g]),
 
         Chain: src.Chain.map(item => ({ ...item, Effects: [...item.Effects] })),
-        SimulationPQ: {
-            Items: src.SimulationPQ.Items.map(item => ({ ...item, Effects: [...item.Effects] })),
-        },
 
         Mana: [...src.Mana],
         Structures: src.Structures.map(s => ({ ...s })),

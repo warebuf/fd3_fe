@@ -1,6 +1,6 @@
 
 import { get } from "svelte/store";
-import type { GameState, Card, ChainItem, SimulationItem } from "../engine/gameState"
+import type { GameState, Card, ChainItem } from "../engine/gameState"
 import { Phase } from "../engine/gameState"
 import type { coordinate } from "./cardCoordinates"
 import { serverClockOffset, ping } from "../networking/ping";
@@ -118,7 +118,7 @@ function drawWrappedText(ctx: CanvasRenderingContext2D, text: string, x: number,
     return currentY;
 }
 
-function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, recurringItem?: SimulationItem, faceDown?: boolean, selected?: boolean ) {
+function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, faceDown?: boolean, selected?: boolean ) {
     ctx.save();
 
     // adjust for blurry half pixel borders
@@ -186,12 +186,13 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
         descBottom = drawWrappedText(ctx, card.Description, tx, divY + 10, PCARD_W - P_PAD_W * 2, 11, contentBot - 4);
     }
 
-    // draw recurring ability progress below description
-    if (recurringItem) {
+    // draw first ability timer progress below description
+    const activeTimer = card.AbilityTimers?.[0];
+    if (activeTimer) {
         const barX = x + P_PAD_W;
-        const contentBot = y + PCARD_H - P_PAD_H - 12 - P_PAD_H; // top of footer divider
-        const barY = contentBot - 6 - P_PAD_H; // 6 = BLOCK_H, pinned near footer to leave room for description
-        drawBlockProgress(ctx, barX, barY, PCARD_W - P_PAD_W * 2, recurringItem.StartAtSimTime, recurringItem.ExecuteAtSimTime);
+        const contentBot = y + PCARD_H - P_PAD_H - 12 - P_PAD_H;
+        const barY = contentBot - 6 - P_PAD_H;
+        drawBlockProgress(ctx, barX, barY, PCARD_W - P_PAD_W * 2, activeTimer.StartAtSimTime, activeTimer.ExecuteAtSimTime);
     }
 
     // determine status
@@ -257,7 +258,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.restore();
 }
 
-function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card[], field: number[], canvasWidth: number, recurringMap: Map<number, SimulationItem>): void {
+function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card[], field: number[], canvasWidth: number): void {
     const n = field.length;
     if (n === 0) return;
 
@@ -268,7 +269,7 @@ function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card[], fie
         const cardIdx = field[i];
         const card = cards[cardIdx];
         const cardX = startX + i * (PCARD_W + CARD_GAP);
-        drawFieldCard(ctx, cardX, y, card, recurringMap.get(cardIdx));
+        drawFieldCard(ctx, cardX, y, card);
     }
 }
 
@@ -327,14 +328,14 @@ function drawReactionChains( ctx: CanvasRenderingContext2D, centerX: number, cen
         ctx.lineWidth = 0.5;
         ctx.stroke();
 
-        drawFieldCard(ctx, chainX + chainPad_W, chainY, card);
+        drawFieldCard(ctx, chainX + chainPad_W, chainY, card, false);
     }
 
 }
 
 function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean, selectedIndex: number ) {
     for (let i = 0; i < handOrder.length; i++) {
-        drawFieldCard( ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]], undefined, faceDown, selectedIndex === handOrder[i]);
+        drawFieldCard( ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]], faceDown, selectedIndex === handOrder[i]);
     }
 }
 
@@ -439,7 +440,7 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, opponent
     }
 }
 
-export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number, recurringMap: Map<number, SimulationItem>) {
+export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number) {
     const W = ctx.canvas.clientWidth;
     const H = ctx.canvas.clientHeight;
     const opponentIndex = userIndex === 0 ? 1 : 0;
@@ -478,14 +479,14 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
 
     if (state.Phase !== Phase.BoardSetup) {
         // Opponent field
-        drawField(ctx, y, state.Cards, state.Field[opponentIndex], W, recurringMap);
+        drawField(ctx, y, state.Cards, state.Field[opponentIndex], W);
         y += ZONE_H + 16;
 
         // Chain Zone
         y += drawReactionZone(ctx, ZONE_X, y, state.Chain, state.Cards);
 
         // Player field
-        drawField(ctx, y, state.Cards, state.Field[userIndex], W, recurringMap);
+        drawField(ctx, y, state.Cards, state.Field[userIndex], W);
         y += ZONE_H + 16;
     }
 

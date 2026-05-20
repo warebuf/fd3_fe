@@ -6,11 +6,10 @@
     import { stopPing } from "./networking/ping";
 
     import { StateManager } from "./engine/stateManager"
-    import { initGameState, cloneGameState, type GameState, type SimulationItem, Phase } from './engine/gameState';
+    import { initGameState, cloneGameState, type GameState, Phase } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
     import { drawBoard } from './ui/drawBoard';
-    import { buildRecurringMap } from './engine/buildRecurringMap';
     import { calcCoordinates, getClickedCard, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
 
     // drawing related
@@ -35,7 +34,6 @@
     let clickedIndex: number = -1; // is unitIdx
     let handOrder: number[][] = [];
     let handCoords: coordinate[][] = [];
-    let recurringMap = new Map<number, SimulationItem>();
 
 
     function resizeCanvas() {
@@ -62,14 +60,13 @@
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
             handCoords = calcCoordinates(handOrder, ctx.canvas.clientWidth, teamIdx);
-            recurringMap = buildRecurringMap(interpolatedState.SimulationPQ.Items);
         }
 
         // draw
         const width = canvasEl.clientWidth;
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
-        drawBoard(ctx, interpolatedState, teamIdx, handOrder, handCoords, clickedIndex, recurringMap);
+        drawBoard(ctx, interpolatedState, teamIdx, handOrder, handCoords, clickedIndex);
 
         // schedule next frame
         animationID = requestAnimationFrame(loop);
