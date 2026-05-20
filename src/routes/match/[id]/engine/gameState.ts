@@ -143,7 +143,7 @@ export function cloneGameState(src: GameState): GameState {
         TeamPaused: src.TeamPaused,
         TimeBank: [...src.TimeBank],
 
-        Cards: src.Cards.map(card => ({ ...card, AbilityTimers: (card.AbilityTimers ?? []).map(t => ({ ...t })) })),
+        Cards: src.Cards.map(card => ({ ...card, AbilityTimers: card.AbilityTimers.map(t => ({ ...t })) })),
         Deck: src.Deck.map(d => [...d]),
         Hand: src.Hand.map(h => [...h]),
         Field: src.Field.map(f => [...f]),
