@@ -6,7 +6,7 @@ export function addAbilityTimer(state: GameState, log: AddAbilityTimerLog) {
         AbilityID: log.AbilityID,
         AbilityIdx: log.AbilityIdx,
         Type: log.TimerType,
-        StartAtSimTime: log.StartTime,
-        ExecuteAtSimTime: log.OccurTime,
+        StartAtSimTime: log.StartAtSimTime,
+        ExecuteAtSimTime: log.ExecuteAtSimTime,
     });
 }

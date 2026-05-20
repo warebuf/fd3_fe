@@ -14,7 +14,7 @@ export type ReadyLog              = Timestamp & { Type: 10; TeamIndex: number; }
 export type AutoSummonLog         = Timestamp & { Type: 11; TeamIndex: number; CardIndex: number; AutoSummonIdx: number; }
 export type PauseLog              = Timestamp & { Type: 12; TeamIndex: number; TimeRemaining: number; }
 export type UnpauseLog            = Timestamp & { Type: 13; TeamIndex: number; TimeRemaining: number; }
-export type AddAbilityTimerLog    = Timestamp & { Type: 14; CardIndex: number; AbilityID: number; AbilityIdx: number; TimerType: number; StartTime: number; OccurTime: number; }
+export type AddAbilityTimerLog    = Timestamp & { Type: 14; CardIndex: number; AbilityID: number; AbilityIdx: number; TimerType: number; StartAtSimTime: number; ExecuteAtSimTime: number; }
 export type ClearAbilityTimerLog  = Timestamp & { Type: 15; CardIndex: number; AbilityID: number; }
 
 export type EventLog =
