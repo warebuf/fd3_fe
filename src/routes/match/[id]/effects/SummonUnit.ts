@@ -1,8 +1,8 @@
 
-import type { SummonLog } from "../engine/logs";
+import type { SummonResolutionLog } from "../engine/logs";
 import type { GameState } from "../engine/gameState"
 
-export function summonUnit(state: GameState, log: SummonLog) {
+export function summonUnit(state: GameState, log: SummonResolutionLog) {
 
     let teamIndex = log.TeamIndex;
     let cardIndex = log.CardIndex;

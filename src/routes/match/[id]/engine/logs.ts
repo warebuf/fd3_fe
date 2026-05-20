@@ -3,8 +3,8 @@ import type { Timestamp } from "./gameState";
 export type PhaseLog              = Timestamp & { Type: 0;  Phase: number; }
 export type DrawLog               = Timestamp & { Type: 1;  TeamIndex: number; NumCards: number; }
 export type DeclareCardLog        = Timestamp & { Type: 2;  TeamIndex: number; CardIndex: number; }
-export type SummonLog             = Timestamp & { Type: 3;  TeamIndex: number; CardIndex: number; }
-export type AddChainLog           = Timestamp & { Type: 4;  StartTime: number; OccurTime: number; CardID: number; }
+export type SummonResolutionLog   = Timestamp & { Type: 3;  TeamIndex: number; CardIndex: number; }
+export type AddChainLog           = Timestamp & { Type: 4;  StartAtActiveTime: number; ExecuteAtActiveTime: number; CardID: number; }
 export type RemoveChainLog        = Timestamp & { Type: 5;  CardID: number; }
 export type DestroyCardLog        = Timestamp & { Type: 6;  TeamIndex: number; CardIndex: number; TargetAll: boolean; TargetTeamIndex: number; TargetCardIndex: number; }
 export type GainManaLog           = Timestamp & { Type: 7;  TeamIndex: number; Amount: number; }
@@ -21,7 +21,7 @@ export type EventLog =
     | PhaseLog
     | DrawLog
     | DeclareCardLog
-    | SummonLog
+    | SummonResolutionLog
     | AddChainLog
     | RemoveChainLog
     | DestroyCardLog
