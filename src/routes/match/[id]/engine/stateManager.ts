@@ -7,6 +7,7 @@ import { MinHeap } from "./stateMinHeap"
 import { applyEffect } from "../effects/ApplyEffect"
 import { serverClockOffset } from "../networking/ping";
 import type { EventLog } from "./logs";
+import { printLog } from "./logPrinter";
 
 type Event = EventLog | GameState;
 
@@ -25,9 +26,9 @@ export class StateManager {
             const nextEvent = this.scheduled.peek();
             const eventTime = nextEvent.WallTimestamp - clockOffset;
             if( currentTime >= eventTime ) { // an event has passed
-                console.log("nextEvent", nextEvent)
                 this.scheduled.pop();
                 if("Type" in nextEvent) { // EventResult
+                    printLog(nextEvent);
                     applyEffect(currentState, nextEvent);
                     significantEvent = true;
                 } else { // GameState
