@@ -7,7 +7,7 @@ import { MinHeap } from "./stateMinHeap"
 import { applyEffect } from "../effects/ApplyEffect"
 import { serverClockOffset } from "../networking/ping";
 import type { EventLog } from "./logs";
-import { printLog } from "./logPrinter";
+import { recordTrace } from "./debugTrace";
 
 type Event = EventLog | GameState;
 
@@ -28,8 +28,8 @@ export class StateManager {
             if( currentTime >= eventTime ) { // an event has passed
                 this.scheduled.pop();
                 if("Type" in nextEvent) { // EventResult
-                    printLog(nextEvent);
                     applyEffect(currentState, nextEvent);
+                    recordTrace(nextEvent, currentState);
                     significantEvent = true;
                 } else { // GameState
                     currentState = cloneGameState(nextEvent);
