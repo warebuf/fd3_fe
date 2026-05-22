@@ -4,6 +4,12 @@ import type { EventLog } from "./logs";
 
 export const DEBUG_TRACE = true;
 
+/*
+//
+// to download the json file, call downloadTrace() from the debugger
+//
+*/
+
 type TraceEntry = {
     log: EventLog;
     state: GameState;
@@ -17,17 +23,21 @@ export function recordTrace(log: EventLog, state: GameState) {
 }
 
 export function downloadTrace() {
-    const jsonl = entries.map(e => JSON.stringify(e)).join('\n');
-    const blob = new Blob([jsonl], { type: 'application/jsonl' });
+    const json = JSON.stringify(entries, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `trace_${Date.now()}.jsonl`;
+    a.download = `trace_${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
 }
 
-// call downloadTrace() from the browser console
+export function clearTrace() {
+    entries.length = 0;
+}
+
 if (DEBUG_TRACE && typeof window !== 'undefined') {
     (window as any).downloadTrace = downloadTrace;
+    (window as any).clearTrace = clearTrace;
 }

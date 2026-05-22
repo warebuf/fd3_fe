@@ -4,6 +4,7 @@ import { sendPing, calculateOffset } from "./ping";
 import { StateManager } from "../engine/stateManager";
 import type { EventLog } from "../engine/logs";
 import type { GameState } from "../engine/gameState";
+import { clearTrace } from "../engine/debugTrace";
 
 
 export async function connectWS(matchID: string, stateManager: StateManager) {
@@ -34,6 +35,7 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
         calculateOffset(msg.t1, msg.t2, clientReceive);
         break;
       case "fullState": {
+        clearTrace();
         stateManager.addFullState(msg.data as GameState);
         break;
       }

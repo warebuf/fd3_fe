@@ -21,6 +21,7 @@ import { clearAbilityTimer } from "./ClearAbilityTimer";
 
 export function applyEffect(state: GameState, log: EventLog) {
 
+    let applied = true;
     switch(log.Type) {
         case 0:  incrementPhase(state, log); break;
         case 1:  drawCard(state, log); break;
@@ -39,7 +40,9 @@ export function applyEffect(state: GameState, log: EventLog) {
         case 14: addAbilityTimer(state, log); break;
         case 15: clearAbilityTimer(state, log); break;
 
-        default: console.log("could not apply log", log); break;
+        default: console.log("could not apply log", log); applied = false; break;
     }
+
+    if (applied) state.WallTimestamp = log.WallTimestamp;
 
 }
