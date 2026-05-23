@@ -60,14 +60,13 @@ export const ChainItemType = {
 } as const;
 
 export const EffectType = {
-    SummonResolution: 1,
-    Attack:           2,
-    Heal:             3,
-    Draw:             4,
-    Mana:             5,
-    Silence:          6,
-    GrantAbility:     7,
-    Destroy:          8,
+    Attack:           1,
+    Heal:             2,
+    Draw:             3,
+    Mana:             4,
+    Silence:          5,
+    GrantAbility:     6,
+    Destroy:          7,
 } as const;
 
 export interface Structure {
