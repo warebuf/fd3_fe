@@ -372,8 +372,7 @@ const SUMMON_COLOR = "#D3D1C7";
 
 function drawSummoningBar( ctx: CanvasRenderingContext2D, x: number, y: number, startMs: number, endMs: number ) {
     const GAP = 12;
-    const BAR_H = 5;
-    const LABEL_H = 9;
+    const BAR_H = 6;
     const BAR_W = PCARD_W - 20;
     const barX = x + 10;
     const clockOffset = get(serverClockOffset);
@@ -383,22 +382,25 @@ function drawSummoningBar( ctx: CanvasRenderingContext2D, x: number, y: number, 
     const countdown = (remainingMs / 1000).toFixed(1);
 
     const barY = y - GAP - BAR_H;
-    const labelY = barY - 4;
 
-    // label: "Summoning" left, countdown right
-    ctx.font = `${LABEL_H}px sans-serif`;
+    ctx.font = "9px sans-serif";
     ctx.textBaseline = "alphabetic";
     ctx.fillStyle = SUMMON_COLOR;
     ctx.textAlign = "left";
-    ctx.fillText("Summoning", barX, labelY);
+    ctx.fillText("Summoning", barX, barY - 4);
     ctx.textAlign = "right";
-    ctx.fillText(countdown, barX + BAR_W, labelY);
+    ctx.fillText(countdown, barX + BAR_W, barY - 4);
 
-    // progress bar
-    ctx.fillStyle = CARD_BORDER;
+    // gray track
+    ctx.fillStyle = "#444444";
     ctx.fillRect(Math.round(barX), Math.round(barY), BAR_W, BAR_H);
-    ctx.fillStyle = SUMMON_COLOR;
+    // white fill
+    ctx.fillStyle = "#ffffff";
     ctx.fillRect(Math.round(barX), Math.round(barY), Math.round(BAR_W * progress), BAR_H);
+    // white border
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(Math.round(barX) + 0.5, Math.round(barY) + 0.5, BAR_W, BAR_H);
 }
 
 function drawBlockProgress( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, startMs: number, endMs: number ) {
@@ -543,4 +545,5 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userI
     drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[userIndex] ?? [], state.Cards, handCoords[userIndex] ?? [], false, selectedIndex); // face up
 
     drawInfoPanel(ctx, state, opponentIndex, userIndex);
+
 }
