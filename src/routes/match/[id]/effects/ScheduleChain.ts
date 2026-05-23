@@ -5,9 +5,9 @@ export function addChain(state: GameState, log: AddChainLog) {
     state.Chain.push({
         Type: 0,
         CardID: log.CardID,
-        StartTime: log.StartAtActiveTime,
-        PopTime: 0,
-        OccurTime: log.ExecuteAtActiveTime,
+        StartAtActiveTime: log.StartAtActiveTime,
+        PopAtActiveTime: 0,
+        ExecuteAtActiveTime: log.ExecuteAtActiveTime,
         Effects: [],
     });
 }

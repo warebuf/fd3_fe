@@ -102,9 +102,9 @@ export interface Effect {
 export interface ChainItem {
     Type: number;
     CardID: number;
-    StartTime: number;
-    PopTime: number;
-    OccurTime: number;
+    StartAtActiveTime: number;
+    PopAtActiveTime: number;
+    ExecuteAtActiveTime: number;
     Effects: Effect[];
 }
 
