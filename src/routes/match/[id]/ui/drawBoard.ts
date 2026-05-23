@@ -1,7 +1,7 @@
 
 import { get } from "svelte/store";
 import type { GameState, Card, ChainItem } from "../engine/gameState"
-import { Phase, CardStatus } from "../engine/gameState"
+import { Phase, CardStatus, AbilityTimerType } from "../engine/gameState"
 import type { coordinate } from "./cardCoordinates"
 import { serverClockOffset, ping } from "../networking/ping";
 
@@ -186,6 +186,14 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
         descBottom = drawWrappedText(ctx, card.Description, tx, divY + 10, PCARD_W - P_PAD_W * 2, 11, contentBot - 4);
     }
 
+    // draw summoning bar above card
+    if (card.Status === CardStatus.Summoning) {
+        const summonTimer = card.AbilityTimers?.find(t => t.Type === AbilityTimerType.Summon);
+        if (summonTimer) {
+            drawSummoningBar(ctx, x, y, summonTimer.StartAtSimTime, summonTimer.ExecuteAtSimTime);
+        }
+    }
+
     // draw first ability timer progress below description
     const activeTimer = card.AbilityTimers?.[0];
     if (activeTimer) {
@@ -358,6 +366,39 @@ function drawStatBox(ctx: CanvasRenderingContext2D, x: number, y: number, value:
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(String(value), x + STAT_BOX_W / 2, y + STAT_BOX_H / 2);
+}
+
+const SUMMON_COLOR = "#D3D1C7";
+
+function drawSummoningBar( ctx: CanvasRenderingContext2D, x: number, y: number, startMs: number, endMs: number ) {
+    const GAP = 12;
+    const BAR_H = 5;
+    const LABEL_H = 9;
+    const BAR_W = PCARD_W - 20;
+    const barX = x + 10;
+    const clockOffset = get(serverClockOffset);
+    const now = Date.now() + clockOffset;
+    const progress = Math.min(Math.max((now - startMs) / (endMs - startMs), 0), 1);
+    const remainingMs = Math.max(endMs - now, 0);
+    const countdown = (remainingMs / 1000).toFixed(1);
+
+    const barY = y - GAP - BAR_H;
+    const labelY = barY - 4;
+
+    // label: "Summoning" left, countdown right
+    ctx.font = `${LABEL_H}px sans-serif`;
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = SUMMON_COLOR;
+    ctx.textAlign = "left";
+    ctx.fillText("Summoning", barX, labelY);
+    ctx.textAlign = "right";
+    ctx.fillText(countdown, barX + BAR_W, labelY);
+
+    // progress bar
+    ctx.fillStyle = CARD_BORDER;
+    ctx.fillRect(Math.round(barX), Math.round(barY), BAR_W, BAR_H);
+    ctx.fillStyle = SUMMON_COLOR;
+    ctx.fillRect(Math.round(barX), Math.round(barY), Math.round(BAR_W * progress), BAR_H);
 }
 
 function drawBlockProgress( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, startMs: number, endMs: number ) {
