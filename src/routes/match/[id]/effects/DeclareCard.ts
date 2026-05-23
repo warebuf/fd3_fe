@@ -1,6 +1,6 @@
 
 import type { DeclareCardLog } from "../engine/logs";
-import { Zone, type GameState } from "../engine/gameState"
+import { Zone, CardStatus, type GameState } from "../engine/gameState"
 
 export function declareCard(state: GameState, log: DeclareCardLog) {
 
@@ -13,6 +13,7 @@ export function declareCard(state: GameState, log: DeclareCardLog) {
 
         // update card's state
         state.Cards[cardIndex].Zone = Zone.Field;
+        state.Cards[cardIndex].Status = CardStatus.Summoning;
 
         // remove card from hand, add to field
         for(let i = 0; i < state.Hand[teamIndex].length; i++) {

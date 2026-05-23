@@ -1,7 +1,7 @@
 
 import { get } from "svelte/store";
 import type { GameState, Card, ChainItem } from "../engine/gameState"
-import { Phase } from "../engine/gameState"
+import { Phase, CardStatus } from "../engine/gameState"
 import type { coordinate } from "./cardCoordinates"
 import { serverClockOffset, ping } from "../networking/ping";
 
@@ -196,12 +196,18 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     }
 
     // determine status
-    let statusColor = "";
-    let statusText = "";
-    statusText = "Available";
-    statusColor = "#3A8F5A";
-    //statusText = "Pending Summon";
-    //statusColor = "#BFA43A";
+    let statusText: string;
+    let statusColor: string;
+    if (card.Status === CardStatus.Summoning) {
+        statusText = "Summoning";
+        statusColor = "#BFA43A";
+    } else if (card.Status === CardStatus.Online) {
+        statusText = "Online";
+        statusColor = "#3A8F5A";
+    } else {
+        statusText = "Available";
+        statusColor = "#3A8F5A";
+    }
 
     // draw status at footer
     const statusX = x + (PCARD_W/2);

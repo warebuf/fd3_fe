@@ -1,5 +1,5 @@
 import type { GameState } from "../engine/gameState";
-import { Zone } from "../engine/gameState";
+import { Zone, CardStatus } from "../engine/gameState";
 import type { RemoveChainLog } from "../engine/logs";
 
 export function removeChain(state: GameState, log: RemoveChainLog) {
@@ -9,6 +9,7 @@ export function removeChain(state: GameState, log: RemoveChainLog) {
     const card = state.Cards[log.CardID];
     if (card && card.Zone === Zone.Chain) {
         card.Zone = Zone.Graveyard;
+        card.Status = CardStatus.Default;
         state.Grave[card.Team].push(log.CardID);
     }
 }
