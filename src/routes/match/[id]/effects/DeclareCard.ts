@@ -1,6 +1,6 @@
 
 import type { DeclareCardLog } from "../engine/logs";
-import type { GameState } from "../engine/gameState"
+import { Zone, type GameState } from "../engine/gameState"
 
 export function declareCard(state: GameState, log: DeclareCardLog) {
 
@@ -9,17 +9,18 @@ export function declareCard(state: GameState, log: DeclareCardLog) {
 
     // check card type
     let cardType = state.Cards[cardIndex].Type;
-    if (cardType == 1) { // unit type        
+    if (cardType == 1) { // unit type
 
         // update card's state
-        state.Cards[cardIndex].Zone = 4;
-        
-        // remove card from hand
+        state.Cards[cardIndex].Zone = Zone.Field;
+
+        // remove card from hand, add to field
         for(let i = 0; i < state.Hand[teamIndex].length; i++) {
             if(cardIndex == state.Hand[teamIndex][i]) {
                 state.Hand[teamIndex].splice(i, 1);
             }
         }
+        state.Field[teamIndex].push(cardIndex);
         
     } else if (cardType == 3) { // spell type
 
