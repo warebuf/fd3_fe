@@ -30,6 +30,12 @@ export type GameState = {
     Ready: boolean[];
 };
 
+export const PausePhase = {
+    FullPause:   0,
+    SimPause:    1,
+    Simulating:  2,
+} as const;
+
 export const Phase = {
     PreMatch: 0,
     Draw: 1,
