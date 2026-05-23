@@ -43,7 +43,5 @@ export function destroyCard(state: GameState, log: DestroyCardLog) {
         console.log("quick hack in destroy card...");
     }
 
-    // update GameState UpdateID (i don't think it really matters tbh)
-    state.UpdateID = log.UpdateID + 1;
 
 }

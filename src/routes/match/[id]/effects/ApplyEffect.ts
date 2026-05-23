@@ -43,6 +43,9 @@ export function applyEffect(state: GameState, log: EventLog) {
         default: console.log("could not apply log", log); applied = false; break;
     }
 
-    if (applied) state.WallTimestamp = log.WallTimestamp;
+    if (applied) {
+        state.WallTimestamp = log.WallTimestamp;
+        state.UpdateID = log.UpdateID;
+    }
 
 }

@@ -28,9 +28,9 @@ export class StateManager {
             if( currentTime >= eventTime ) { // an event has passed
                 this.scheduled.pop();
                 if("Type" in nextEvent) { // EventResult
-                    // if (nextEvent.WallTimestamp <= currentState.WallTimestamp) {
-                    //     continue;
-                    // }
+                    if (nextEvent.UpdateID <= currentState.UpdateID) {
+                        continue;
+                    }
                     applyEffect(currentState, nextEvent);
                     recordTrace(nextEvent, currentState);
                     significantEvent = true;

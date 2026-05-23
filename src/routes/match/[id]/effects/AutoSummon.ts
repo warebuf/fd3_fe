@@ -16,6 +16,5 @@ export function autoSummon(state: GameState, log: AutoSummonLog) {
         }
     }
 
-    state.UpdateID = log.UpdateID + 1;
 
 }

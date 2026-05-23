@@ -38,7 +38,5 @@ export function declareCard(state: GameState, log: DeclareCardLog) {
     // set autosummon to 0
     state.Cards[cardIndex].AutoSummon = 0;
 
-    // update GameState UpdateID (i don't think it really matters tbh)
-    state.UpdateID = log.UpdateID + 1;
 
 }

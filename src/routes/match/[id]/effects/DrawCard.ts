@@ -16,7 +16,5 @@ export function drawCard(state: GameState, log: DrawLog) {
         state.Cards[cardIndex].Zone = 1; // update card state to Hand
     }
 
-    // update GameState UpdateID (i don't think it really matters tbh)
-    state.UpdateID = log.UpdateID + 1;
 
 }

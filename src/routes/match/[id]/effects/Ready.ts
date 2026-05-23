@@ -6,6 +6,5 @@ export function ready(state: GameState, log: ReadyLog) {
 
     state.Ready[log.TeamIndex] = true;
 
-    state.UpdateID = log.UpdateID + 1;
 
 }

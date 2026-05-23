@@ -14,7 +14,5 @@ export function summonUnit(state: GameState, log: SummonResolutionLog) {
     // apply any effects
     // apply any triggers
 
-    // update GameState UpdateID (i don't think it really matters tbh)
-    state.UpdateID = log.UpdateID + 1;
 
 }

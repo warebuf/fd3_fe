@@ -6,6 +6,5 @@ export function spendMana(state: GameState, log: SpendManaLog) {
 
     state.Mana[log.TeamIndex] -= log.Amount;
 
-    state.UpdateID = log.UpdateID + 1;
 
 }
