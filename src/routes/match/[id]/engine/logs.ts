@@ -1,10 +1,10 @@
-import type { Timestamp } from "./gameState";
+import type { Timestamp, Effect } from "./gameState";
 
 export type PhaseLog              = Timestamp & { Type: 0;  Phase: number; }
 export type DrawLog               = Timestamp & { Type: 1;  TeamIndex: number; NumCards: number; }
 export type DeclareCardLog        = Timestamp & { Type: 2;  TeamIndex: number; CardIndex: number; }
 export type SummonResolutionLog   = Timestamp & { Type: 3;  TeamIndex: number; CardIndex: number; }
-export type AddChainLog           = Timestamp & { Type: 4;  CardID: number; StartAtActiveTime: number; ExecuteAtActiveTime: number; }
+export type AddChainLog           = Timestamp & { Type: 4;  CardID: number; StartAtActiveTime: number; PopAtActiveTime: number; ExecuteAtActiveTime: number; Effects: Effect[]; }
 export type RemoveChainLog        = Timestamp & { Type: 5;  CardID: number; }
 export type DestroyCardLog        = Timestamp & { Type: 6;  TeamIndex: number; CardIndex: number; TargetAll: boolean; TargetTeamIndex: number; TargetCardIndex: number; }
 export type GainManaLog           = Timestamp & { Type: 7;  TeamIndex: number; Amount: number; }

@@ -59,6 +59,17 @@ export const ChainItemType = {
     Spell: 2,
 } as const;
 
+export const EffectType = {
+    SummonResolution: 1,
+    Attack:           2,
+    Heal:             3,
+    Draw:             4,
+    Mana:             5,
+    Silence:          6,
+    GrantAbility:     7,
+    Destroy:          8,
+} as const;
+
 export interface Structure {
     DefNo: number;
     HP: number;

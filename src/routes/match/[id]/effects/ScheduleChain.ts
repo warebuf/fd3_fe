@@ -6,8 +6,8 @@ export function addChain(state: GameState, log: AddChainLog) {
         Type: 0,
         CardID: log.CardID,
         StartAtActiveTime: log.StartAtActiveTime,
-        PopAtActiveTime: 0,
+        PopAtActiveTime: log.PopAtActiveTime,
         ExecuteAtActiveTime: log.ExecuteAtActiveTime,
-        Effects: [],
+        Effects: log.Effects,
     });
 }
