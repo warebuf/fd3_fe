@@ -7,7 +7,7 @@ export function summonUnit(state: GameState, log: SummonResolutionLog) {
     let teamIndex = log.TeamIndex;
     let cardIndex = log.CardIndex;
 
-    state.Cards[cardIndex].Status = CardStatus.Online;
+    state.Cards[cardIndex].Status = CardStatus.UnitActive;
 
     // apply any effects
     // apply any triggers
