@@ -168,7 +168,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.font = "9px sans-serif";
     let cardType = "";
     if(card.Type === 1) {
-        cardType = "Permanent";
+        cardType = "Unit";
     } else if(card.Type === 3) {
         cardType = "Spell";
     }
@@ -209,8 +209,8 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     if (card.Status === CardStatus.Summoning) {
         statusText = "Summoning";
         statusColor = "#BFA43A";
-    } else if (card.Status === CardStatus.Online) {
-        statusText = "Online";
+    } else if (card.Status === CardStatus.UnitActive) {
+        statusText = "Active";
         statusColor = "#3A8F5A";
     } else {
         statusText = "Available";

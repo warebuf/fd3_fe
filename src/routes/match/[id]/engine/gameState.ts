@@ -88,11 +88,11 @@ export interface AbilityTimer {
 }
 
 export const CardStatus = {
-    Default:   0, // spells, structures
-    Summoning: 1, // unit: on field, summon window not yet resolved
-    Online:    2, // unit: fully resolved and active
-    TrapSet:   3, // trap: face-down on field
-    Active:    4, // trap: triggered/active
+    Default:    0, // spells, structures
+    Summoning:  1, // unit: on field, summon window not yet resolved
+    UnitActive: 2, // unit: fully resolved and active
+    Set:        3, // trap: face-down on field
+    TrapActive: 4, // trap: triggered/active
 } as const;
 
 export interface Card {
