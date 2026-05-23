@@ -6,5 +6,9 @@ export function incrementPhase(state: GameState, log: PhaseLog) {
 
     state.Phase = log.Phase;
 
+    if (log.Phase === 3) {
+        state.Ready = state.Ready.map(() => false);
+    }
+
 
 }
