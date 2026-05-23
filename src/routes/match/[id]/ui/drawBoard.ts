@@ -395,7 +395,7 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, opponent
     ctx.fillStyle = SUBTEXT_COLOR;
     ctx.fillText(`Phase ${state.Phase}`, x, y);
     y += LINE_H;
-    ctx.fillText(`PausePhase ${state.PausePhase}`, x, y);
+    ctx.fillText(`Pause ${state.PausePhase}`, x, y);
     y += LINE_H;
     ctx.fillText(`${get(ping)} ms`, x, y);
     y += LINE_H * 2;
