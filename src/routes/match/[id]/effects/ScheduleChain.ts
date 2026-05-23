@@ -3,7 +3,7 @@ import type { AddChainLog } from "../engine/logs";
 
 export function addChain(state: GameState, log: AddChainLog) {
     state.Chain.push({
-        Type: 0,
+        Type: log.ChainType,
         CardID: log.CardID,
         StartAtActiveTime: log.StartAtActiveTime,
         PopAtActiveTime: log.PopAtActiveTime,
