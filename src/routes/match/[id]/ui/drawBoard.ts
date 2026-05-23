@@ -372,7 +372,7 @@ const SUMMON_COLOR = "#D3D1C7";
 
 function drawSummoningBar( ctx: CanvasRenderingContext2D, x: number, y: number, startMs: number, endMs: number ) {
     const GAP = 12;
-    const BAR_H = 6;
+    const BAR_H = 4;
     const BAR_W = PCARD_W - 20;
     const barX = x + 10;
     const clockOffset = get(serverClockOffset);
@@ -383,13 +383,13 @@ function drawSummoningBar( ctx: CanvasRenderingContext2D, x: number, y: number, 
 
     const barY = y - GAP - BAR_H;
 
-    ctx.font = "9px sans-serif";
+    ctx.font = "8px sans-serif";
     ctx.textBaseline = "alphabetic";
     ctx.fillStyle = SUMMON_COLOR;
     ctx.textAlign = "left";
-    ctx.fillText("Summoning", barX, barY - 4);
+    ctx.fillText("Summoning", barX, barY - 5);
     ctx.textAlign = "right";
-    ctx.fillText(countdown, barX + BAR_W, barY - 4);
+    ctx.fillText(countdown, barX + BAR_W, barY - 5);
 
     // gray track
     ctx.fillStyle = "#444444";
