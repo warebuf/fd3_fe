@@ -9,7 +9,7 @@
     import { initGameState, cloneGameState, type GameState, Phase } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
-    import { drawBoard } from './ui/drawBoard';
+    import { drawBoard, drawPhaseAnnouncement, PHASE_MESSAGE_DURATION } from './ui/drawBoard';
     import { calcCoordinates, getClickedCard, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
 
     // drawing related
@@ -34,6 +34,9 @@
     let clickedIndex: number = -1; // is unitIdx
     let handOrder: number[][] = [];
     let handCoords: coordinate[][] = [];
+
+    let phaseShown = -1;
+    let phaseMessageStart = -Infinity;
 
 
     function resizeCanvas() {
@@ -60,6 +63,11 @@
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
             handCoords = calcCoordinates(handOrder, ctx.canvas.clientWidth, teamIdx);
+
+            if (authoritativeState.Phase !== phaseShown) {
+                if (phaseShown !== -1) phaseMessageStart = now;
+                phaseShown = authoritativeState.Phase;
+            }
         }
 
         // draw
@@ -67,6 +75,7 @@
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
         drawBoard(ctx, interpolatedState, teamIdx, handOrder, handCoords, clickedIndex);
+        if (now - phaseMessageStart < PHASE_MESSAGE_DURATION) drawPhaseAnnouncement(ctx, authoritativeState.Phase);
 
         // schedule next frame
         animationID = requestAnimationFrame(loop);

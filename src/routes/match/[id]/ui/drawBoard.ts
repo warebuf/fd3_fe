@@ -491,6 +491,31 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, opponent
     }
 }
 
+const phaseLabels: Record<number, string> = {
+    1: 'Game Start',
+    2: 'Board Set Up Phase',
+    3: 'Reveal Phase',
+    4: 'Start Play',
+    5: 'Game Over',
+};
+export const PHASE_MESSAGE_DURATION = 2500;
+
+export function drawPhaseAnnouncement(ctx: CanvasRenderingContext2D, phase: number) {
+    const label = phaseLabels[phase];
+    if (!label) return;
+    const W = ctx.canvas.clientWidth;
+    const H = ctx.canvas.clientHeight;
+    ctx.save();
+    ctx.font = 'bold 22px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 8;
+    ctx.fillStyle = TEXT_COLOR;
+    ctx.fillText(`Phase ${phase} — ${label}`, W / 2, H / 2);
+    ctx.restore();
+}
+
 export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number) {
     const W = ctx.canvas.clientWidth;
     const H = ctx.canvas.clientHeight;
