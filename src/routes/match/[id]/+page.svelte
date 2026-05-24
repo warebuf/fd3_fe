@@ -120,6 +120,10 @@
                     }
                     clickedIndex = -1;
                 }
+            } else if (e.key === 'r' || e.key === 'R') {
+                if (interpolatedState?.Phase === Phase.BoardSetup && !(interpolatedState?.Ready[teamIdx] ?? false)) {
+                    ws?.send(JSON.stringify({ type: "ready" }));
+                }
             }
         };
 
@@ -181,7 +185,7 @@
                 {#if interpolatedState?.Ready[teamIdx]}
                     <span class="ready-icon">✓</span> Waiting...
                 {:else}
-                    <span class="ready-icon">✓</span> Ready Up
+                    <span class="ready-icon">✓</span> Ready (r)
                 {/if}
             </button>
         </div>
@@ -205,9 +209,9 @@
 
     .ready-overlay {
         position: absolute;
-        bottom: 125px;
+        top: 50%;
         left: 50%;
-        transform: translateX(-50%);
+        transform: translate(-50%, -50%);
         pointer-events: none;
     }
 
