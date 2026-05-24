@@ -500,8 +500,8 @@ const phaseLabels: Record<number, string> = {
 };
 export const PHASE_MESSAGE_DURATION = 2500;
 
-const FADE_IN  = 200;
-const FADE_OUT = 500;
+const FADE_IN  = 400;
+const FADE_OUT = 800;
 
 export function drawPhaseAnnouncement(ctx: CanvasRenderingContext2D, phase: number, phaseStartTime: number, now: number) {
     const label = phaseLabels[phase];
@@ -526,10 +526,8 @@ export function drawPhaseAnnouncement(ctx: CanvasRenderingContext2D, phase: numb
     ctx.font = '9px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,0,0,0.8)';
-    ctx.shadowBlur = 8;
-    ctx.fillStyle = TEXT_COLOR;
-    ctx.fillText(`${label}`, W / 2, H / 2);
+    ctx.fillStyle = SUBTEXT_COLOR;
+    ctx.fillText(label, W / 2, 30);
     ctx.restore();
 }
 
