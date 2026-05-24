@@ -492,29 +492,44 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, opponent
 }
 
 const phaseLabels: Record<number, string> = {
-    1: 'Game Start',
-    2: 'Board Set Up Phase',
+    1: 'Draw Phase',
+    2: 'Setup Phase',
     3: 'Reveal Phase',
-    4: 'Start Play',
+    4: 'Play Phase',
     5: 'Game Over',
 };
 export const PHASE_MESSAGE_DURATION = 2500;
 
+const FADE_IN  = 200;
+const FADE_OUT = 500;
+
 export function drawPhaseAnnouncement(ctx: CanvasRenderingContext2D, phase: number, phaseStartTime: number, now: number) {
     const label = phaseLabels[phase];
     if (!label) return;
-    if (now - phaseStartTime >= PHASE_MESSAGE_DURATION) return;
+
+    const elapsed = now - phaseStartTime;
+    if (elapsed >= PHASE_MESSAGE_DURATION) return;
+
+    let alpha: number;
+    if (elapsed < FADE_IN) {
+        alpha = elapsed / FADE_IN;
+    } else if (elapsed > PHASE_MESSAGE_DURATION - FADE_OUT) {
+        alpha = (PHASE_MESSAGE_DURATION - elapsed) / FADE_OUT;
+    } else {
+        alpha = 1;
+    }
 
     const W = ctx.canvas.clientWidth;
     const H = ctx.canvas.clientHeight;
     ctx.save();
-    ctx.font = 'bold 22px sans-serif';
+    ctx.globalAlpha = alpha;
+    ctx.font = '9px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.shadowColor = 'rgba(0,0,0,0.8)';
     ctx.shadowBlur = 8;
     ctx.fillStyle = TEXT_COLOR;
-    ctx.fillText(`Phase ${phase} — ${label}`, W / 2, H / 2);
+    ctx.fillText(`${label}`, W / 2, H / 2);
     ctx.restore();
 }
 
