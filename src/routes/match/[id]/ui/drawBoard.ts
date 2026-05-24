@@ -500,9 +500,11 @@ const phaseLabels: Record<number, string> = {
 };
 export const PHASE_MESSAGE_DURATION = 2500;
 
-export function drawPhaseAnnouncement(ctx: CanvasRenderingContext2D, phase: number) {
+export function drawPhaseAnnouncement(ctx: CanvasRenderingContext2D, phase: number, phaseStartTime: number, now: number) {
     const label = phaseLabels[phase];
     if (!label) return;
+    if (now - phaseStartTime >= PHASE_MESSAGE_DURATION) return;
+
     const W = ctx.canvas.clientWidth;
     const H = ctx.canvas.clientHeight;
     ctx.save();

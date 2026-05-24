@@ -65,7 +65,9 @@
             handCoords = calcCoordinates(handOrder, ctx.canvas.clientWidth, teamIdx);
 
             if (authoritativeState.Phase !== phaseShown) {
-                if (phaseShown !== -1) phaseMessageStart = now;
+                if (phaseShown !== -1) {
+                    phaseMessageStart = now;
+                }
                 phaseShown = authoritativeState.Phase;
             }
         }
@@ -75,7 +77,7 @@
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
         drawBoard(ctx, interpolatedState, teamIdx, handOrder, handCoords, clickedIndex);
-        if (now - phaseMessageStart < PHASE_MESSAGE_DURATION) drawPhaseAnnouncement(ctx, authoritativeState.Phase);
+        drawPhaseAnnouncement(ctx, authoritativeState.Phase, phaseMessageStart, now);
 
         // schedule next frame
         animationID = requestAnimationFrame(loop);
