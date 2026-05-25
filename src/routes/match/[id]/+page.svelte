@@ -2,8 +2,9 @@
 
     import { page } from '$app/stores';
     import { onMount } from 'svelte';
+    import { get } from 'svelte/store';
     import { connectWS } from "./networking/ws";
-    import { stopPing } from "./networking/ping";
+    import { stopPing, serverClockOffset } from "./networking/ping";
 
     import { StateManager } from "./engine/stateManager"
     import { initGameState, cloneGameState, type GameState, Phase } from './engine/gameState';
@@ -76,7 +77,8 @@
         const width = canvasEl.clientWidth;
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
-        drawBoard(ctx, interpolatedState, teamIdx, handOrder, handCoords, clickedIndex);
+        const wallNow = now + performance.timeOrigin + get(serverClockOffset);
+        drawBoard(ctx, interpolatedState, wallNow, teamIdx, handOrder, handCoords, clickedIndex);
         drawPhaseAnnouncement(ctx, authoritativeState.Phase, phaseMessageStart, now);
 
         // schedule next frame
