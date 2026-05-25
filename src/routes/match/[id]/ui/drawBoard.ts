@@ -178,12 +178,11 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
 
     // draw description
     const divY = ty + 8;
-    let descBottom = divY + 10;
     if (card.Description) {
         ctx.fillStyle = SUBTEXT_COLOR;
         ctx.font = "italic 9px sans-serif";
         ctx.textBaseline = "alphabetic";
-        descBottom = drawWrappedText(ctx, card.Description, tx, divY + 10, PCARD_W - P_PAD_W * 2, 11, contentBot - 4);
+        drawWrappedText(ctx, card.Description, tx, divY + 10, PCARD_W - P_PAD_W * 2, 11, contentBot - 4);
     }
 
     // draw summoning bar above card
