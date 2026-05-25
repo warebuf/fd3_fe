@@ -77,8 +77,8 @@
         const width = canvasEl.clientWidth;
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
-        const wallNow = now + performance.timeOrigin + get(serverClockOffset);
-        drawBoard(ctx, interpolatedState, wallNow, teamIdx, handOrder, handCoords, clickedIndex);
+        const currentWallTime = now + performance.timeOrigin + get(serverClockOffset);
+        drawBoard(ctx, interpolatedState, currentWallTime, teamIdx, handOrder, handCoords, clickedIndex);
         drawPhaseAnnouncement(ctx, authoritativeState.Phase, phaseMessageStart, now);
 
         // schedule next frame

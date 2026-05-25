@@ -118,7 +118,7 @@ function drawWrappedText(ctx: CanvasRenderingContext2D, text: string, x: number,
     return currentY;
 }
 
-function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, simNow: number, faceDown?: boolean, selected?: boolean ) {
+function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, currentSimTime: number, faceDown?: boolean, selected?: boolean ) {
     ctx.save();
 
     // adjust for blurry half pixel borders
@@ -190,7 +190,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     if (card.Status === CardStatus.Summoning) {
         const summonTimer = card.AbilityTimers?.find(t => t.Type === AbilityTimerType.Summon);
         if (summonTimer) {
-            drawSummoningBar(ctx, x, y, summonTimer.StartAtSimTime, summonTimer.ExecuteAtSimTime, simNow);
+            drawSummoningBar(ctx, x, y, summonTimer.StartAtSimTime, summonTimer.ExecuteAtSimTime, currentSimTime);
         }
     }
 
@@ -200,7 +200,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
         const barX = x + P_PAD_W;
         const contentBot = y + PCARD_H - P_PAD_H - 12 - P_PAD_H;
         const barY = contentBot - 6 - P_PAD_H;
-        drawBlockProgress(ctx, barX, barY, PCARD_W - P_PAD_W * 2, activeTimer.StartAtSimTime, activeTimer.ExecuteAtSimTime, simNow);
+        drawBlockProgress(ctx, barX, barY, PCARD_W - P_PAD_W * 2, activeTimer.StartAtSimTime, activeTimer.ExecuteAtSimTime, currentSimTime);
     }
 
     // determine status
@@ -272,7 +272,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.restore();
 }
 
-function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card[], field: number[], canvasWidth: number, simNow: number): void {
+function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card[], field: number[], canvasWidth: number, currentSimTime: number): void {
     const n = field.length;
     if (n === 0) return;
 
@@ -283,25 +283,25 @@ function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card[], fie
         const cardIdx = field[i];
         const card = cards[cardIdx];
         const cardX = startX + i * (PCARD_W + CARD_GAP);
-        drawFieldCard(ctx, cardX, y, card, simNow);
+        drawFieldCard(ctx, cardX, y, card, currentSimTime);
     }
 }
 
 // returns how much to increment y by
-function drawReactionZone( ctx: CanvasRenderingContext2D, x: number, y: number, chain: ChainItem[], cards: Card[], simNow: number ) : number {
+function drawReactionZone( ctx: CanvasRenderingContext2D, x: number, y: number, chain: ChainItem[], cards: Card[], currentSimTime: number ) : number {
 
     const margin = 10;
     const height = 300;
 
     const centerX = ctx.canvas.clientWidth / 2;
     const centerY = y + (height / 2);
-    drawReactionChains( ctx, centerX, centerY, chain, cards, simNow );
+    drawReactionChains( ctx, centerX, centerY, chain, cards, currentSimTime );
 
     return height + (2*margin);
 }
 
 
-function drawReactionChains( ctx: CanvasRenderingContext2D, centerX: number, centerY: number, chain: ChainItem[], cards: Card[], simNow: number ) {
+function drawReactionChains( ctx: CanvasRenderingContext2D, centerX: number, centerY: number, chain: ChainItem[], cards: Card[], currentSimTime: number ) {
 
     if (chain.length <= 0) { return; }
 
@@ -342,14 +342,14 @@ function drawReactionChains( ctx: CanvasRenderingContext2D, centerX: number, cen
         ctx.lineWidth = 0.5;
         ctx.stroke();
 
-        drawFieldCard(ctx, chainX + chainPad_W, chainY, card, simNow, false);
+        drawFieldCard(ctx, chainX + chainPad_W, chainY, card, currentSimTime, false);
     }
 
 }
 
-function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean, selectedIndex: number, simNow: number ) {
+function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean, selectedIndex: number, currentSimTime: number ) {
     for (let i = 0; i < handOrder.length; i++) {
-        drawFieldCard( ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]], simNow, faceDown, selectedIndex === handOrder[i]);
+        drawFieldCard( ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]], currentSimTime, faceDown, selectedIndex === handOrder[i]);
     }
 }
 
@@ -370,9 +370,9 @@ function drawStatBox(ctx: CanvasRenderingContext2D, x: number, y: number, value:
 
 const SUMMON_COLOR = "#D3D1C7";
 
-function computeSimNow(wallNow: number, state: GameState): number {
+function computeCurrentSimTime(currentWallTime: number, state: GameState): number {
     if (state.PausePhase === PausePhase.Simulating) {
-        return wallNow - state.SimPauseOffset;
+        return currentWallTime - state.SimPauseOffset;
     }
     if (state.PausePhase === PausePhase.SimPause) {
         return state.PauseStack[PausePhase.SimPause] - state.SimPauseOffset;
@@ -384,13 +384,13 @@ function computeSimNow(wallNow: number, state: GameState): number {
     return state.PauseStack[PausePhase.FullPause] - state.SimPauseOffset;
 }
 
-function drawSummoningBar( ctx: CanvasRenderingContext2D, x: number, y: number, startMs: number, endMs: number, simNow: number ) {
+function drawSummoningBar( ctx: CanvasRenderingContext2D, x: number, y: number, startMs: number, endMs: number, currentSimTime: number ) {
     const GAP = 12;
     const BAR_H = 4;
     const BAR_W = PCARD_W - 20;
     const barX = x + 10;
-    const progress = Math.min(Math.max((simNow - startMs) / (endMs - startMs), 0), 1);
-    const remainingMs = Math.max(endMs - simNow, 0);
+    const progress = Math.min(Math.max((currentSimTime - startMs) / (endMs - startMs), 0), 1);
+    const remainingMs = Math.max(endMs - currentSimTime, 0);
     const countdown = (remainingMs / 1000).toFixed(1);
 
     const barY = y - GAP - BAR_H;
@@ -415,16 +415,16 @@ function drawSummoningBar( ctx: CanvasRenderingContext2D, x: number, y: number, 
     ctx.strokeRect(Math.round(barX) + 0.5, Math.round(barY) + 0.5, BAR_W, BAR_H);
 }
 
-function drawBlockProgress( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, startMs: number, endMs: number, simNow: number ) {
+function drawBlockProgress( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, startMs: number, endMs: number, currentSimTime: number ) {
     const NUM_BLOCKS = 8;
     const BLOCK_H = 6;
     const GAP = 2;
     const LABEL_W = 44;
     const blocksW = w - GAP - LABEL_W;
     const blockW = (blocksW - GAP * (NUM_BLOCKS - 1)) / NUM_BLOCKS;
-    const progress = Math.min(Math.max((simNow - startMs) / (endMs - startMs), 0), 1);
+    const progress = Math.min(Math.max((currentSimTime - startMs) / (endMs - startMs), 0), 1);
     const filled = Math.floor(progress * NUM_BLOCKS);
-    const remainingMs = Math.max(endMs - simNow, 0);
+    const remainingMs = Math.max(endMs - currentSimTime, 0);
     const label = (remainingMs / 1000).toFixed(1);
 
     for (let i = 0; i < NUM_BLOCKS; i++) {
@@ -545,11 +545,11 @@ export function drawPhaseAnnouncement(ctx: CanvasRenderingContext2D, phase: numb
     ctx.restore();
 }
 
-export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, wallNow: number, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number) {
+export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number) {
     const W = ctx.canvas.clientWidth;
     const H = ctx.canvas.clientHeight;
     const opponentIndex = userIndex === 0 ? 1 : 0;
-    const simNow = computeSimNow(wallNow, state);
+    const currentSimTime = computeCurrentSimTime(currentWallTime, state);
 
     // draw dot grid
     if(false){ 
@@ -580,24 +580,24 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, wallN
     let y = 16;
 
     // Opponent hand
-    drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[opponentIndex] ?? [], state.Cards, handCoords[opponentIndex] ?? [], true, selectedIndex, simNow); // face down
+    drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[opponentIndex] ?? [], state.Cards, handCoords[opponentIndex] ?? [], true, selectedIndex, currentSimTime); // face down
     y += ZONE_H + 16;
 
     if (state.Phase !== Phase.BoardSetup) {
         // Opponent field
-        drawField(ctx, y, state.Cards, state.Field[opponentIndex], W, simNow);
+        drawField(ctx, y, state.Cards, state.Field[opponentIndex], W, currentSimTime);
         y += ZONE_H + 16;
 
         // Chain Zone
-        y += drawReactionZone(ctx, ZONE_X, y, state.Chain, state.Cards, simNow);
+        y += drawReactionZone(ctx, ZONE_X, y, state.Chain, state.Cards, currentSimTime);
 
         // Player field
-        drawField(ctx, y, state.Cards, state.Field[userIndex], W, simNow);
+        drawField(ctx, y, state.Cards, state.Field[userIndex], W, currentSimTime);
         y += ZONE_H + 16;
     }
 
     // Player hand
-    drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[userIndex] ?? [], state.Cards, handCoords[userIndex] ?? [], false, selectedIndex, simNow); // face up
+    drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[userIndex] ?? [], state.Cards, handCoords[userIndex] ?? [], false, selectedIndex, currentSimTime); // face up
 
     drawInfoPanel(ctx, state, opponentIndex, userIndex);
 
