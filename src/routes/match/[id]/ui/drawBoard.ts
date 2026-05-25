@@ -189,17 +189,14 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     if (card.Status === CardStatus.Summoning) {
         const summonTimer = card.AbilityTimers?.find(t => t.Type === AbilityTimerType.Summon);
         if (summonTimer) {
-            drawSummoningBar(ctx, x, y, summonTimer.StartAtSimTime, summonTimer.ExecuteAtSimTime, currentSimTime);
+            drawTimerBar(ctx, x, y, summonTimer.StartAtSimTime, summonTimer.ExecuteAtSimTime, currentSimTime, "Summoning");
         }
     }
 
-    // draw first ability timer progress below description
-    const activeTimer = card.AbilityTimers?.[0];
-    if (activeTimer) {
-        const barX = x + P_PAD_W;
-        const contentBot = y + PCARD_H - P_PAD_H - 12 - P_PAD_H;
-        const barY = contentBot - 6 - P_PAD_H;
-        drawBlockProgress(ctx, barX, barY, PCARD_W - P_PAD_W * 2, activeTimer.StartAtSimTime, activeTimer.ExecuteAtSimTime, currentSimTime);
+    // draw ability timer above card
+    const abilityTimer = card.AbilityTimers?.find(t => t.Type === AbilityTimerType.Normal);
+    if (abilityTimer) {
+        drawTimerBar(ctx, x, y, abilityTimer.StartAtSimTime, abilityTimer.ExecuteAtSimTime, currentSimTime, "Ability");
     }
 
     // determine status
@@ -383,7 +380,7 @@ function computeCurrentSimTime(currentWallTime: number, state: GameState): numbe
     return state.PauseStack[PausePhase.FullPause] - state.SimPauseOffset;
 }
 
-function drawSummoningBar( ctx: CanvasRenderingContext2D, x: number, y: number, startMs: number, endMs: number, currentSimTime: number ) {
+function drawTimerBar( ctx: CanvasRenderingContext2D, x: number, y: number, startMs: number, endMs: number, currentSimTime: number, label: string ) {
     const GAP = 12;
     const BAR_H = 4;
     const BAR_W = PCARD_W - 20;
@@ -398,7 +395,7 @@ function drawSummoningBar( ctx: CanvasRenderingContext2D, x: number, y: number, 
     ctx.textBaseline = "alphabetic";
     ctx.fillStyle = SUMMON_COLOR;
     ctx.textAlign = "left";
-    ctx.fillText("Summoning", barX, barY - 5);
+    ctx.fillText(label, barX, barY - 5);
     ctx.textAlign = "right";
     ctx.fillText(countdown, barX + BAR_W, barY - 5);
 
