@@ -12,6 +12,7 @@
 
     import { drawBoard, drawPhaseAnnouncement, PHASE_MESSAGE_DURATION } from './ui/drawBoard';
     import { calcBoardLayout, getClickedCard, isCardCalculated, mirrorUIWithHand, type BoardLayout } from './ui/cardCoordinates';
+    import { PausePhase } from './engine/gameState';
 
     // drawing related
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
@@ -129,6 +130,12 @@
                 if (interpolatedState?.Phase === Phase.BoardSetup && !(interpolatedState?.Ready[teamIdx] ?? false)) {
                     ws?.send(JSON.stringify({ type: "ready" }));
                 }
+            } else if (e.key === 'p' || e.key === 'P') {
+                if (interpolatedState?.PausePhase === PausePhase.FullPause) {
+                    ws?.send(JSON.stringify({ type: "unpause" }));
+                } else {
+                    ws?.send(JSON.stringify({ type: "pause" }));
+                }
             }
         };
 
@@ -195,6 +202,23 @@
             </button>
         </div>
     {/if}
+    {#if interpolatedState}
+        <div class="controls">
+            <button
+                class="ctrl-btn"
+                on:click={() => {
+                    if (interpolatedState.PausePhase === PausePhase.FullPause) {
+                        ws?.send(JSON.stringify({ type: "unpause" }));
+                    } else {
+                        ws?.send(JSON.stringify({ type: "pause" }));
+                    }
+                }}
+            >
+                <span class="key">P</span>
+                {interpolatedState.PausePhase === PausePhase.FullPause ? 'Unpause' : 'Pause'}
+            </button>
+        </div>
+    {/if}
 </div>
 
 <style>
@@ -254,5 +278,64 @@
 
     .ready-btn:disabled .ready-icon {
         color: #333;
+    }
+
+    .controls {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+        pointer-events: none;
+    }
+
+    .ctrl-btn {
+        pointer-events: all;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        background: #1e1e1c;
+        border: 1px solid #3a3a38;
+        border-radius: 4px;
+        color: #888780;
+        font-size: 11px;
+        cursor: pointer;
+        transition: border-color 0.15s, color 0.15s;
+        white-space: nowrap;
+    }
+
+    .ctrl-btn:hover:not(:disabled) {
+        border-color: #666;
+        color: #D3D1C7;
+    }
+
+    .ctrl-btn:disabled, .ctrl-btn.dimmed {
+        color: #444;
+        cursor: default;
+        border-color: #2a2a28;
+    }
+
+    .key {
+        font-family: monospace;
+        font-size: 10px;
+        color: #555;
+        background: #2a2a28;
+        border: 1px solid #3a3a38;
+        border-radius: 2px;
+        padding: 1px 4px;
+        line-height: 1;
+    }
+
+    .ctrl-btn:hover:not(:disabled) .key {
+        color: #888;
+        border-color: #555;
+    }
+
+    .ctrl-btn.dimmed .key {
+        color: #333;
+        border-color: #2a2a28;
     }
 </style>
