@@ -477,6 +477,7 @@ export function drawPhaseAnnouncement(ctx: CanvasRenderingContext2D, phase: numb
 
 export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, layout: BoardLayout, handOrder: number[][], selectedIndex: number) {
     const opponentIndex = userIndex === 0 ? 1 : 0;
+    if (state.Phase === Phase.GameEnd) currentWallTime = state.WallTimestamp;
     const currentSimTime = computeCurrentSimTime(currentWallTime, state);
     const currentActiveTime = computeCurrentActiveTime(currentWallTime, state);
 

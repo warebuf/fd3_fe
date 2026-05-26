@@ -28,6 +28,8 @@ export type GameState = {
     Mana: number[];
     Structures: Structure[];
     Ready: boolean[];
+
+    Winner: number; // -1: no winner, 0+: winning team index
 };
 
 export const PausePhase = {
@@ -151,6 +153,8 @@ export function initGameState(): GameState {
         Mana: [],
         Structures: [],
         Ready: [false, false],
+
+        Winner: -1,
     };
 }
 
@@ -178,5 +182,7 @@ export function cloneGameState(src: GameState): GameState {
         Mana: [...src.Mana],
         Structures: src.Structures.map(s => ({ ...s })),
         Ready: [...src.Ready],
+
+        Winner: src.Winner,
     };
 }

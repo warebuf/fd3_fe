@@ -16,6 +16,7 @@ export type PauseLog              = Timestamp & { Type: 12; PausePhase: number; 
 export type UnpauseLog            = Timestamp & { Type: 13; TimeRemaining: number; }
 export type AddAbilityTimerLog    = Timestamp & { Type: 14; CardIndex: number; AbilityID: number; AbilityIdx: number; TimerType: number; StartAtSimTime: number; ExecuteAtSimTime: number; }
 export type ClearAbilityTimerLog  = Timestamp & { Type: 15; CardIndex: number; AbilityID: number; }
+export type GameOverLog           = Timestamp & { Type: 16; Winner: number; }
 
 export type EventLog =
     | PhaseLog
@@ -33,4 +34,5 @@ export type EventLog =
     | PauseLog
     | UnpauseLog
     | AddAbilityTimerLog
-    | ClearAbilityTimerLog;
+    | ClearAbilityTimerLog
+    | GameOverLog;

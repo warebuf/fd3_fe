@@ -18,6 +18,7 @@ import { pause } from "./Pause";
 import { unpause } from "./Unpause";
 import { addAbilityTimer } from "./AddAbilityTimer";
 import { clearAbilityTimer } from "./ClearAbilityTimer";
+import { gameOver } from "./GameOver";
 
 export function applyEffect(state: GameState, log: EventLog) {
 
@@ -39,6 +40,7 @@ export function applyEffect(state: GameState, log: EventLog) {
         case 13: unpause(state, log); break;
         case 14: addAbilityTimer(state, log); break;
         case 15: clearAbilityTimer(state, log); break;
+        case 16: gameOver(state, log); break;
 
         default: console.log("could not apply log", log); applied = false; break;
     }
