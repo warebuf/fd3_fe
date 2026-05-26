@@ -1,76 +1,99 @@
 
-
 import { CARD_GAP, ZONE_H, PCARD_W, PCARD_H } from "./drawBoard"
 
 export type coordinate = {
-  x: number
-  y: number
+    x: number
+    y: number
 }
+
+export type BoardLayout = {
+    hand: coordinate[][]
+    field: coordinate[][]
+    chain: coordinate[]
+}
+
+const ZONE_GAP = 48;
+const START_Y = 16;
 
 export function mirrorUIWithHand(order: number[][], hand: number[][]): number[][] {
     const result: number[][] = [];
-  
+
     for (let i = 0; i < hand.length; i++) {
-      const handRow = hand[i];
-      const orderRow = order[i] ?? [];
-      const row: number[] = [];
-  
-      const handSet = new Set(handRow);
-      const orderSet = new Set(orderRow);
-  
-      for (let j = 0; j < orderRow.length; j++) {
-        if (handSet.has(orderRow[j])) row.push(orderRow[j]);
-      }
-  
-      for (let j = 0; j < handRow.length; j++) {
-        if (!orderSet.has(handRow[j])) row.push(handRow[j]);
-      }
-  
-      result.push(row);
+        const handRow = hand[i];
+        const orderRow = order[i] ?? [];
+        const row: number[] = [];
+
+        const handSet = new Set(handRow);
+        const orderSet = new Set(orderRow);
+
+        for (let j = 0; j < orderRow.length; j++) {
+            if (handSet.has(orderRow[j])) row.push(orderRow[j]);
+        }
+        for (let j = 0; j < handRow.length; j++) {
+            if (!orderSet.has(handRow[j])) row.push(handRow[j]);
+        }
+
+        result.push(row);
     }
-  
+
     return result;
 }
 
-const playerY = 700;
-const oppY = 44;
-
-
-export function calcCoordinates(order: number[][], canvasWidth: number, playerNum: number): coordinate[][] {
-
-  const result: coordinate[][] = [];
-
-  for (let i = 0; i < order.length; i++) {
-
-    const row: coordinate[] = [];
-    const isPlayer : boolean = (playerNum === i);
-    
-    // calculate center
-    const totalW = order[i].length * PCARD_W + (order[i].length - 1) * CARD_GAP;
+function rowCoords(count: number, canvasWidth: number, cardY: number): coordinate[] {
+    if (count === 0) return [];
+    const totalW = count * PCARD_W + (count - 1) * CARD_GAP;
     const startX = (canvasWidth - totalW) / 2;
-
-    // calc coords
-    for (let j = 0; j < order[i].length; j++) {
-        const cx = startX + j * (PCARD_W + CARD_GAP);
-        const cy = (isPlayer ? playerY : oppY) + (ZONE_H - PCARD_H) / 2;
-        row.push({x:cx,y:cy});
+    const coords: coordinate[] = [];
+    for (let j = 0; j < count; j++) {
+        coords.push({ x: startX + j * (PCARD_W + CARD_GAP), y: cardY });
     }
-
-    result.push(row);
-  }
-
-  return result;
+    return coords;
 }
 
-export function getClickedCard(mouseX: number, mouseY: number, coords: coordinate[][], order: number[][]) : number {
-  for(let i = 0; i < coords.length; i++) {
-    for(let j = 0; j < coords[i].length; j++) {
-      const x = coords[i][j].x;
-      const y = coords[i][j].y;
-      if( (mouseX >= x && mouseX <= x + PCARD_W) && (mouseY >= y && mouseY <= y + PCARD_H) ) {
-        return order[i][j];
-      }
+export function calcBoardLayout(
+    canvasWidth: number,
+    playerNum: number,
+    handOrder: number[][],
+    field: number[][],
+    chainLength: number
+): BoardLayout {
+    let y = START_Y;
+
+    const oppHandCardY     = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP;
+    const oppFieldCardY    = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP;
+    const chainCardY       = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP;
+    const playerFieldCardY = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP;
+    const playerHandCardY  = y + (ZONE_H - PCARD_H) / 2;
+
+    const hand: coordinate[][] = [[], []];
+    const fieldCoords: coordinate[][] = [[], []];
+
+    for (let t = 0; t < 2; t++) {
+        const isPlayer = t === playerNum;
+        hand[t]        = rowCoords(handOrder[t]?.length ?? 0, canvasWidth, isPlayer ? playerHandCardY  : oppHandCardY);
+        fieldCoords[t] = rowCoords(field[t]?.length    ?? 0, canvasWidth, isPlayer ? playerFieldCardY : oppFieldCardY);
     }
-  }
-  return -1;
+
+    const chain = rowCoords(chainLength, canvasWidth, chainCardY);
+
+    return { hand, field: fieldCoords, chain };
+}
+
+function hitTest(mouseX: number, mouseY: number, x: number, y: number): boolean {
+    return mouseX >= x && mouseX <= x + PCARD_W && mouseY >= y && mouseY <= y + PCARD_H;
+}
+
+export function getClickedCard(mouseX: number, mouseY: number, layout: BoardLayout, handOrder: number[][], field: number[][], chainIds: number[]): number {
+    for (let i = 0; i < layout.hand.length; i++)
+        for (let j = 0; j < layout.hand[i].length; j++)
+            if (hitTest(mouseX, mouseY, layout.hand[i][j].x, layout.hand[i][j].y)) return handOrder[i][j];
+
+    for (let i = 0; i < layout.field.length; i++)
+        for (let j = 0; j < layout.field[i].length; j++)
+            if (hitTest(mouseX, mouseY, layout.field[i][j].x, layout.field[i][j].y)) return field[i][j];
+
+    for (let i = 0; i < layout.chain.length; i++)
+        if (hitTest(mouseX, mouseY, layout.chain[i].x, layout.chain[i].y)) return chainIds[i];
+
+    return -1;
 }

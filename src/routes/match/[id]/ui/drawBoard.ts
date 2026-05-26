@@ -2,7 +2,7 @@
 import { get } from "svelte/store";
 import type { GameState, Card, ChainItem } from "../engine/gameState"
 import { Phase, PausePhase, CardStatus, AbilityTimerType } from "../engine/gameState"
-import type { coordinate } from "./cardCoordinates"
+import type { coordinate, BoardLayout } from "./cardCoordinates"
 import { ping } from "../networking/ping";
 
 export const CARD_W = 56;
@@ -25,18 +25,6 @@ export const PCARD_W = 120;
 export const PCARD_H = 100;
 const P_PAD_W = 8;
 const P_PAD_H = 6;
-
-function roundRectTop( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.arcTo(x + w, y, x + w, y + r, r);
-    ctx.lineTo(x + w, y + h);
-    ctx.lineTo(x, y + h);
-    ctx.lineTo(x, y + r);
-    ctx.arcTo(x, y, x + r, y, r);
-    ctx.closePath();
-}
 
 function roundRect( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number ) {
     ctx.beginPath();
@@ -93,7 +81,6 @@ function drawCrosshair(ctx: CanvasRenderingContext2D, x: number, y: number) {
 }
 
 
-const RESERVES_SIZE = 70;
 
 function drawWrappedText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number, maxY: number): number {
     if (!text) return y;
@@ -127,10 +114,10 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
 
     if (faceDown) {
         roundRect(ctx, x, y, PCARD_W, PCARD_H, CARD_RADIUS);
-        ctx.fillStyle = "#141414";
+        ctx.fillStyle = selected ? CROSSHAIR_BG : "#141414";
         ctx.fill();
-        ctx.strokeStyle = CARD_BORDER;
-        ctx.lineWidth = 0.5;
+        ctx.strokeStyle = selected ? CROSSHAIR_BORDER : CARD_BORDER;
+        ctx.lineWidth = selected ? 1 : 0.5;
         roundRect(ctx, x, y, PCARD_W, PCARD_H, CARD_RADIUS);
         ctx.stroke();
         ctx.fillStyle = TEXT_COLOR;
@@ -138,6 +125,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("FD", x + PCARD_W / 2, y + PCARD_H / 2);
+        if (selected) drawCrosshair(ctx, x, y);
         ctx.restore();
         return;
     }
@@ -243,8 +231,6 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.stroke();
 
     // draw hp (bottom-left) and cost (top-right)
-    const footerH = y + PCARD_H - lineY;
-    const boxY = lineY + (footerH - STAT_BOX_H) / 2;
     drawStatBox(ctx, x + PCARD_W - 4 - STAT_BOX_W, y + 4, card.Cost, "#0E1E30", "#7AADDF");
     drawStatBox(ctx, x + PCARD_W - 4 - STAT_BOX_W, y + PCARD_H - 4 - STAT_BOX_H, card.HP, "#2E0E0E", "#D46B6B");
 
@@ -268,82 +254,23 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.restore();
 }
 
-function drawField( ctx: CanvasRenderingContext2D, y: number, cards: Card[], field: number[], canvasWidth: number, currentSimTime: number): void {
-    const n = field.length;
-    if (n === 0) return;
-
-    const totalW = n * PCARD_W + (n - 1) * CARD_GAP;
-    const startX = (canvasWidth - totalW) / 2;
-
-    for (let i = 0; i < n; i++) {
-        const cardIdx = field[i];
-        const card = cards[cardIdx];
-        const cardX = startX + i * (PCARD_W + CARD_GAP);
-        drawFieldCard(ctx, cardX, y, card, currentSimTime);
+function drawField( ctx: CanvasRenderingContext2D, cards: Card[], field: number[], coords: coordinate[], currentSimTime: number, selectedIndex: number): void {
+    for (let i = 0; i < field.length; i++) {
+        drawFieldCard(ctx, coords[i].x, coords[i].y, cards[field[i]], currentSimTime, false, selectedIndex === field[i]);
     }
 }
 
-// returns how much to increment y by
-function drawReactionZone( ctx: CanvasRenderingContext2D, x: number, y: number, chain: ChainItem[], cards: Card[], currentSimTime: number ) : number {
-
-    const margin = 10;
-    const height = 300;
-
-    const centerX = ctx.canvas.clientWidth / 2;
-    const centerY = y + (height / 2);
-    drawReactionChains( ctx, centerX, centerY, chain, cards, currentSimTime );
-
-    return height + (2*margin);
-}
-
-
-function drawReactionChains( ctx: CanvasRenderingContext2D, centerX: number, centerY: number, chain: ChainItem[], cards: Card[], currentSimTime: number ) {
-
-    if (chain.length <= 0) { return; }
-
-    const itemWidth = PCARD_W;
-    const itemHeight = PCARD_H;
-    const chainPad_W = 10;
-    const chainPad_H = 10;
-    const titleHeight = 20;
-    const chainMargin = 16;
-
-    const chainContainerW = itemWidth + 2 * chainPad_W;
-    const totalWidth = chain.length * chainContainerW + (chain.length - 1) * chainMargin;
-    const groupStartX = centerX - totalWidth / 2;
-
+function drawChainZone( ctx: CanvasRenderingContext2D, chain: ChainItem[], cards: Card[], coords: coordinate[], currentActiveTime: number ): void {
     for (let i = 0; i < chain.length; i++) {
         const item = chain[i];
         const card = cards[item.CardID];
         if (!card) continue;
-
-        const chainX = groupStartX + i * (chainContainerW + chainMargin);
-        const chainY = centerY - itemHeight / 2;
-
-        // container title background
-        roundRectTop(ctx, chainX, chainY - chainPad_H - titleHeight, chainContainerW, titleHeight, CARD_RADIUS);
-        ctx.fillStyle = "#383735";
-        ctx.fill();
-
-        // container title text
-        ctx.fillStyle = TEXT_COLOR;
-        ctx.font = "10px sans-serif";
-        ctx.textAlign = "left";
-        ctx.textBaseline = "middle";
-        ctx.fillText("Chain", chainX + 6, chainY - chainPad_H - titleHeight / 2 + 1);
-
-        // container border
-        roundRect(ctx, chainX + 0.5, chainY - chainPad_H - titleHeight + 0.5, chainContainerW, itemHeight + 2 * chainPad_H + titleHeight, CARD_RADIUS);
-        ctx.strokeStyle = CARD_BORDER;
-        ctx.lineWidth = 0.5;
-        ctx.stroke();
-
-        drawFieldCard(ctx, chainX + chainPad_W, chainY, card, currentSimTime, false);
+        drawFieldCard(ctx, coords[i].x, coords[i].y, card, 0); // no sim-time timers on chain cards
+        drawTimerBar(ctx, coords[i].x, coords[i].y, item.StartAtActiveTime, item.ExecuteAtActiveTime, currentActiveTime, "Chain");
     }
-
 }
 
-function drawHand( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean, selectedIndex: number, currentSimTime: number ) {
+function drawHand( ctx: CanvasRenderingContext2D, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean, selectedIndex: number, currentSimTime: number ) {
     for (let i = 0; i < handOrder.length; i++) {
         drawFieldCard( ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]], currentSimTime, faceDown, selectedIndex === handOrder[i]);
     }
@@ -365,6 +292,13 @@ function drawStatBox(ctx: CanvasRenderingContext2D, x: number, y: number, value:
 }
 
 const SUMMON_COLOR = "#D3D1C7";
+
+function computeCurrentActiveTime(currentWallTime: number, state: GameState): number {
+    if (state.PausePhase === PausePhase.FullPause) {
+        return state.PauseStack[PausePhase.FullPause] - state.FullPauseOffset;
+    }
+    return currentWallTime - state.FullPauseOffset;
+}
 
 function computeCurrentSimTime(currentWallTime: number, state: GameState): number {
     if (state.PausePhase === PausePhase.Simulating) {
@@ -541,60 +475,27 @@ export function drawPhaseAnnouncement(ctx: CanvasRenderingContext2D, phase: numb
     ctx.restore();
 }
 
-export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, handOrder: number[][], handCoords: coordinate[][], selectedIndex: number) {
-    const W = ctx.canvas.clientWidth;
-    const H = ctx.canvas.clientHeight;
+export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, layout: BoardLayout, handOrder: number[][], selectedIndex: number) {
     const opponentIndex = userIndex === 0 ? 1 : 0;
     const currentSimTime = computeCurrentSimTime(currentWallTime, state);
-
-    // draw dot grid
-    if(false){ 
-        const spacing = 8;
-        const dotRadius = 0.5;
-        const dotColor = "white";
-
-        const cols = Math.ceil(W / spacing);
-        const rows = Math.ceil(H / spacing);
-        
-        ctx.fillStyle = dotColor;
-        for (let row = 0; row <= rows; row++) {
-            for (let col = 0; col <= cols; col++) {
-            const x = col * spacing;
-            const y = row * spacing;
-            ctx.beginPath();
-            ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
-            ctx.fill();
-            }
-        }
-    }
-
-    const LEFT_X = 16;
-    const RIGHT_X = W - RESERVES_SIZE - LEFT_X;
-    const ZONE_X = LEFT_X;
-    const ZONE_W = RIGHT_X - CARD_GAP - LEFT_X;
-
-    let y = 16;
+    const currentActiveTime = computeCurrentActiveTime(currentWallTime, state);
 
     // Opponent hand
-    drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[opponentIndex] ?? [], state.Cards, handCoords[opponentIndex] ?? [], true, selectedIndex, currentSimTime); // face down
-    y += ZONE_H + 16;
+    drawHand(ctx, handOrder[opponentIndex] ?? [], state.Cards, layout.hand[opponentIndex] ?? [], true, selectedIndex, currentSimTime);
 
     if (state.Phase !== Phase.BoardSetup) {
         // Opponent field
-        drawField(ctx, y, state.Cards, state.Field[opponentIndex], W, currentSimTime);
-        y += ZONE_H + 16;
+        drawField(ctx, state.Cards, state.Field[opponentIndex], layout.field[opponentIndex] ?? [], currentSimTime, selectedIndex);
 
-        // Chain Zone
-        y += drawReactionZone(ctx, ZONE_X, y, state.Chain, state.Cards, currentSimTime);
+        // Chain zone
+        drawChainZone(ctx, state.Chain, state.Cards, layout.chain, currentActiveTime);
 
         // Player field
-        drawField(ctx, y, state.Cards, state.Field[userIndex], W, currentSimTime);
-        y += ZONE_H + 16;
+        drawField(ctx, state.Cards, state.Field[userIndex], layout.field[userIndex] ?? [], currentSimTime, selectedIndex);
     }
 
     // Player hand
-    drawHand(ctx, ZONE_X, y, ZONE_W, handOrder[userIndex] ?? [], state.Cards, handCoords[userIndex] ?? [], false, selectedIndex, currentSimTime); // face up
+    drawHand(ctx, handOrder[userIndex] ?? [], state.Cards, layout.hand[userIndex] ?? [], false, selectedIndex, currentSimTime);
 
     drawInfoPanel(ctx, state, opponentIndex, userIndex);
-
 }

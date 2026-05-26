@@ -11,7 +11,7 @@
     import { interpolate } from './engine/interpolate';
 
     import { drawBoard, drawPhaseAnnouncement, PHASE_MESSAGE_DURATION } from './ui/drawBoard';
-    import { calcCoordinates, getClickedCard, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
+    import { calcBoardLayout, getClickedCard, mirrorUIWithHand, type BoardLayout } from './ui/cardCoordinates';
 
     // drawing related
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
@@ -34,7 +34,7 @@
     // ui
     let clickedIndex: number = -1; // is unitIdx
     let handOrder: number[][] = [];
-    let handCoords: coordinate[][] = [];
+    let layout: BoardLayout = { hand: [[], []], field: [[], []], chain: [] };
 
     let phaseShown = -1;
     let phaseMessageStart = -Infinity;
@@ -47,7 +47,7 @@
         canvasEl.height = Math.max(1, Math.round(height * dpr));
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        handCoords = calcCoordinates(handOrder, ctx.canvas.clientWidth, teamIdx);
+        layout = calcBoardLayout(ctx.canvas.clientWidth, teamIdx, handOrder, interpolatedState?.Field ?? [[], []], interpolatedState?.Chain?.length ?? 0);
     }
 
     function loop(now: number) { // now is current time relative to page load
@@ -63,7 +63,7 @@
         // update derived states
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
-            handCoords = calcCoordinates(handOrder, ctx.canvas.clientWidth, teamIdx);
+            layout = calcBoardLayout(ctx.canvas.clientWidth, teamIdx, handOrder, interpolatedState.Field, interpolatedState.Chain.length);
 
             if (authoritativeState.Phase !== phaseShown) {
                 if (phaseShown !== -1) {
@@ -78,7 +78,7 @@
         const height = canvasEl.clientHeight;
         ctx.clearRect(0, 0, width, height);
         const currentWallTime = now + performance.timeOrigin + get(serverClockOffset);
-        drawBoard(ctx, interpolatedState, currentWallTime, teamIdx, handOrder, handCoords, clickedIndex);
+        drawBoard(ctx, interpolatedState, currentWallTime, teamIdx, layout, handOrder, clickedIndex);
         drawPhaseAnnouncement(ctx, authoritativeState.Phase, phaseMessageStart, now);
 
         // schedule next frame
@@ -107,7 +107,7 @@
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
 
-            clickedIndex = getClickedCard(x, y, handCoords, handOrder);
+            clickedIndex = getClickedCard(x, y, layout, handOrder, interpolatedState?.Field ?? [[], []], interpolatedState?.Chain?.map(c => c.CardID) ?? []);
         };
 
         const onKeyDown = (e: KeyboardEvent) => {
