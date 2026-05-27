@@ -1,5 +1,5 @@
 
-import { CARD_GAP, ZONE_H, PCARD_W, PCARD_H } from "./drawBoard"
+import { CARD_GAP, ZONE_H, PCARD_W, PCARD_H, ZONE_GAP, START_Y, OVERLAY_ZONE_H } from "./drawBoard"
 
 export type coordinate = {
     x: number
@@ -11,11 +11,6 @@ export type BoardLayout = {
     field: coordinate[][]
     chain: coordinate[]
 }
-
-export const ZONE_GAP = 48;
-export const START_Y = 16;
-const OVERLAY_ZONE_H = 32;
-export const OVERLAY_Y = START_Y + 2 * ZONE_H + 2 * ZONE_GAP + OVERLAY_ZONE_H / 2;
 
 export function mirrorUIWithHand(order: number[][], hand: number[][]): number[][] {
     const result: number[][] = [];

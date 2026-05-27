@@ -3,7 +3,6 @@ import { get } from "svelte/store";
 import type { GameState, Card, ChainItem } from "../engine/gameState"
 import { Phase, PausePhase, CardStatus, AbilityTimerType } from "../engine/gameState"
 import type { coordinate, BoardLayout } from "./cardCoordinates"
-import { OVERLAY_Y } from "./cardCoordinates"
 import { ping } from "../networking/ping";
 
 export const CARD_W = 56;
@@ -12,6 +11,10 @@ const CARD_RADIUS = 6;
 export const CARD_GAP = 8;
 const ZONE_PAD = 8;
 export const ZONE_H = CARD_H + ZONE_PAD * 2;
+export const ZONE_GAP = 48;
+export const START_Y = 16;
+export const OVERLAY_ZONE_H = 32;
+export const OVERLAY_Y = START_Y + 2 * ZONE_H + 2 * ZONE_GAP + OVERLAY_ZONE_H / 2;
 const CARD_COLOR = "#2C2C2A";
 const CARD_BORDER = "#6E6D69";
 const TEXT_COLOR = "#D3D1C7";
@@ -26,6 +29,29 @@ export const PCARD_W = 120;
 export const PCARD_H = 100;
 const P_PAD_W = 8;
 const P_PAD_H = 6;
+
+function drawZoneBackgrounds(ctx: CanvasRenderingContext2D, width: number) {
+    let y = START_Y;
+
+    const oppHandY    = y;  y += ZONE_H + ZONE_GAP;
+    const oppFieldY   = y;  y += ZONE_H + ZONE_GAP + OVERLAY_ZONE_H + ZONE_GAP;
+    const chainY      = y;  y += ZONE_H + ZONE_GAP;
+    const playerFldY  = y;  y += ZONE_H + ZONE_GAP;
+    const playerHandY = y;
+
+    const zones = [
+        { y: oppHandY,    color: "#2a1a1a" },
+        { y: oppFieldY,   color: "#221a1a" },
+        { y: chainY,      color: "#1e1e14" },
+        { y: playerFldY,  color: "#1a1a22" },
+        { y: playerHandY, color: "#1a1a2a" },
+    ];
+
+    for (const zone of zones) {
+        ctx.fillStyle = zone.color;
+        ctx.fillRect(0, zone.y, width, ZONE_H);
+    }
+}
 
 function roundRect( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number ) {
     ctx.beginPath();
@@ -520,6 +546,9 @@ function drawPause(ctx: CanvasRenderingContext2D, state: GameState, userIndex: n
 export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, layout: BoardLayout, handOrder: number[][], selectedIndex: number) {
     const opponentIndex = userIndex === 0 ? 1 : 0;
     if (state.Phase === Phase.GameEnd) currentWallTime = state.WallTimestamp;
+
+    drawZoneBackgrounds(ctx, ctx.canvas.clientWidth);
+
     const currentSimTime = computeCurrentSimTime(currentWallTime, state);
     const currentActiveTime = computeCurrentActiveTime(currentWallTime, state);
 
