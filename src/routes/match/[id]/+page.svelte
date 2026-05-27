@@ -189,19 +189,6 @@
 
 <div class="wrap">
     <canvas bind:this={canvasEl}></canvas>
-    {#if interpolatedState?.Phase === Phase.GameEnd}
-        <div class="gameover-overlay">
-            <div class="gameover-text {interpolatedState.Winner === -2 ? 'tie' : interpolatedState.Winner === teamIdx ? 'win' : 'lose'}">Game over</div>
-        </div>
-    {/if}
-    {#if interpolatedState?.PausePhase === PausePhase.FullPause}
-        <div class="pause-overlay">
-            <div class="pause-text">{interpolatedState.TeamPaused === teamIdx ? 'You paused' : 'Opponent paused'}</div>
-            {#if (interpolatedState.TimeBank[interpolatedState.TeamPaused] ?? 0) > 0}
-                <div class="pause-timebank">{Math.ceil((interpolatedState.TimeBank[interpolatedState.TeamPaused]) / 1000)}s</div>
-            {/if}
-        </div>
-    {/if}
     {#if interpolatedState?.Phase === Phase.BoardSetup}
         <div class="ready-overlay">
             <button
@@ -251,54 +238,6 @@
         height: 100%;
         display: block;
         background: #1a1a1a;
-    }
-
-    .gameover-overlay {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-        text-align: center;
-    }
-
-    .gameover-text {
-        font-size: 9px;
-        font-family: sans-serif;
-    }
-
-    .gameover-text.win {
-        color: #3A8F5A;
-    }
-
-    .gameover-text.lose {
-        color: #D46B6B;
-    }
-
-    .gameover-text.tie {
-        color: #888780;
-    }
-
-    .pause-overlay {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-        text-align: center;
-    }
-
-    .pause-text {
-        font-size: 9px;
-        font-family: sans-serif;
-        color: #888780;
-    }
-
-    .pause-timebank {
-        font-size: 9px;
-        font-family: monospace;
-        color: #555;
-        margin-top: 3px;
     }
 
     .ready-overlay {

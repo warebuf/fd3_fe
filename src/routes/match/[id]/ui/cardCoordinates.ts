@@ -12,8 +12,10 @@ export type BoardLayout = {
     chain: coordinate[]
 }
 
-const ZONE_GAP = 48;
-const START_Y = 16;
+export const ZONE_GAP = 48;
+export const START_Y = 16;
+const OVERLAY_ZONE_H = 32;
+export const OVERLAY_Y = START_Y + 2 * ZONE_H + 2 * ZONE_GAP + OVERLAY_ZONE_H / 2;
 
 export function mirrorUIWithHand(order: number[][], hand: number[][]): number[][] {
     const result: number[][] = [];
@@ -60,7 +62,7 @@ export function calcBoardLayout(
     let y = START_Y;
 
     const oppHandCardY     = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP;
-    const oppFieldCardY    = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP;
+    const oppFieldCardY    = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP + OVERLAY_ZONE_H + ZONE_GAP;
     const chainCardY       = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP;
     const playerFieldCardY = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP;
     const playerHandCardY  = y + (ZONE_H - PCARD_H) / 2;

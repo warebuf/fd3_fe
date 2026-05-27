@@ -3,6 +3,7 @@ import { get } from "svelte/store";
 import type { GameState, Card, ChainItem } from "../engine/gameState"
 import { Phase, PausePhase, CardStatus, AbilityTimerType } from "../engine/gameState"
 import type { coordinate, BoardLayout } from "./cardCoordinates"
+import { OVERLAY_Y } from "./cardCoordinates"
 import { ping } from "../networking/ping";
 
 export const CARD_W = 56;
@@ -293,6 +294,7 @@ function drawStatBox(ctx: CanvasRenderingContext2D, x: number, y: number, value:
 
 const SUMMON_COLOR = "#D3D1C7";
 
+
 function computeCurrentActiveTime(currentWallTime: number, state: GameState): number {
     if (state.PausePhase === PausePhase.FullPause) {
         return state.PauseStack[PausePhase.FullPause] - state.FullPauseOffset;
@@ -464,14 +466,54 @@ export function drawPhaseAnnouncement(ctx: CanvasRenderingContext2D, phase: numb
     }
 
     const W = ctx.canvas.clientWidth;
-    const H = ctx.canvas.clientHeight;
     ctx.save();
     ctx.globalAlpha = alpha;
     ctx.font = '9px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = SUBTEXT_COLOR;
-    ctx.fillText(label, W / 2, 30);
+    ctx.fillText(label, W / 2, OVERLAY_Y);
+    ctx.restore();
+}
+
+function drawGameOver(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number) {
+    const W = ctx.canvas.clientWidth;
+
+    let color: string;
+    if (state.Winner === -2) {
+        color = "#888780";
+    } else if (state.Winner === userIndex) {
+        color = "#3A8F5A";
+    } else {
+        color = "#D46B6B";
+    }
+
+    ctx.save();
+    ctx.font = "9px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = color;
+    ctx.fillText("Game Over", W / 2, OVERLAY_Y);
+    ctx.restore();
+}
+
+function drawPause(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number) {
+    const W = ctx.canvas.clientWidth;
+    const label = state.TeamPaused === userIndex ? "You paused" : "Opponent paused";
+    const timeBank = state.TimeBank[state.TeamPaused] ?? 0;
+
+    ctx.save();
+    ctx.font = "9px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = SUBTEXT_COLOR;
+    ctx.fillText(label, W / 2, OVERLAY_Y);
+
+    if (timeBank > 0) {
+        ctx.font = "9px monospace";
+        ctx.fillStyle = "#555";
+        ctx.fillText(`${Math.ceil(timeBank / 1000)}s`, W / 2, OVERLAY_Y + 14);
+    }
     ctx.restore();
 }
 
@@ -499,4 +541,7 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     drawHand(ctx, handOrder[userIndex] ?? [], state.Cards, layout.hand[userIndex] ?? [], false, selectedIndex, currentSimTime);
 
     drawInfoPanel(ctx, state, opponentIndex, userIndex);
+
+    if (state.Phase === Phase.GameEnd) drawGameOver(ctx, state, userIndex);
+    if (state.PausePhase === PausePhase.FullPause) drawPause(ctx, state, userIndex);
 }
