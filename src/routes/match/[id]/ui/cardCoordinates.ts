@@ -1,5 +1,5 @@
 
-import { CARD_GAP, ZONE_H, PCARD_W, PCARD_H, ZONE_GAP, START_Y, OVERLAY_ZONE_H } from "./drawBoard"
+import { CARD_GAP, ZONE_H, PCARD_W, PCARD_H, ZONE_GAP, START_Y } from "./drawBoard"
 
 export type coordinate = {
     x: number
@@ -57,7 +57,7 @@ export function calcBoardLayout(
     let y = START_Y;
 
     const oppHandCardY     = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP;
-    const oppFieldCardY    = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP + OVERLAY_ZONE_H + ZONE_GAP;
+    const oppFieldCardY    = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP;
     const chainCardY       = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP;
     const playerFieldCardY = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP;
     const playerHandCardY  = y + (ZONE_H - PCARD_H) / 2;

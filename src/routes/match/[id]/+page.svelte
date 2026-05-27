@@ -10,7 +10,7 @@
     import { initGameState, cloneGameState, type GameState, Phase } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
-    import { drawBoard, drawPhaseAnnouncement, PHASE_MESSAGE_DURATION } from './ui/drawBoard';
+    import { drawBoard, drawPhaseAnnouncement } from './ui/drawBoard';
     import { calcBoardLayout, getClickedCard, isCardCalculated, mirrorUIWithHand, type BoardLayout } from './ui/cardCoordinates';
     import { PausePhase } from './engine/gameState';
 
@@ -301,9 +301,8 @@
         align-items: center;
         gap: 6px;
         padding: 4px 10px;
-        background: #1e1e1c;
-        border: 1px solid #3a3a38;
-        border-radius: 4px;
+        background: transparent;
+        border: none;
         color: #888780;
         font-size: 11px;
         cursor: pointer;
@@ -312,14 +311,12 @@
     }
 
     .ctrl-btn:hover:not(:disabled) {
-        border-color: #666;
         color: #D3D1C7;
     }
 
     .ctrl-btn:disabled, .ctrl-btn.dimmed {
         color: #444;
         cursor: default;
-        border-color: #2a2a28;
     }
 
     .key {

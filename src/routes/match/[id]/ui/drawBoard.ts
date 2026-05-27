@@ -13,8 +13,6 @@ const ZONE_PAD = 8;
 export const ZONE_H = CARD_H + ZONE_PAD * 2;
 export const ZONE_GAP = 48;
 export const START_Y = 16;
-export const OVERLAY_ZONE_H = 32;
-export const OVERLAY_Y = START_Y + 2 * ZONE_H + 2 * ZONE_GAP + OVERLAY_ZONE_H / 2;
 const CARD_COLOR = "#2C2C2A";
 const CARD_BORDER = "#6E6D69";
 const TEXT_COLOR = "#D3D1C7";
@@ -30,11 +28,47 @@ export const PCARD_H = 100;
 const P_PAD_W = 8;
 const P_PAD_H = 6;
 
+function drawCenteredOverlay(ctx: CanvasRenderingContext2D, lines: { text: string; color: string; font: string }[], bgColor: string) {
+    const W = ctx.canvas.clientWidth;
+    const H = ctx.canvas.clientHeight;
+    const PAD_X = 10;
+    const PAD_Y = 7;
+    const LINE_H = 16;
+
+    let maxW = 0;
+    let textH = 0;
+    for (const line of lines) {
+        ctx.font = line.font;
+        const m = ctx.measureText(line.text);
+        if (m.width > maxW) maxW = m.width;
+        if (!textH) textH = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent;
+    }
+
+    const boxW = maxW + PAD_X * 2;
+    const boxH = (lines.length - 1) * LINE_H + textH + PAD_Y * 2;
+    const boxX = W / 2 - boxW / 2;
+    const boxY = H / 2 - boxH / 2;
+
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(Math.round(boxX), Math.round(boxY), Math.round(boxW), Math.round(boxH));
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const totalTextH = lines.length * LINE_H;
+    let ty = H / 2 - totalTextH / 2 + LINE_H / 2;
+    for (const line of lines) {
+        ctx.font = line.font;
+        ctx.fillStyle = line.color;
+        ctx.fillText(line.text, W / 2, ty);
+        ty += LINE_H;
+    }
+}
+
 function drawZoneBackgrounds(ctx: CanvasRenderingContext2D, width: number) {
     let y = START_Y;
 
     const oppHandY    = y;  y += ZONE_H + ZONE_GAP;
-    const oppFieldY   = y;  y += ZONE_H + ZONE_GAP + OVERLAY_ZONE_H + ZONE_GAP;
+    const oppFieldY   = y;  y += ZONE_H + ZONE_GAP;
     const chainY      = y;  y += ZONE_H + ZONE_GAP;
     const playerFldY  = y;  y += ZONE_H + ZONE_GAP;
     const playerHandY = y;
@@ -468,7 +502,6 @@ const phaseLabels: Record<number, string> = {
     2: 'Setup Phase',
     3: 'Reveal Phase',
     4: 'Play Phase',
-    5: 'Game Over',
 };
 export const PHASE_MESSAGE_DURATION = 2500;
 
@@ -491,55 +524,40 @@ export function drawPhaseAnnouncement(ctx: CanvasRenderingContext2D, phase: numb
         alpha = 1;
     }
 
-    const W = ctx.canvas.clientWidth;
     ctx.save();
     ctx.globalAlpha = alpha;
-    ctx.font = '9px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = SUBTEXT_COLOR;
-    ctx.fillText(label, W / 2, OVERLAY_Y);
+    drawCenteredOverlay(ctx, [{ text: label, color: TEXT_COLOR, font: '11px sans-serif' }], '#000');
     ctx.restore();
 }
 
 function drawGameOver(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number) {
-    const W = ctx.canvas.clientWidth;
-
-    let color: string;
+    let textColor: string;
     if (state.Winner === -2) {
-        color = "#888780";
+        textColor = TEXT_COLOR;
     } else if (state.Winner === userIndex) {
-        color = "#3A8F5A";
+        textColor = "#3A8F5A";
     } else {
-        color = "#D46B6B";
+        textColor = "#8B2020";
     }
 
     ctx.save();
-    ctx.font = "9px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = color;
-    ctx.fillText("Game Over", W / 2, OVERLAY_Y);
+    drawCenteredOverlay(ctx, [{ text: 'Game Over', color: textColor, font: '11px sans-serif' }], '#000');
     ctx.restore();
 }
 
 function drawPause(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number) {
-    const W = ctx.canvas.clientWidth;
-    const label = state.TeamPaused === userIndex ? "You paused" : "Opponent paused";
+    const label = state.TeamPaused === userIndex ? "You Paused" : "Opponent Paused";
     const timeBank = state.TimeBank[state.TeamPaused] ?? 0;
 
-    ctx.save();
-    ctx.font = "9px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = SUBTEXT_COLOR;
-    ctx.fillText(label, W / 2, OVERLAY_Y);
-
+    const lines: { text: string; color: string; font: string }[] = [
+        { text: label, color: TEXT_COLOR, font: '11px sans-serif' },
+    ];
     if (timeBank > 0) {
-        ctx.font = "9px monospace";
-        ctx.fillStyle = "#555";
-        ctx.fillText(`${Math.ceil(timeBank / 1000)}s`, W / 2, OVERLAY_Y + 14);
+        lines.push({ text: `${Math.ceil(timeBank / 1000)}s`, color: TEXT_COLOR, font: '10px monospace' });
     }
+
+    ctx.save();
+    drawCenteredOverlay(ctx, lines, '#000');
     ctx.restore();
 }
 
