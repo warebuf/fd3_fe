@@ -535,7 +535,7 @@ function drawGameOver(ctx: CanvasRenderingContext2D, state: GameState, userIndex
     if (state.Winner === -2) {
         textColor = TEXT_COLOR;
     } else if (state.Winner === userIndex) {
-        textColor = "#3A8F5A";
+        textColor = "#2DB55D";
     } else {
         textColor = "#8B2020";
     }
