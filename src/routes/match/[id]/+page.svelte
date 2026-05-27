@@ -131,10 +131,12 @@
                     ws?.send(JSON.stringify({ type: "ready" }));
                 }
             } else if (e.key === 'p' || e.key === 'P') {
-                if (interpolatedState?.PausePhase === PausePhase.FullPause) {
-                    ws?.send(JSON.stringify({ type: "unpause" }));
-                } else {
-                    ws?.send(JSON.stringify({ type: "pause" }));
+                const ps = interpolatedState;
+                if (!ps) return;
+                const canPause   = ps.PausePhase === PausePhase.Simulating && ps.TimeBank[teamIdx] > 0 && ps.Phase >= Phase.Draw;
+                const canUnpause = ps.PausePhase === PausePhase.FullPause   && ps.TeamPaused === teamIdx;
+                if (canPause || canUnpause) {
+                    ws?.send(JSON.stringify({ type: "fullPause" }));
                 }
             }
         };
@@ -208,19 +210,21 @@
         </div>
     {/if}
     {#if interpolatedState}
+        {@const canPause   = interpolatedState.PausePhase === PausePhase.Simulating && interpolatedState.TimeBank[teamIdx] > 0 && interpolatedState.Phase >= Phase.Draw}
+        {@const canUnpause = interpolatedState.PausePhase === PausePhase.FullPause   && interpolatedState.TeamPaused === teamIdx}
         <div class="controls">
             <button
                 class="ctrl-btn"
+                class:dimmed={!canPause && !canUnpause}
+                disabled={!canPause && !canUnpause}
                 on:click={() => {
-                    if (interpolatedState.PausePhase === PausePhase.FullPause) {
-                        ws?.send(JSON.stringify({ type: "unpause" }));
-                    } else {
-                        ws?.send(JSON.stringify({ type: "pause" }));
+                    if (canPause || canUnpause) {
+                        ws?.send(JSON.stringify({ type: "fullPause" }));
                     }
                 }}
             >
                 <span class="key">P</span>
-                {interpolatedState.PausePhase === PausePhase.FullPause ? 'Unpause' : 'Pause'}
+                {canUnpause ? 'Unpause' : 'Pause'}
             </button>
         </div>
     {/if}

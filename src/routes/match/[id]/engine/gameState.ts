@@ -135,11 +135,11 @@ export function initGameState(): GameState {
         WallTimestamp: Date.now(),
         Phase: 0,
 
-        PausePhase: 0,
+        PausePhase: 2,
         PauseStack: [0, 0],
         FullPauseOffset: 0,
         SimPauseOffset: 0,
-        TeamPaused: 0,
+        TeamPaused: -1,
         TimeBank: [0, 0],
 
         Cards: [],
