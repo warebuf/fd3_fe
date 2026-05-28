@@ -438,7 +438,7 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, opponent
     y += LINE_H;
     ctx.fillText(`Graveyard ${state.Grave[opponentIndex].length}`, x, y);
     y += LINE_H;
-    ctx.fillText(`Time Bank ${Math.ceil((state.TimeBank[opponentIndex] ?? 0) / 1000)}`, x, y);
+    ctx.fillText(`Time Bank ${Math.floor((state.TimeBank[opponentIndex] ?? 0) / 1000)}`, x, y);
     if (state.Phase === Phase.BoardSetup) {
         y += LINE_H;
         const oppReady = state.Ready[opponentIndex] ?? false;
@@ -461,7 +461,7 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, opponent
     y += LINE_H;
     ctx.fillText(`Graveyard ${state.Grave[userIndex].length}`, x, y);
     y += LINE_H;
-    ctx.fillText(`Time Bank ${Math.ceil((state.TimeBank[userIndex] ?? 0) / 1000)}`, x, y);
+    ctx.fillText(`Time Bank ${Math.floor((state.TimeBank[userIndex] ?? 0) / 1000)}`, x, y);
     if (state.Phase === Phase.BoardSetup) {
         y += LINE_H;
         const userReady = state.Ready[userIndex] ?? false;
@@ -526,7 +526,7 @@ function drawPause(ctx: CanvasRenderingContext2D, state: GameState, userIndex: n
         { text: label, color: TEXT_COLOR, font: '11px sans-serif' },
     ];
     if (timeBank > 0) {
-        lines.push({ text: `${Math.ceil(timeBank / 1000)}s`, color: TEXT_COLOR, font: '10px monospace' });
+        lines.push({ text: `${Math.floor(timeBank / 1000)}s`, color: TEXT_COLOR, font: '10px monospace' });
     }
 
     ctx.save();
