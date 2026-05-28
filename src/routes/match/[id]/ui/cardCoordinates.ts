@@ -47,13 +47,7 @@ function rowCoords(count: number, canvasWidth: number, cardY: number): coordinat
     return coords;
 }
 
-export function calcBoardLayout(
-    canvasWidth: number,
-    playerNum: number,
-    handOrder: number[][],
-    field: number[][],
-    chainLength: number
-): BoardLayout {
+export function calcBoardLayout( canvasWidth: number, playerNum: number, handOrder: number[][], field: number[][], chainLength: number ): BoardLayout {
     let y = START_Y;
 
     const oppHandCardY     = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP;

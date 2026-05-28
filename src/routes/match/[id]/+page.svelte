@@ -78,9 +78,7 @@
         }
 
         // draw
-        const width = canvasEl.clientWidth;
-        const height = canvasEl.clientHeight;
-        ctx.clearRect(0, 0, width, height);
+        ctx.clearRect(0, 0, canvasEl.clientWidth, canvasEl.clientHeight);
         const currentWallTime = now + performance.timeOrigin + get(serverClockOffset);
         drawBoard(ctx, interpolatedState, currentWallTime, teamIdx, layout, handOrder, clickedIndex);
         drawPhaseAnnouncement(ctx, authoritativeState.Phase, phaseMessageStart, now);

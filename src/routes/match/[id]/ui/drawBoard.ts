@@ -407,33 +407,6 @@ function drawTimerBar( ctx: CanvasRenderingContext2D, x: number, y: number, star
     ctx.strokeRect(Math.round(barX) + 0.5, Math.round(barY) + 0.5, BAR_W, BAR_H);
 }
 
-function drawBlockProgress( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, startMs: number, endMs: number, currentSimTime: number ) {
-    const NUM_BLOCKS = 8;
-    const BLOCK_H = 6;
-    const GAP = 2;
-    const LABEL_W = 44;
-    const blocksW = w - GAP - LABEL_W;
-    const blockW = (blocksW - GAP * (NUM_BLOCKS - 1)) / NUM_BLOCKS;
-    const progress = Math.min(Math.max((currentSimTime - startMs) / (endMs - startMs), 0), 1);
-    const filled = Math.floor(progress * NUM_BLOCKS);
-    const remainingMs = Math.max(endMs - currentSimTime, 0);
-    const label = (remainingMs / 1000).toFixed(1);
-
-    for (let i = 0; i < NUM_BLOCKS; i++) {
-        const bx = x + i * (blockW + GAP);
-        ctx.fillStyle = i < filled ? TEXT_COLOR : CARD_BORDER;
-        ctx.fillRect(Math.round(bx), y, Math.floor(blockW), BLOCK_H);
-    }
-
-    ctx.fillStyle = SUBTEXT_COLOR;
-    ctx.font = "8px monospace";
-    ctx.textAlign = "right";
-    ctx.textBaseline = "middle";
-    ctx.fillText(label, x + w, y + BLOCK_H / 2);
-
-}
-
-
 function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, opponentIndex: number, userIndex: number) {
     const x = 6;
     let y = 6;
@@ -573,16 +546,14 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     // Opponent hand
     drawHand(ctx, handOrder[opponentIndex] ?? [], state.Cards, layout.hand[opponentIndex] ?? [], true, selectedIndex, currentSimTime);
 
-    if (state.Phase !== Phase.BoardSetup) {
-        // Opponent field
-        drawField(ctx, state.Cards, state.Field[opponentIndex], layout.field[opponentIndex] ?? [], currentSimTime, selectedIndex);
+    // Opponent field
+    drawField(ctx, state.Cards, state.Field[opponentIndex], layout.field[opponentIndex] ?? [], currentSimTime, selectedIndex);
 
-        // Chain zone
-        drawChainZone(ctx, state.Chain, state.Cards, layout.chain, currentActiveTime);
+    // Chain zone
+    drawChainZone(ctx, state.Chain, state.Cards, layout.chain, currentActiveTime);
 
-        // Player field
-        drawField(ctx, state.Cards, state.Field[userIndex], layout.field[userIndex] ?? [], currentSimTime, selectedIndex);
-    }
+    // Player field
+    drawField(ctx, state.Cards, state.Field[userIndex], layout.field[userIndex] ?? [], currentSimTime, selectedIndex);
 
     // Player hand
     drawHand(ctx, handOrder[userIndex] ?? [], state.Cards, layout.hand[userIndex] ?? [], false, selectedIndex, currentSimTime);
