@@ -74,29 +74,22 @@ function hitTest(mouseX: number, mouseY: number, x: number, y: number): boolean 
     return mouseX >= x && mouseX <= x + PCARD_W && mouseY >= y && mouseY <= y + PCARD_H;
 }
 
-export function isCardCalculated(cardIndex: number, handOrder: number[][], field: number[][], chainIds: number[]): boolean {
-    for (let i = 0; i < handOrder.length; i++)
-        for (let j = 0; j < handOrder[i].length; j++)
-            if (handOrder[i][j] === cardIndex) return true;
-    for (let i = 0; i < field.length; i++)
-        for (let j = 0; j < field[i].length; j++)
-            if (field[i][j] === cardIndex) return true;
-    for (let i = 0; i < chainIds.length; i++)
-        if (chainIds[i] === cardIndex) return true;
-    return false;
-}
-
 export function getClickedCard(mouseX: number, mouseY: number, layout: BoardLayout, handOrder: number[][], field: number[][], chainIds: number[]): number {
-    for (let i = 0; i < layout.hand.length; i++)
-        for (let j = 0; j < layout.hand[i].length; j++)
+    for (let i = 0; i < layout.hand.length; i++) {
+        for (let j = 0; j < layout.hand[i].length; j++) {
             if (hitTest(mouseX, mouseY, layout.hand[i][j].x, layout.hand[i][j].y)) return handOrder[i][j];
+        }
+    }
 
-    for (let i = 0; i < layout.field.length; i++)
-        for (let j = 0; j < layout.field[i].length; j++)
+    for (let i = 0; i < layout.field.length; i++) {
+        for (let j = 0; j < layout.field[i].length; j++) {
             if (hitTest(mouseX, mouseY, layout.field[i][j].x, layout.field[i][j].y)) return field[i][j];
-
-    for (let i = 0; i < layout.chain.length; i++)
+        }
+    }
+        
+    for (let i = 0; i < layout.chain.length; i++) {
         if (hitTest(mouseX, mouseY, layout.chain[i].x, layout.chain[i].y)) return chainIds[i];
-
+    }
+        
     return -1;
 }

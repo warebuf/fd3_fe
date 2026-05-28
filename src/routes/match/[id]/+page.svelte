@@ -11,7 +11,7 @@
     import { interpolate } from './engine/interpolate';
 
     import { drawBoard, drawPhaseAnnouncement } from './ui/drawBoard';
-    import { calcBoardLayout, getClickedCard, isCardCalculated, mirrorUIWithHand, type BoardLayout } from './ui/cardCoordinates';
+    import { calcBoardLayout, getClickedCard, mirrorUIWithHand, type BoardLayout } from './ui/cardCoordinates';
     import { PausePhase } from './engine/gameState';
 
     // drawing related
@@ -65,9 +65,6 @@
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
             layout = calcBoardLayout(ctx.canvas.clientWidth, teamIdx, handOrder, interpolatedState.Field, interpolatedState.Chain.length);
-
-            if (clickedIndex !== -1 && !isCardCalculated(clickedIndex, handOrder, interpolatedState.Field, interpolatedState.Chain.map(c => c.CardID)))
-                clickedIndex = -1;
 
             if (authoritativeState.Phase !== phaseShown) {
                 if (phaseShown !== -1) {
