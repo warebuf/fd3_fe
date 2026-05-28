@@ -200,7 +200,7 @@
         </div>
     {/if}
     {#if interpolatedState}
-        {@const canPause   = interpolatedState.PausePhase === PausePhase.Simulating && interpolatedState.TimeBank[teamIdx] > 0 && interpolatedState.Phase >= Phase.Draw}
+        {@const canPause   = interpolatedState.TimeBank[teamIdx] > 0 && interpolatedState.Phase >= Phase.Draw}
         {@const canUnpause = interpolatedState.PausePhase === PausePhase.FullPause   && interpolatedState.TeamPaused === teamIdx}
         <div class="controls">
             <button
