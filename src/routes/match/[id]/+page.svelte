@@ -128,7 +128,7 @@
             } else if (e.key === 'p' || e.key === 'P') {
                 const ps = interpolatedState;
                 if (!ps) return;
-                const canPause   = ps.PausePhase === PausePhase.Simulating && ps.TimeBank[teamIdx] > 0 && ps.Phase >= Phase.Draw;
+                const canPause   = ps.TimeBank[teamIdx] > 0 && ps.Phase >= Phase.Draw;
                 const canUnpause = ps.PausePhase === PausePhase.FullPause   && ps.TeamPaused === teamIdx;
                 if (canPause || canUnpause) {
                     ws?.send(JSON.stringify({ type: "fullPause" }));
