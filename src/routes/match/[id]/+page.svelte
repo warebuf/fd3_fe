@@ -39,6 +39,7 @@
 
     let phaseShown = -1;
     let phaseMessageStart = -Infinity;
+    let pauseEnd = 0; // absolute wall time when the current pause expires
 
 
     function resizeCanvas() {
