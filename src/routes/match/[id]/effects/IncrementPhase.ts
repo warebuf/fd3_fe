@@ -10,5 +10,11 @@ export function incrementPhase(state: GameState, log: PhaseLog) {
         state.Ready = state.Ready.map(() => false);
     }
 
+    if (log.Phase === 4) {
+        for (let i = 0; i < state.Cards.length; i++) {
+            state.Cards[i].AutoSummon = 0;
+        }
+    }
+
 
 }
