@@ -8,6 +8,7 @@ import { applyEffect } from "../effects/ApplyEffect"
 import { serverClockOffset } from "../networking/ping";
 import type { EventLog } from "./logs";
 import { recordTrace } from "./debugTrace";
+import { dlog } from "./debugLog";
 
 type Event = EventLog | GameState;
 
@@ -31,6 +32,11 @@ export class StateManager {
                     if (nextEvent.UpdateID <= currentState.UpdateID) {
                         continue;
                     }
+                    const M = 1_000_000;
+                    const logWall    = nextEvent.WallTimestamp % M;
+                    const clientWall = currentTime % M;
+                    const adjusted   = (currentTime + clockOffset) % M;
+                    dlog(`[log type=${nextEvent.Type}] logWall=${logWall.toFixed(0)} clientWall=${clientWall.toFixed(0)} offset=${clockOffset.toFixed(0)} adjusted=${adjusted.toFixed(0)}`);
                     applyEffect(currentState, nextEvent);
                     recordTrace(nextEvent, currentState);
                     significantEvent = true;

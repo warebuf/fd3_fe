@@ -3,7 +3,8 @@ import { get } from "svelte/store";
 import type { GameState, Card, ChainItem } from "../engine/gameState"
 import { Phase, PausePhase, CardStatus, AbilityTimerType } from "../engine/gameState"
 import type { coordinate, BoardLayout } from "./cardCoordinates"
-import { ping } from "../networking/ping";
+import { ping, serverClockOffset } from "../networking/ping";
+import { dlog } from "../engine/debugLog";
 
 export const CARD_W = 56;
 export const CARD_H = 80;
@@ -383,6 +384,8 @@ function drawTimerBar( ctx: CanvasRenderingContext2D, x: number, y: number, star
     const barX = x + 10;
     const progress = Math.min(Math.max((currentSimTime - startMs) / (endMs - startMs), 0), 1);
     const remainingMs = Math.max(endMs - currentSimTime, 0);
+    const M = 1_000_000;
+    dlog(`[${label}] start=${(startMs%M)|0} end=${(endMs%M)|0} simTime=${(currentSimTime%M)|0} progress=${progress.toFixed(2)} remaining=${remainingMs|0}`);
     const countdown = (remainingMs / 1000).toFixed(1);
 
     const barY = y - GAP - BAR_H;
@@ -542,6 +545,10 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
 
     const currentSimTime = computeCurrentSimTime(currentWallTime, state);
     const currentActiveTime = computeCurrentActiveTime(currentWallTime, state);
+
+    const M = 1_000_000;
+    const clockOffset = get(serverClockOffset);
+    dlog(`[drawBoard] wallTime=${(currentWallTime%M)|0} offset=${clockOffset|0} adjWall=${((currentWallTime-state.SimPauseOffset)%M)|0} simTime=${(currentSimTime%M)|0} pausePhase=${state.PausePhase}`);
 
     // Opponent hand
     drawHand(ctx, handOrder[opponentIndex] ?? [], state.Cards, layout.hand[opponentIndex] ?? [], true, selectedIndex, currentSimTime);
