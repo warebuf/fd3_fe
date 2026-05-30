@@ -65,29 +65,6 @@ function drawCenteredOverlay(ctx: CanvasRenderingContext2D, lines: { text: strin
     }
 }
 
-function drawZoneBackgrounds(ctx: CanvasRenderingContext2D, width: number) {
-    let y = START_Y;
-
-    const oppHandY    = y;  y += ZONE_H + ZONE_GAP;
-    const oppFieldY   = y;  y += ZONE_H + ZONE_GAP;
-    const chainY      = y;  y += ZONE_H + ZONE_GAP;
-    const playerFldY  = y;  y += ZONE_H + ZONE_GAP;
-    const playerHandY = y;
-
-    const zones = [
-        { y: oppHandY,    color: "#2a1a1a" },
-        { y: oppFieldY,   color: "#221a1a" },
-        { y: chainY,      color: "#1e1e14" },
-        { y: playerFldY,  color: "#1a1a22" },
-        { y: playerHandY, color: "#1a1a2a" },
-    ];
-
-    for (const zone of zones) {
-        ctx.fillStyle = zone.color;
-        ctx.fillRect(0, zone.y, width, ZONE_H);
-    }
-}
-
 function roundRect( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number ) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -540,8 +517,6 @@ function drawPause(ctx: CanvasRenderingContext2D, state: GameState, userIndex: n
 export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, layout: BoardLayout, handOrder: number[][], selectedIndex: number) {
     const opponentIndex = userIndex === 0 ? 1 : 0;
     if (state.Phase === Phase.GameEnd) currentWallTime = state.WallTimestamp;
-
-    drawZoneBackgrounds(ctx, ctx.canvas.clientWidth);
 
     const currentSimTime = computeCurrentSimTime(currentWallTime, state);
     const currentActiveTime = computeCurrentActiveTime(currentWallTime, state);
