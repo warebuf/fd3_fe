@@ -89,6 +89,11 @@ export interface AbilityTimer {
     ExecuteAtSimTime: number;
 }
 
+export const Archetype = {
+    None: 0,
+    Tree: 1,
+} as const;
+
 export const CardStatus = {
     Default:    0, // spells, structures
     Summoning:  1, // unit: on field, summon window not yet resolved
@@ -103,6 +108,7 @@ export interface Card {
     Description: string;
     Cost: number;
     HP: number;
+    Archetype: number;
 
     Team: number;
     Type: number;

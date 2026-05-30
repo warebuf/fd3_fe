@@ -1,7 +1,7 @@
 
 import { get } from "svelte/store";
 import type { GameState, Card, ChainItem } from "../engine/gameState"
-import { Phase, PausePhase, CardStatus, AbilityTimerType } from "../engine/gameState"
+import { Phase, PausePhase, CardStatus, AbilityTimerType, Archetype } from "../engine/gameState"
 import type { coordinate, BoardLayout } from "./cardCoordinates"
 import { ping, serverClockOffset } from "../networking/ping";
 import { dlog } from "../engine/debugLog";
@@ -194,6 +194,9 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
         cardType = "Unit";
     } else if(card.Type === 3) {
         cardType = "Spell";
+    }
+    if (card.Archetype === Archetype.Tree) {
+        cardType += " · Tree";
     }
     ctx.fillText(cardType, tx, ty);
 
