@@ -6,14 +6,13 @@ import type { coordinate, BoardLayout } from "./cardCoordinates"
 import { ping, serverClockOffset } from "../networking/ping";
 import { dlog } from "../engine/debugLog";
 
-export const CARD_W = 56;
-export const CARD_H = 80;
+export const CARD_W = 150;
+export const CARD_H = 125;
 const CARD_RADIUS = 6;
 export const CARD_GAP = 8;
-const ZONE_PAD = 8;
-export const ZONE_H = CARD_H + ZONE_PAD * 2;
+export const ZONE_H = 96;
 export const ZONE_GAP = 48;
-export const START_Y = 16;
+export const START_Y = 32;
 const CARD_COLOR = "#2C2C2A";
 const CARD_BORDER = "#6E6D69";
 const TEXT_COLOR = "#D3D1C7";
@@ -23,9 +22,6 @@ const DIVIDER_COLOR = "#6F6E68";
 const CROSSHAIR_COLOR = "#D3D1C7";
 const CROSSHAIR_BORDER = "rgba(211,209,199,0.5)";
 const CROSSHAIR_BG = "rgba(211,209,199,0.06)";
-
-export const PCARD_W = 120;
-export const PCARD_H = 100;
 const P_PAD_W = 8;
 const P_PAD_H = 6;
 
@@ -80,8 +76,8 @@ function roundRect( ctx: CanvasRenderingContext2D, x: number, y: number, w: numb
 }
 
 function drawCrosshair(ctx: CanvasRenderingContext2D, x: number, y: number) {
-  const w = PCARD_W;
-  const h = PCARD_H;
+  const w = CARD_W;
+  const h = CARD_H;
   const ARM = 12;
   const GAP = 2;
   const x0 = x - GAP;
@@ -152,32 +148,32 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     y = Math.round(y) + 0.5;
 
     if (faceDown) {
-        roundRect(ctx, x, y, PCARD_W, PCARD_H, CARD_RADIUS);
+        roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
         ctx.fillStyle = selected ? CROSSHAIR_BG : "#141414";
         ctx.fill();
         ctx.strokeStyle = selected ? CROSSHAIR_BORDER : CARD_BORDER;
         ctx.lineWidth = selected ? 1 : 0.5;
-        roundRect(ctx, x, y, PCARD_W, PCARD_H, CARD_RADIUS);
+        roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
         ctx.stroke();
         ctx.fillStyle = TEXT_COLOR;
         ctx.font = "bold italic 9px sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("FD", x + PCARD_W / 2, y + PCARD_H / 2);
+        ctx.fillText("FD", x + CARD_W / 2, y + CARD_H / 2);
         if (selected) drawCrosshair(ctx, x, y);
         ctx.restore();
         return;
     }
 
     // draw card background
-    roundRect(ctx, x, y, PCARD_W, PCARD_H, CARD_RADIUS);
+    roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
     ctx.fillStyle = selected ? CROSSHAIR_BG : CARD_COLOR;
     ctx.fill();
 
     // draw the border
     ctx.strokeStyle = selected ? CROSSHAIR_BORDER : CARD_BORDER;
     ctx.lineWidth = selected ? 1 : 0.5;
-    roundRect(ctx, x, y, PCARD_W, PCARD_H, CARD_RADIUS);
+    roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
     ctx.stroke();
 
     // draw title
@@ -201,7 +197,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     }
     ctx.fillText(cardType, tx, ty);
 
-    const contentBot = y + PCARD_H - P_PAD_H - 12 - P_PAD_H; // top of footer divider
+    const contentBot = y + CARD_H - P_PAD_H - 12 - P_PAD_H; // top of footer divider
 
     // draw description
     const divY = ty + 8;
@@ -209,7 +205,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
         ctx.fillStyle = SUBTEXT_COLOR;
         ctx.font = "italic 9px sans-serif";
         ctx.textBaseline = "alphabetic";
-        drawWrappedText(ctx, card.Description, tx, divY + 10, PCARD_W - P_PAD_W * 2, 11, contentBot - 4);
+        drawWrappedText(ctx, card.Description, tx, divY + 10, CARD_W - P_PAD_W * 2, 11, contentBot - 4);
     }
 
     // draw summoning bar above card
@@ -241,8 +237,8 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     }
 
     // draw status at footer
-    const statusX = x + (PCARD_W/2);
-    const statusY = y + PCARD_H - P_PAD_H;
+    const statusX = x + (CARD_W/2);
+    const statusY = y + CARD_H - P_PAD_H;
     ctx.fillStyle = SUBTEXT_COLOR;
     ctx.font = "9px sans-serif";
     ctx.textAlign = "center"
@@ -261,7 +257,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     // draw footer divider
     const lineY = statusY - P_PAD_H - 12;
     const lineX1 = x + P_PAD_W;
-    const lineX2 = x + PCARD_W - P_PAD_W;
+    const lineX2 = x + CARD_W - P_PAD_W;
     ctx.beginPath();
     ctx.moveTo(lineX1, lineY);
     ctx.lineTo(lineX2, lineY);
@@ -270,8 +266,8 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.stroke();
 
     // draw hp (bottom-left) and cost (top-right)
-    drawStatBox(ctx, x + PCARD_W - 4 - STAT_BOX_W, y + 4, card.Cost, "#0E1E30", "#7AADDF");
-    drawStatBox(ctx, x + PCARD_W - 4 - STAT_BOX_W, y + PCARD_H - 4 - STAT_BOX_H, card.HP, "#2E0E0E", "#D46B6B");
+    drawStatBox(ctx, x + CARD_W - 4 - STAT_BOX_W, y + 4, card.Cost, "#0E1E30", "#7AADDF");
+    drawStatBox(ctx, x + CARD_W - 4 - STAT_BOX_W, y + CARD_H - 4 - STAT_BOX_H, card.HP, "#2E0E0E", "#D46B6B");
 
     if (selected) drawCrosshair(ctx, x, y);
 
@@ -357,7 +353,7 @@ function computeCurrentSimTime(currentWallTime: number, state: GameState): numbe
 function drawTimerBar( ctx: CanvasRenderingContext2D, x: number, y: number, startMs: number, endMs: number, currentSimTime: number, label: string ) {
     const GAP = 12;
     const BAR_H = 4;
-    const BAR_W = PCARD_W - 20;
+    const BAR_W = CARD_W - 20;
     const barX = x + 10;
     const progress = Math.min(Math.max((currentSimTime - startMs) / (endMs - startMs), 0), 1);
     const remainingMs = Math.max(endMs - currentSimTime, 0);

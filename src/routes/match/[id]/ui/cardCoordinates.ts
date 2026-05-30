@@ -1,5 +1,5 @@
 
-import { CARD_GAP, ZONE_H, PCARD_W, PCARD_H, ZONE_GAP, START_Y } from "./drawBoard"
+import { CARD_GAP, ZONE_H, CARD_W, CARD_H, ZONE_GAP, START_Y } from "./drawBoard"
 
 export type coordinate = {
     x: number
@@ -38,11 +38,11 @@ export function mirrorUIWithHand(order: number[][], hand: number[][]): number[][
 
 function rowCoords(count: number, canvasWidth: number, cardY: number): coordinate[] {
     if (count === 0) return [];
-    const totalW = count * PCARD_W + (count - 1) * CARD_GAP;
+    const totalW = count * CARD_W + (count - 1) * CARD_GAP;
     const startX = (canvasWidth - totalW) / 2;
     const coords: coordinate[] = [];
     for (let j = 0; j < count; j++) {
-        coords.push({ x: startX + j * (PCARD_W + CARD_GAP), y: cardY });
+        coords.push({ x: startX + j * (CARD_W + CARD_GAP), y: cardY });
     }
     return coords;
 }
@@ -50,11 +50,11 @@ function rowCoords(count: number, canvasWidth: number, cardY: number): coordinat
 export function calcBoardLayout( canvasWidth: number, playerNum: number, handOrder: number[][], field: number[][], chainLength: number ): BoardLayout {
     let y = START_Y;
 
-    const oppHandCardY     = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP;
-    const oppFieldCardY    = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP;
-    const chainCardY       = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP;
-    const playerFieldCardY = y + (ZONE_H - PCARD_H) / 2;  y += ZONE_H + ZONE_GAP;
-    const playerHandCardY  = y + (ZONE_H - PCARD_H) / 2;
+    const oppHandCardY     = y + (ZONE_H - CARD_H) / 2;  y += ZONE_H + ZONE_GAP;
+    const oppFieldCardY    = y + (ZONE_H - CARD_H) / 2;  y += ZONE_H + ZONE_GAP;
+    const chainCardY       = y + (ZONE_H - CARD_H) / 2;  y += ZONE_H + ZONE_GAP;
+    const playerFieldCardY = y + (ZONE_H - CARD_H) / 2;  y += ZONE_H + ZONE_GAP;
+    const playerHandCardY  = y + (ZONE_H - CARD_H) / 2;
 
     const hand: coordinate[][] = [[], []];
     const fieldCoords: coordinate[][] = [[], []];
@@ -71,7 +71,7 @@ export function calcBoardLayout( canvasWidth: number, playerNum: number, handOrd
 }
 
 function hitTest(mouseX: number, mouseY: number, x: number, y: number): boolean {
-    return mouseX >= x && mouseX <= x + PCARD_W && mouseY >= y && mouseY <= y + PCARD_H;
+    return mouseX >= x && mouseX <= x + CARD_W && mouseY >= y && mouseY <= y + CARD_H;
 }
 
 export function getClickedCard(mouseX: number, mouseY: number, layout: BoardLayout, handOrder: number[][], field: number[][], chainIds: number[]): number {
