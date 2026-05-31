@@ -109,6 +109,7 @@ export interface Card {
     Cost: number;
     HP: number;
     Archetype: number;
+    Taunt: boolean;
 
     Team: number;
     Type: number;

@@ -19,7 +19,7 @@
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          deck: [1, 1, 2, 2, 3, 3, 4, 4, 5, 5],
+          deck: [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6],
           startingHand: [3,4],
           structNo: 1,
         }),
