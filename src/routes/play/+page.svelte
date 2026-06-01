@@ -6,9 +6,20 @@
   let es: EventSource | null;
   let finding = false;
 
+  let deckInput = "1,1,2,2,3,3,4,4,5,5,6,6";
+  let startingHandInput = "";
+  let structNo = 1;
+
+  function parseCardList(s: string): number[] {
+    return s.split(",").map(v => v.trim()).filter(v => v !== "").map(Number);
+  }
+
   export async function findMatch() {
-    
+
     finding = true;
+
+    const deck = parseCardList(deckInput);
+    const startingHand = parseCardList(startingHandInput);
 
     try {
       // create guest cookie
@@ -19,9 +30,9 @@
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          deck: [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6],
-          startingHand: [],
-          structNo: 1,
+          deck,
+          startingHand,
+          structNo,
         }),
       });
       if (!res.ok) {
@@ -90,6 +101,20 @@
 </script>
 
 <div class="center">
+  <div class="fields">
+    <label>
+      Deck
+      <input type="text" bind:value={deckInput} placeholder="e.g. 1,1,2,2,3,3" disabled={finding} />
+    </label>
+    <label>
+      Starting Hand
+      <input type="text" bind:value={startingHandInput} placeholder="e.g. 1,2,3" disabled={finding} />
+    </label>
+    <label>
+      Struct No
+      <input type="number" bind:value={structNo} min="1" disabled={finding} />
+    </label>
+  </div>
   <button
     class="rainbow"
     data-label={finding ? "Searching" : "Find Match"}
@@ -103,10 +128,40 @@
 
 	.center {
 		display: flex;
+		flex-direction: column;
 		justify-content: center;
 		align-items: center;
-		height: 100%; /* inherits available height from parent */
+		gap: 16px;
+		height: 100%;
 	}
+
+  .fields {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: white;
+    font-size: 13px;
+  }
+
+  .fields label {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .fields input {
+    background: #111;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: white;
+    padding: 4px 8px;
+    font-size: 13px;
+    width: 220px;
+  }
+
+  .fields input:disabled {
+    opacity: 0.5;
+  }
 
   .rainbow {
     background-color: transparent;
