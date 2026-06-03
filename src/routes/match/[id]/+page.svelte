@@ -116,16 +116,28 @@
                 e.preventDefault(); // prevent page scroll
                 if (clickedIndex !== -1) {
                     const card = interpolatedState?.Cards[clickedIndex];
-                    if (interpolatedState?.Phase === Phase.BoardSetup && card?.AutoSummon > 0) {
-                        ws?.send(JSON.stringify({ type: "clearAutoSummon", CardIndex: clickedIndex }));
-                    } else {
-                        ws?.send(JSON.stringify({ type: "hand", CardIndex: clickedIndex }));
+                    if (interpolatedState?.Phase === Phase.BoardSetup) {
+                        if (card?.StageOrder > 0) {
+                            ws?.send(JSON.stringify({ type: "unstage", CardIndex: clickedIndex }));
+                        } else {
+                            ws?.send(JSON.stringify({ type: "stage", CardIndex: clickedIndex }));
+                        }
+                    } else if (interpolatedState?.Phase === Phase.Play) {
+                        if (card?.AutoSummon > 0) {
+                            ws?.send(JSON.stringify({ type: "unautosummon", CardIndex: clickedIndex }));
+                        } else {
+                            ws?.send(JSON.stringify({ type: "autosummon", CardIndex: clickedIndex }));
+                        }
                     }
                     clickedIndex = -1;
                 }
             } else if (e.key === 'r' || e.key === 'R') {
-                if (interpolatedState?.Phase === Phase.BoardSetup && !(interpolatedState?.Ready[teamIdx] ?? false)) {
-                    ws?.send(JSON.stringify({ type: "ready" }));
+                if (interpolatedState?.Phase === Phase.BoardSetup) {
+                    if (interpolatedState?.Ready[teamIdx]) {
+                        ws?.send(JSON.stringify({ type: "unready" }));
+                    } else {
+                        ws?.send(JSON.stringify({ type: "ready" }));
+                    }
                 }
             } else if (e.key === 'd' || e.key === 'D') {
                 downloadLogs();
@@ -192,11 +204,16 @@
         <div class="ready-overlay">
             <button
                 class="ready-btn"
-                disabled={interpolatedState?.Ready[teamIdx] ?? false}
-                on:click={() => ws?.send(JSON.stringify({ type: "ready" }))}
+                on:click={() => {
+                    if (interpolatedState?.Ready[teamIdx]) {
+                        ws?.send(JSON.stringify({ type: "unready" }));
+                    } else {
+                        ws?.send(JSON.stringify({ type: "ready" }));
+                    }
+                }}
             >
                 {#if interpolatedState?.Ready[teamIdx]}
-                    <span class="ready-icon">✓</span> Waiting...
+                    <span class="ready-icon">✓</span> Unready (r)
                 {:else}
                     <span class="ready-icon">✓</span> Ready (r)
                 {/if}

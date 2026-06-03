@@ -115,6 +115,7 @@ export interface Card {
     Type: number;
     Zone: number;
     Status: number;
+    StageOrder: number;
     AutoSummon: number;
     AbilityTimers: AbilityTimer[];
 }

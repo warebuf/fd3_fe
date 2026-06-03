@@ -12,7 +12,7 @@ export function incrementPhase(state: GameState, log: PhaseLog) {
 
     if (log.Phase === 4) {
         for (let i = 0; i < state.Cards.length; i++) {
-            state.Cards[i].AutoSummon = 0;
+            state.Cards[i].StageOrder = 0;
         }
     }
 

@@ -16,5 +16,4 @@ export function autoSummon(state: GameState, log: AutoSummonLog) {
         }
     }
 
-
 }

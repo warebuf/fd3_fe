@@ -275,19 +275,20 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
 
     if (selected) drawCrosshair(ctx, x, y);
 
-    if (!faceDown && card.AutoSummon > 0) {
+    const badgeNum = card.StageOrder > 0 ? card.StageOrder : card.AutoSummon > 0 ? card.AutoSummon : 0;
+    if (!faceDown && badgeNum > 0) {
         const badgeR = 7;
         const badgeX = x;
         const badgeY = y;
         ctx.beginPath();
         ctx.arc(badgeX, badgeY, badgeR, 0, Math.PI * 2);
-        ctx.fillStyle = "#F5C518";
+        ctx.fillStyle = card.StageOrder > 0 ? "#F5C518" : "#6abf6a";
         ctx.fill();
         ctx.fillStyle = "#1a1a1a";
         ctx.font = "bold 7px sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(String(card.AutoSummon), badgeX, badgeY);
+        ctx.fillText(String(badgeNum), badgeX, badgeY);
     }
 
     ctx.restore();

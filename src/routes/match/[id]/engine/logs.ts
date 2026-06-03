@@ -12,12 +12,14 @@ export type SpendManaLog          = Timestamp & { Type: 8;  TeamIndex: number; A
 export type AttackLog             = Timestamp & { Type: 9;  AttackerIndex: number; TargetIsUnit: boolean; TargetTeamIndex: number; TargetCardIndex: number; Damage: number; }
 export type HealLog               = Timestamp & { Type: 10; HealerIndex: number; TargetCardIndex: number; Amount: number; }
 export type ReadyLog              = Timestamp & { Type: 11; TeamIndex: number; }
-export type AutoSummonLog         = Timestamp & { Type: 12; TeamIndex: number; CardIndex: number; AutoSummonIdx: number; }
-export type PauseLog              = Timestamp & { Type: 13; PausePhase: number; TeamIndex: number; TimeStart: number; TimeRemaining: number; }
-export type UnpauseLog            = Timestamp & { Type: 14; TimeRemaining: number; }
-export type AddAbilityTimerLog    = Timestamp & { Type: 15; CardIndex: number; AbilityID: number; AbilityIdx: number; TimerType: number; StartAtSimTime: number; ExecuteAtSimTime: number; }
-export type ClearAbilityTimerLog  = Timestamp & { Type: 16; CardIndex: number; AbilityID: number; }
-export type GameOverLog           = Timestamp & { Type: 17; Winner: number; }
+export type UnreadyLog            = Timestamp & { Type: 12; TeamIndex: number; }
+export type StageLog              = Timestamp & { Type: 13; TeamIndex: number; CardIndex: number; StageOrder: number; }
+export type AutoSummonLog         = Timestamp & { Type: 14; TeamIndex: number; CardIndex: number; AutoSummonIdx: number; }
+export type PauseLog              = Timestamp & { Type: 15; PausePhase: number; TeamIndex: number; TimeStart: number; TimeRemaining: number; }
+export type UnpauseLog            = Timestamp & { Type: 16; TimeRemaining: number; }
+export type AddAbilityTimerLog    = Timestamp & { Type: 17; CardIndex: number; AbilityID: number; AbilityIdx: number; TimerType: number; StartAtSimTime: number; ExecuteAtSimTime: number; }
+export type ClearAbilityTimerLog  = Timestamp & { Type: 18; CardIndex: number; AbilityID: number; }
+export type GameOverLog           = Timestamp & { Type: 19; Winner: number; }
 
 export type EventLog =
     | PhaseLog
@@ -32,6 +34,8 @@ export type EventLog =
     | AttackLog
     | HealLog
     | ReadyLog
+    | UnreadyLog
+    | StageLog
     | AutoSummonLog
     | PauseLog
     | UnpauseLog
