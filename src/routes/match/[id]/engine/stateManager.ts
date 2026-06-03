@@ -7,7 +7,7 @@ import { MinHeap } from "./stateMinHeap"
 import { applyEffect } from "../effects/ApplyEffect"
 import { serverClockOffset } from "../networking/ping";
 import type { EventLog } from "./logs";
-import { recordTrace } from "./debugTrace";
+//import { recordTrace } from "./debugTrace";
 import { dlog } from "./debugLog";
 
 type Event = EventLog | GameState;
@@ -38,7 +38,7 @@ export class StateManager {
                     const adjusted   = (currentTime + clockOffset) % M;
                     dlog(`[log type=${nextEvent.Type}] logWall=${logWall.toFixed(0)} clientWall=${clientWall.toFixed(0)} offset=${clockOffset.toFixed(0)} adjusted=${adjusted.toFixed(0)}`);
                     applyEffect(currentState, nextEvent);
-                    recordTrace(nextEvent, currentState);
+                    //recordTrace(nextEvent, currentState);
                     significantEvent = true;
                 } else { // GameState
                     currentState = cloneGameState(nextEvent);
