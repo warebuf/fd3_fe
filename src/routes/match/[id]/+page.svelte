@@ -23,7 +23,7 @@
     // misc info
     let matchID: string;
     $: matchID = $page.params.id!;
-    let teamIdx: number;
+    let teamIndex: number;
 
     // networking related
     let ws: WebSocket | undefined;
@@ -50,7 +50,7 @@
         canvasEl.height = Math.max(1, Math.round(height * dpr));
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        layout = calcBoardLayout(ctx.canvas.clientWidth, teamIdx, handOrder, interpolatedState?.Field ?? [[], []], interpolatedState?.Chain?.length ?? 0);
+        layout = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], interpolatedState?.Chain?.length ?? 0);
     }
 
     function loop(now: number) { // now is current time relative to page load
@@ -66,7 +66,7 @@
         // update derived states
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
-            layout = calcBoardLayout(ctx.canvas.clientWidth, teamIdx, handOrder, interpolatedState.Field, interpolatedState.Chain.length);
+            layout = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState.Field, interpolatedState.Chain.length);
 
             if (authoritativeState.Phase !== phaseShown) {
                 if (phaseShown !== -1) {
@@ -79,7 +79,7 @@
         // draw
         ctx.clearRect(0, 0, canvasEl.clientWidth, canvasEl.clientHeight);
         const currentWallTime = now + performance.timeOrigin + get(serverClockOffset);
-        drawBoard(ctx, interpolatedState, currentWallTime, teamIdx, layout, handOrder, clickedIndex);
+        drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, layout, handOrder, clickedIndex);
         drawPhaseAnnouncement(ctx, authoritativeState.Phase, phaseMessageStart, now);
 
         // schedule next frame
@@ -133,7 +133,7 @@
                 }
             } else if (e.key === 'r' || e.key === 'R') {
                 if (interpolatedState?.Phase === Phase.BoardSetup) {
-                    if (interpolatedState?.Ready[teamIdx]) {
+                    if (interpolatedState?.Ready[teamIndex]) {
                         ws?.send(JSON.stringify({ type: "unready" }));
                     } else {
                         ws?.send(JSON.stringify({ type: "ready" }));
@@ -144,8 +144,8 @@
             } else if (e.key === 'p' || e.key === 'P') {
                 const ps = interpolatedState;
                 if (!ps) return;
-                const canPause   = ps.TimeBank[teamIdx] > 0 && ps.Phase >= Phase.Draw;
-                const canUnpause = ps.PausePhase === PausePhase.FullPause   && ps.TeamPaused === teamIdx;
+                const canPause   = ps.TimeBank[teamIndex] > 0 && ps.Phase >= Phase.Draw;
+                const canUnpause = ps.PausePhase === PausePhase.FullPause   && ps.TeamPaused === teamIndex;
                 if (canPause || canUnpause) {
                     ws?.send(JSON.stringify({ type: "fullPause" }));
                 }
@@ -165,7 +165,7 @@
 
             // websocket setup, also set up clientIdx
             const result = await connectWS(matchID, stateManager); // does not stop awaiting until connection is open
-            if (result) { ({ ws, teamIdx } = result); }
+            if (result) { ({ ws, teamIndex } = result); }
 
             // user navigated away, do not continue
             if (cancelledWebsocket) return;
@@ -205,14 +205,14 @@
             <button
                 class="ready-btn"
                 on:click={() => {
-                    if (interpolatedState?.Ready[teamIdx]) {
+                    if (interpolatedState?.Ready[teamIndex]) {
                         ws?.send(JSON.stringify({ type: "unready" }));
                     } else {
                         ws?.send(JSON.stringify({ type: "ready" }));
                     }
                 }}
             >
-                {#if interpolatedState?.Ready[teamIdx]}
+                {#if interpolatedState?.Ready[teamIndex]}
                     <span class="ready-icon">✓</span> Unready (r)
                 {:else}
                     <span class="ready-icon">✓</span> Ready (r)
@@ -221,8 +221,8 @@
         </div>
     {/if}
     {#if interpolatedState}
-        {@const canPause   = interpolatedState.TimeBank[teamIdx] > 0 && interpolatedState.Phase >= Phase.Draw}
-        {@const canUnpause = interpolatedState.PausePhase === PausePhase.FullPause   && interpolatedState.TeamPaused === teamIdx}
+        {@const canPause   = interpolatedState.TimeBank[teamIndex] > 0 && interpolatedState.Phase >= Phase.Draw}
+        {@const canUnpause = interpolatedState.PausePhase === PausePhase.FullPause   && interpolatedState.TeamPaused === teamIndex}
         <div class="controls">
             <button
                 class="ctrl-btn"
