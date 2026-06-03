@@ -12,6 +12,7 @@ import { destroyCard } from "./DestroyCard";
 import { gainMana } from "./GainMana";
 import { spendMana } from "./SpendMana";
 import { attack } from "./Attack";
+import { heal } from "./Heal";
 import { ready } from "./Ready";
 import { autoSummon } from "./AutoSummon";
 import { pause } from "./Pause";
@@ -34,13 +35,14 @@ export function applyEffect(state: GameState, log: EventLog) {
         case 7:  gainMana(state, log); break;
         case 8:  spendMana(state, log); break;
         case 9:  attack(state, log); break;
-        case 10: ready(state, log); break;
-        case 11: autoSummon(state, log); break;
-        case 12: pause(state, log); break;
-        case 13: unpause(state, log); break;
-        case 14: addAbilityTimer(state, log); break;
-        case 15: clearAbilityTimer(state, log); break;
-        case 16: gameOver(state, log); break;
+        case 10: heal(state, log); break;
+        case 11: ready(state, log); break;
+        case 12: autoSummon(state, log); break;
+        case 13: pause(state, log); break;
+        case 14: unpause(state, log); break;
+        case 15: addAbilityTimer(state, log); break;
+        case 16: clearAbilityTimer(state, log); break;
+        case 17: gameOver(state, log); break;
 
         default: console.log("could not apply log", log); applied = false; break;
     }

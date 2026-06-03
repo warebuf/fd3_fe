@@ -10,13 +10,14 @@ export type DestroyCardLog        = Timestamp & { Type: 6;  TeamIndex: number; C
 export type GainManaLog           = Timestamp & { Type: 7;  TeamIndex: number; Amount: number; }
 export type SpendManaLog          = Timestamp & { Type: 8;  TeamIndex: number; Amount: number; }
 export type AttackLog             = Timestamp & { Type: 9;  AttackerIndex: number; TargetIsUnit: boolean; TargetTeamIndex: number; TargetCardIndex: number; Damage: number; }
-export type ReadyLog              = Timestamp & { Type: 10; TeamIndex: number; }
-export type AutoSummonLog         = Timestamp & { Type: 11; TeamIndex: number; CardIndex: number; AutoSummonIdx: number; }
-export type PauseLog              = Timestamp & { Type: 12; PausePhase: number; TeamIndex: number; TimeStart: number; TimeRemaining: number; }
-export type UnpauseLog            = Timestamp & { Type: 13; TimeRemaining: number; }
-export type AddAbilityTimerLog    = Timestamp & { Type: 14; CardIndex: number; AbilityID: number; AbilityIdx: number; TimerType: number; StartAtSimTime: number; ExecuteAtSimTime: number; }
-export type ClearAbilityTimerLog  = Timestamp & { Type: 15; CardIndex: number; AbilityID: number; }
-export type GameOverLog           = Timestamp & { Type: 16; Winner: number; }
+export type HealLog               = Timestamp & { Type: 10; HealerIndex: number; TargetCardIndex: number; Amount: number; }
+export type ReadyLog              = Timestamp & { Type: 11; TeamIndex: number; }
+export type AutoSummonLog         = Timestamp & { Type: 12; TeamIndex: number; CardIndex: number; AutoSummonIdx: number; }
+export type PauseLog              = Timestamp & { Type: 13; PausePhase: number; TeamIndex: number; TimeStart: number; TimeRemaining: number; }
+export type UnpauseLog            = Timestamp & { Type: 14; TimeRemaining: number; }
+export type AddAbilityTimerLog    = Timestamp & { Type: 15; CardIndex: number; AbilityID: number; AbilityIdx: number; TimerType: number; StartAtSimTime: number; ExecuteAtSimTime: number; }
+export type ClearAbilityTimerLog  = Timestamp & { Type: 16; CardIndex: number; AbilityID: number; }
+export type GameOverLog           = Timestamp & { Type: 17; Winner: number; }
 
 export type EventLog =
     | PhaseLog
@@ -29,6 +30,7 @@ export type EventLog =
     | GainManaLog
     | SpendManaLog
     | AttackLog
+    | HealLog
     | ReadyLog
     | AutoSummonLog
     | PauseLog
