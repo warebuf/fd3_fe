@@ -22,6 +22,7 @@ import { unpause } from "./Unpause";
 import { addAbilityTimer } from "./AddAbilityTimer";
 import { clearAbilityTimer } from "./ClearAbilityTimer";
 import { gameOver } from "./GameOver";
+import { counterChain } from "./CounterChain";
 
 export function applyEffect(state: GameState, log: EventLog) {
 
@@ -47,6 +48,7 @@ export function applyEffect(state: GameState, log: EventLog) {
         case 17: addAbilityTimer(state, log); break;
         case 18: clearAbilityTimer(state, log); break;
         case 19: gameOver(state, log); break;
+        case 20: counterChain(state, log); break;
 
         default: console.log("could not apply log", log); applied = false; break;
     }
