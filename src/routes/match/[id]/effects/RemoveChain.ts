@@ -3,6 +3,7 @@ import { Zone, CardStatus } from "../engine/gameState";
 import type { RemoveChainLog } from "../engine/logs";
 
 export function removeChain(state: GameState, log: RemoveChainLog) {
+    console.log(`removeChain: cardID=${log.CardID}`);
     const i = state.Chain.findIndex(item => item.CardID === log.CardID);
     if (i !== -1) state.Chain.splice(i, 1);
 

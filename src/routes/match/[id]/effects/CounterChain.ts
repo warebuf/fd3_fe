@@ -3,6 +3,7 @@ import { Zone, CardStatus } from "../engine/gameState";
 import type { CounterChainLog } from "../engine/logs";
 
 export function counterChain(state: GameState, log: CounterChainLog) {
+    console.log(`counterChain: sourceCardID=${log.SourceCardID} targetCardID=${log.TargetCardID}`);
     const i = state.Chain.findIndex(item => item.CardID === log.TargetCardID);
     if (i !== -1) state.Chain.splice(i, 1);
 
