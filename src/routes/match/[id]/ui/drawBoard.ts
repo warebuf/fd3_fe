@@ -301,13 +301,44 @@ function drawField( ctx: CanvasRenderingContext2D, cards: Card[], field: number[
 }
 
 function drawChainZone( ctx: CanvasRenderingContext2D, chain: ChainItem[], cards: Card[], coords: coordinate[], currentActiveTime: number ): void {
+    const topIndex = chain.length - 1;
     for (let i = 0; i < chain.length; i++) {
         const item = chain[i];
         const card = cards[item.CardID];
         if (!card) continue;
         drawFieldCard(ctx, coords[i].x, coords[i].y, card, 0); // no sim-time timers on chain cards
-        drawTimerBar(ctx, coords[i].x, coords[i].y, item.StartAtActiveTime, item.ExecuteAtActiveTime, currentActiveTime, "Chain");
+        if (i === topIndex) {
+            drawTimerBar(ctx, coords[i].x, coords[i].y, item.StartAtActiveTime, item.ExecuteAtActiveTime, currentActiveTime, "Chain");
+        } else {
+            drawChainPositionBadge(ctx, coords[i].x, coords[i].y, i + 1);
+        }
     }
+}
+
+function drawChainPositionBadge(ctx: CanvasRenderingContext2D, x: number, y: number, position: number): void {
+    const GAP = 12;
+    const BAR_H = 4;
+    const BADGE_W = 50;
+    const BADGE_H = 14;
+    const BADGE_R = 4;
+    const badgeX = x + (CARD_W - BADGE_W) / 2;
+    const badgeY = y - GAP - BAR_H - BADGE_H;
+
+    const BADGE_COLORS = [
+        { bg: "#3a2000", text: "#FFD700" }, // yellow
+        { bg: "#00213a", text: "#4FC3F7" }, // blue
+        { bg: "#3a0000", text: "#FF5252" }, // red
+        { bg: "#003a10", text: "#69F0AE" }, // green
+    ];
+    const color = BADGE_COLORS[(position - 1) % BADGE_COLORS.length];
+    roundRect(ctx, badgeX, badgeY, BADGE_W, BADGE_H, BADGE_R);
+    ctx.fillStyle = color.bg;
+    ctx.fill();
+    ctx.fillStyle = color.text;
+    ctx.font = "bold 9px monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(`Chain ${position}`, badgeX + BADGE_W / 2, badgeY + BADGE_H / 2);
 }
 
 function drawHand( ctx: CanvasRenderingContext2D, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean, selectedIndex: number, currentSimTime: number ) {
