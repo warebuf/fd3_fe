@@ -122,7 +122,7 @@
                         } else {
                             ws?.send(JSON.stringify({ type: "stage", CardIndex: clickedIndex }));
                         }
-                    } else if (interpolatedState?.Phase === Phase.Play) {
+                    } else if (interpolatedState?.Phase === Phase.Play || interpolatedState?.Phase === Phase.Reveal) {
                         if (card?.AutoSummon > 0) {
                             ws?.send(JSON.stringify({ type: "unautosummon", CardIndex: clickedIndex }));
                         } else {
