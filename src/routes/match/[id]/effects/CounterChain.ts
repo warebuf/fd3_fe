@@ -3,7 +3,7 @@ import { Zone, CardStatus } from "../engine/gameState";
 import type { CounterStackLog } from "../engine/logs";
 
 export function counterStack(state: GameState, log: CounterStackLog) {
-    console.log(`counterStack: sourceCardID=${log.SourceCardID} targetCardID=${log.TargetCardID}`);
+
     const i = state.Stack.findIndex(item => item.CardID === log.TargetCardID);
     if (i !== -1) state.Stack.splice(i, 1);
 

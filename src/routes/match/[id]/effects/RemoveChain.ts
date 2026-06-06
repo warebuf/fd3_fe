@@ -3,7 +3,7 @@ import { Zone, CardStatus } from "../engine/gameState";
 import type { RemoveStackLog } from "../engine/logs";
 
 export function removeStack(state: GameState, log: RemoveStackLog) {
-    console.log(`removeStack: cardID=${log.CardID}`);
+
     const i = state.Stack.findIndex(item => item.CardID === log.CardID);
     if (i !== -1) state.Stack.splice(i, 1);
 
