@@ -23,7 +23,7 @@ export type GameState = {
     Field: number[][];
     Grave: number[][];
 
-    Chain: ChainItem[];
+    Stack: StackItem[];
 
     Mana: number[];
     Structures: Structure[];
@@ -52,10 +52,10 @@ export const Zone = {
     Hand: 1,
     Field: 2,
     Graveyard: 3,
-    Chain: 4,
+    Stack: 4,
 } as const;
 
-export const ChainItemType = {
+export const StackItemType = {
     Card: 0,
     Ability: 1,
     Spell: 2,
@@ -127,7 +127,7 @@ export interface Effect {
     C: number;
 }
 
-export interface ChainItem {
+export interface StackItem {
     Type: number;
     CardID: number;
     StartAtActiveTime: number;
@@ -156,7 +156,7 @@ export function initGameState(): GameState {
         Field: [[], []],
         Grave: [[], []],
 
-        Chain: [],
+        Stack: [],
 
         Mana: [],
         Structures: [],
@@ -185,7 +185,7 @@ export function cloneGameState(src: GameState): GameState {
         Field: src.Field.map(f => [...f]),
         Grave: src.Grave.map(g => [...g]),
 
-        Chain: src.Chain.map(item => ({ ...item, Effects: [...item.Effects] })),
+        Stack: src.Stack.map(item => ({ ...item, Effects: [...item.Effects] })),
 
         Mana: [...src.Mana],
         Structures: src.Structures.map(s => ({ ...s })),

@@ -1,6 +1,6 @@
 
 import { get } from "svelte/store";
-import type { GameState, Card, ChainItem } from "../engine/gameState"
+import type { GameState, Card, StackItem } from "../engine/gameState"
 import { Phase, PausePhase, CardStatus, AbilityTimerType, Archetype } from "../engine/gameState"
 import type { coordinate, BoardLayout } from "./cardCoordinates"
 import { ping, serverClockOffset } from "../networking/ping";
@@ -300,22 +300,22 @@ function drawField( ctx: CanvasRenderingContext2D, cards: Card[], field: number[
     }
 }
 
-function drawChainZone( ctx: CanvasRenderingContext2D, chain: ChainItem[], cards: Card[], coords: coordinate[], currentActiveTime: number ): void {
-    const topIndex = chain.length - 1;
-    for (let i = 0; i < chain.length; i++) {
-        const item = chain[i];
+function drawStackZone( ctx: CanvasRenderingContext2D, stack: StackItem[], cards: Card[], coords: coordinate[], currentActiveTime: number ): void {
+    const topIndex = stack.length - 1;
+    for (let i = 0; i < stack.length; i++) {
+        const item = stack[i];
         const card = cards[item.CardID];
         if (!card) continue;
-        drawFieldCard(ctx, coords[i].x, coords[i].y, card, 0); // no sim-time timers on chain cards
+        drawFieldCard(ctx, coords[i].x, coords[i].y, card, 0); // no sim-time timers on stack cards
         if (i === topIndex) {
-            drawTimerBar(ctx, coords[i].x, coords[i].y, item.StartAtActiveTime, item.ExecuteAtActiveTime, currentActiveTime, "Chain");
+            drawTimerBar(ctx, coords[i].x, coords[i].y, item.StartAtActiveTime, item.ExecuteAtActiveTime, currentActiveTime, "Stack");
         } else {
-            drawChainPositionBadge(ctx, coords[i].x, coords[i].y, i + 1);
+            drawStackPositionBadge(ctx, coords[i].x, coords[i].y, i + 1);
         }
     }
 }
 
-function drawChainPositionBadge(ctx: CanvasRenderingContext2D, x: number, y: number, position: number): void {
+function drawStackPositionBadge(ctx: CanvasRenderingContext2D, x: number, y: number, position: number): void {
     const GAP = 12;
     const BAR_H = 4;
     const BADGE_W = 50;
@@ -338,7 +338,7 @@ function drawChainPositionBadge(ctx: CanvasRenderingContext2D, x: number, y: num
     ctx.font = "bold 9px monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(`Chain ${position}`, badgeX + BADGE_W / 2, badgeY + BADGE_H / 2);
+    ctx.fillText(`Stack ${position}`, badgeX + BADGE_W / 2, badgeY + BADGE_H / 2);
 }
 
 function drawHand( ctx: CanvasRenderingContext2D, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean, selectedIndex: number, currentSimTime: number ) {
@@ -563,8 +563,8 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     // Opponent field
     drawField(ctx, state.Cards, state.Field[opponentIndex], layout.field[opponentIndex] ?? [], currentSimTime, selectedIndex);
 
-    // Chain zone
-    drawChainZone(ctx, state.Chain, state.Cards, layout.chain, currentActiveTime);
+    // Stack zone
+    drawStackZone(ctx, state.Stack, state.Cards, layout.stack, currentActiveTime);
 
     // Player field
     drawField(ctx, state.Cards, state.Field[userIndex], layout.field[userIndex] ?? [], currentSimTime, selectedIndex);

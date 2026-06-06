@@ -43,9 +43,10 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
         for(let i = 0; i < msg.data.length; i++) {
           const log = msg.data[i] as EventLog;
           const M = 1_000_000;
-          if (log.Type === 4)  console.log(`ws recv addChain t=${log.WallTimestamp % M} updateID=${log.UpdateID} cardID=${log.CardID} chainType=${log.ChainType}`);
-          if (log.Type === 5)  console.log(`ws recv removeChain t=${log.WallTimestamp % M} updateID=${log.UpdateID} cardID=${log.CardID}`);
-          if (log.Type === 20) console.log(`ws recv counterChain t=${log.WallTimestamp % M} updateID=${log.UpdateID} sourceCardID=${log.SourceCardID} targetCardID=${log.TargetCardID}`);
+          if (log.Type === 4)  console.log(`ws recv addStack t=${log.WallTimestamp % M} updateID=${log.UpdateID} cardID=${log.CardID} stackType=${log.StackType}`);
+          if (log.Type === 5)  console.log(`ws recv removeStack t=${log.WallTimestamp % M} updateID=${log.UpdateID} cardID=${log.CardID}`);
+          if (log.Type === 20) console.log(`ws recv counterStack t=${log.WallTimestamp % M} updateID=${log.UpdateID} sourceCardID=${log.SourceCardID} targetCardID=${log.TargetCardID}`);
+          if (log.Type === 21) console.log(`ws recv refreshStack t=${log.WallTimestamp % M} updateID=${log.UpdateID} cardID=${log.CardID}`);
           stateManager.addLog(log);
         }
         break;

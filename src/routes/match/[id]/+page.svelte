@@ -36,7 +36,7 @@
     // ui
     let clickedIndex: number = -1; // is unitIdx
     let handOrder: number[][] = [];
-    let layout: BoardLayout = { hand: [[], []], field: [[], []], chain: [] };
+    let layout: BoardLayout = { hand: [[], []], field: [[], []], stack: [] };
 
     let phaseShown = -1;
     let phaseMessageStart = -Infinity;
@@ -50,7 +50,7 @@
         canvasEl.height = Math.max(1, Math.round(height * dpr));
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        layout = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], interpolatedState?.Chain?.length ?? 0);
+        layout = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], interpolatedState?.Stack?.length ?? 0);
     }
 
     function loop(now: number) { // now is current time relative to page load
@@ -66,7 +66,7 @@
         // update derived states
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
-            layout = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState.Field, interpolatedState.Chain.length);
+            layout = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState.Field, interpolatedState.Stack.length);
 
             if (authoritativeState.Phase !== phaseShown) {
                 if (phaseShown !== -1) {
@@ -108,7 +108,7 @@
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
 
-            clickedIndex = getClickedCard(x, y, layout, handOrder, interpolatedState?.Field ?? [[], []], interpolatedState?.Chain?.map(c => c.CardID) ?? []);
+            clickedIndex = getClickedCard(x, y, layout, handOrder, interpolatedState?.Field ?? [[], []], interpolatedState?.Stack?.map(c => c.CardID) ?? []);
         };
 
         const onKeyDown = (e: KeyboardEvent) => {

@@ -6,8 +6,8 @@ import { drawCard } from "./DrawCard";
 import { incrementPhase } from "./IncrementPhase";
 import { declareCard } from "./DeclareCard";
 import { summonUnit } from "./SummonUnit";
-import { addChain } from "./ScheduleChain";
-import { removeChain } from "./RemoveChain";
+import { addStack } from "./ScheduleChain";
+import { removeStack } from "./RemoveChain";
 import { destroyCard } from "./DestroyCard";
 import { gainMana } from "./GainMana";
 import { spendMana } from "./SpendMana";
@@ -22,7 +22,8 @@ import { unpause } from "./Unpause";
 import { addAbilityTimer } from "./AddAbilityTimer";
 import { clearAbilityTimer } from "./ClearAbilityTimer";
 import { gameOver } from "./GameOver";
-import { counterChain } from "./CounterChain";
+import { counterStack } from "./CounterChain";
+import { refreshStack } from "./RefreshStack";
 
 export function applyEffect(state: GameState, log: EventLog) {
 
@@ -32,8 +33,8 @@ export function applyEffect(state: GameState, log: EventLog) {
         case 1:  drawCard(state, log); break;
         case 2:  declareCard(state, log); break;
         case 3:  summonUnit(state, log); break;
-        case 4:  addChain(state, log); break;
-        case 5:  removeChain(state, log); break;
+        case 4:  addStack(state, log); break;
+        case 5:  removeStack(state, log); break;
         case 6:  destroyCard(state, log); break;
         case 7:  gainMana(state, log); break;
         case 8:  spendMana(state, log); break;
@@ -48,7 +49,8 @@ export function applyEffect(state: GameState, log: EventLog) {
         case 17: addAbilityTimer(state, log); break;
         case 18: clearAbilityTimer(state, log); break;
         case 19: gameOver(state, log); break;
-        case 20: counterChain(state, log); break;
+        case 20: counterStack(state, log); break;
+        case 21: refreshStack(state, log); break;
 
         default: console.log("could not apply log", log); applied = false; break;
     }

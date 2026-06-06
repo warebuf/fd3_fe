@@ -1,10 +1,10 @@
 import type { GameState } from "../engine/gameState";
-import type { AddChainLog } from "../engine/logs";
+import type { AddStackLog } from "../engine/logs";
 
-export function addChain(state: GameState, log: AddChainLog) {
-    console.log(`addChain: cardID=${log.CardID} chainType=${log.ChainType}`);
-    state.Chain.push({
-        Type: log.ChainType,
+export function addStack(state: GameState, log: AddStackLog) {
+    console.log(`addStack: cardID=${log.CardID} stackType=${log.StackType}`);
+    state.Stack.push({
+        Type: log.StackType,
         CardID: log.CardID,
         StartAtActiveTime: log.StartAtActiveTime,
         PopAtActiveTime: log.PopAtActiveTime,
