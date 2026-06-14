@@ -419,7 +419,7 @@ function drawTimerBar( ctx: CanvasRenderingContext2D, x: number, y: number, star
     ctx.strokeRect(Math.round(barX) + 0.5, Math.round(barY) + 0.5, BAR_W, BAR_H);
 }
 
-function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, opponentIndex: number, userIndex: number) {
+function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, currentActiveTime: number, opponentIndex: number, userIndex: number) {
     const x = 6;
     let y = 6;
     const LINE_H = 14;
@@ -429,7 +429,12 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, opponent
     ctx.textBaseline = "top";
 
     ctx.fillStyle = SUBTEXT_COLOR;
-    ctx.fillText(`Phase ${state.Phase}`, x, y);
+    if (state.PhaseEndInActiveTime > 0) {
+        const remainingMs = Math.max(state.PhaseEndInActiveTime - currentActiveTime, 0);
+        ctx.fillText(`Phase ${state.Phase}  ${Math.ceil(remainingMs / 1000)}s`, x, y);
+    } else {
+        ctx.fillText(`Phase ${state.Phase}`, x, y);
+    }
     y += LINE_H;
     ctx.fillText(`Pause ${state.PausePhase}`, x, y);
     y += LINE_H;
@@ -572,7 +577,7 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     // Player hand
     drawHand(ctx, handOrder[userIndex] ?? [], state.Cards, layout.hand[userIndex] ?? [], false, selectedIndex, currentSimTime);
 
-    drawInfoPanel(ctx, state, opponentIndex, userIndex);
+    drawInfoPanel(ctx, state, currentActiveTime, opponentIndex, userIndex);
 
     if (state.Phase === Phase.GameEnd) drawGameOver(ctx, state, userIndex);
     if (state.PausePhase === PausePhase.FullPause) drawPause(ctx, state, userIndex);

@@ -9,6 +9,7 @@ export type GameState = {
     WallTimestamp: number;
 
     Phase: number;
+    PhaseEndInActiveTime: number; // 0 if no fixed end
 
     PausePhase: number;
     PauseStack: [number, number];
@@ -142,6 +143,7 @@ export function initGameState(): GameState {
         UpdateID: 0,
         WallTimestamp: Date.now(),
         Phase: 0,
+        PhaseEndInActiveTime: 0,
 
         PausePhase: 2,
         PauseStack: [0, 0],
@@ -171,6 +173,7 @@ export function cloneGameState(src: GameState): GameState {
         UpdateID: src.UpdateID,
         WallTimestamp: src.WallTimestamp,
         Phase: src.Phase,
+        PhaseEndInActiveTime: src.PhaseEndInActiveTime,
 
         PausePhase: src.PausePhase,
         PauseStack: [...src.PauseStack] as [number, number],
