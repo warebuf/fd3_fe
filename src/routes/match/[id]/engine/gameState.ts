@@ -23,6 +23,7 @@ export type GameState = {
     Hand: number[][];
     Field: number[][];
     Grave: number[][];
+    Continuous: number[][];
 
     Stack: StackItem[];
 
@@ -54,12 +55,22 @@ export const Zone = {
     Field: 2,
     Graveyard: 3,
     Stack: 4,
+    Continuous: 5,
 } as const;
 
 export const StackItemType = {
     Card: 0,
     Ability: 1,
     Spell: 2,
+    ContinuousActivation: 3,
+} as const;
+
+export const CardType = {
+    Structure: 0,
+    Unit: 1,
+    Trap: 2,
+    Spell: 3,
+    Continuous: 4,
 } as const;
 
 export const EffectType = {
@@ -96,11 +107,12 @@ export const Archetype = {
 } as const;
 
 export const CardStatus = {
-    Default:    0, // spells, structures
-    Summoning:  1, // unit: on field, summon window not yet resolved
-    UnitActive: 2, // unit: fully resolved and active
-    Set:        3, // trap: face-down on field
-    TrapActive: 4, // trap: triggered/active
+    Default:           0, // spells, structures, continuous
+    Summoning:         1, // unit: on field, summon window not yet resolved
+    UnitActive:        2, // unit: fully resolved and active
+    Set:               3, // trap: face-down on field
+    TrapActive:        4, // trap: triggered/active
+    ContinuousActive:  5, // continuous spell: in continuous zone
 } as const;
 
 export interface Card {
@@ -119,6 +131,14 @@ export interface Card {
     StageOrder: number;
     AutoSummon: number;
     AbilityTimers: AbilityTimer[];
+    Charges: number;
+    AuraModifiers: AuraModifier[];
+}
+
+export interface AuraModifier {
+    SourceCardID: number;
+    Stat: number;
+    Amount: number;
 }
 
 export interface Effect {
@@ -157,6 +177,7 @@ export function initGameState(): GameState {
         Hand: [[], []],
         Field: [[], []],
         Grave: [[], []],
+        Continuous: [[], []],
 
         Stack: [],
 
@@ -182,11 +203,12 @@ export function cloneGameState(src: GameState): GameState {
         TeamPaused: src.TeamPaused,
         TimeBank: [...src.TimeBank],
 
-        Cards: src.Cards.map(card => ({ ...card, AbilityTimers: card.AbilityTimers.map(t => ({ ...t })) })),
+        Cards: src.Cards.map(card => ({ ...card, AbilityTimers: card.AbilityTimers?.map(t => ({ ...t })) ?? [], AuraModifiers: card.AuraModifiers?.map(m => ({ ...m })) ?? [] })),
         Deck: src.Deck.map(d => [...d]),
         Hand: src.Hand.map(h => [...h]),
         Field: src.Field.map(f => [...f]),
         Grave: src.Grave.map(g => [...g]),
+        Continuous: src.Continuous.map(c => [...c]),
 
         Stack: src.Stack.map(item => ({ ...item, Effects: [...item.Effects] })),
 

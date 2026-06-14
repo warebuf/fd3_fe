@@ -24,6 +24,9 @@ import { clearAbilityTimer } from "./ClearAbilityTimer";
 import { gameOver } from "./GameOver";
 import { counterStack } from "./CounterChain";
 import { refreshStack } from "./RefreshStack";
+import { playContinuous } from "./PlayContinuous";
+import { removeContinuous } from "./RemoveContinuous";
+import { removeCharge } from "./RemoveCharge";
 
 export function applyEffect(state: GameState, log: EventLog) {
 
@@ -51,6 +54,9 @@ export function applyEffect(state: GameState, log: EventLog) {
         case 19: gameOver(state, log); break;
         case 20: counterStack(state, log); break;
         case 21: refreshStack(state, log); break;
+        case 22: playContinuous(state, log); break;
+        case 23: removeContinuous(state, log); break;
+        case 24: removeCharge(state, log); break;
 
         default: console.log("could not apply log", log); applied = false; break;
     }

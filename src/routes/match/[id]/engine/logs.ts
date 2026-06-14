@@ -22,6 +22,9 @@ export type ClearAbilityTimerLog  = Timestamp & { Type: 18; CardIndex: number; A
 export type GameOverLog           = Timestamp & { Type: 19; Winner: number; }
 export type CounterStackLog       = Timestamp & { Type: 20; SourceCardID: number; TargetCardID: number; }
 export type RefreshStackLog       = Timestamp & { Type: 21; CardID: number; StartAtActiveTime: number; PopAtActiveTime: number; ExecuteAtActiveTime: number; }
+export type PlayContinuousLog     = Timestamp & { Type: 22; TeamIndex: number; CardID: number; Charges: number; }
+export type RemoveContinuousLog   = Timestamp & { Type: 23; TeamIndex: number; CardID: number; }
+export type RemoveChargeLog       = Timestamp & { Type: 24; TeamIndex: number; CardID: number; ChargesRemaining: number; }
 
 export type EventLog =
     | PhaseLog
@@ -45,4 +48,7 @@ export type EventLog =
     | ClearAbilityTimerLog
     | GameOverLog
     | CounterStackLog
-    | RefreshStackLog;
+    | RefreshStackLog
+    | PlayContinuousLog
+    | RemoveContinuousLog
+    | RemoveChargeLog;

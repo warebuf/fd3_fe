@@ -10,6 +10,7 @@ export type BoardLayout = {
     hand: coordinate[][]
     field: coordinate[][]
     stack: coordinate[]
+    continuous: coordinate[][]
 }
 
 export function mirrorUIWithHand(order: number[][], hand: number[][]): number[][] {
@@ -47,7 +48,18 @@ function rowCoords(count: number, canvasWidth: number, cardY: number): coordinat
     return coords;
 }
 
-export function calcBoardLayout( canvasWidth: number, playerNum: number, handOrder: number[][], field: number[][], stackLength: number ): BoardLayout {
+const CONT_COL_START_Y = START_Y;
+const CONT_COL_X_LEFT  = 6;
+
+function columnCoords(count: number, startY: number, x: number): coordinate[] {
+    const coords: coordinate[] = [];
+    for (let i = 0; i < count; i++) {
+        coords.push({ x, y: startY + i * (CARD_H + CARD_GAP) });
+    }
+    return coords;
+}
+
+export function calcBoardLayout( canvasWidth: number, playerNum: number, handOrder: number[][], field: number[][], stackLength: number, continuous: number[][] ): BoardLayout {
     let y = START_Y;
 
     const oppHandCardY     = y + (ZONE_H - CARD_H) / 2;  y += ZONE_H + ZONE_GAP;
@@ -58,23 +70,26 @@ export function calcBoardLayout( canvasWidth: number, playerNum: number, handOrd
 
     const hand: coordinate[][] = [[], []];
     const fieldCoords: coordinate[][] = [[], []];
+    const continuousCoords: coordinate[][] = [[], []];
 
     for (let t = 0; t < 2; t++) {
         const isPlayer = t === playerNum;
         hand[t]        = rowCoords(handOrder[t]?.length ?? 0, canvasWidth, isPlayer ? playerHandCardY  : oppHandCardY);
         fieldCoords[t] = rowCoords(field[t]?.length    ?? 0, canvasWidth, isPlayer ? playerFieldCardY : oppFieldCardY);
+        const colX = isPlayer ? CONT_COL_X_LEFT : canvasWidth - CARD_W - 6;
+        continuousCoords[t] = columnCoords(continuous[t]?.length ?? 0, CONT_COL_START_Y, colX);
     }
 
     const stack = rowCoords(stackLength, canvasWidth, stackCardY);
 
-    return { hand, field: fieldCoords, stack };
+    return { hand, field: fieldCoords, stack, continuous: continuousCoords };
 }
 
 function hitTest(mouseX: number, mouseY: number, x: number, y: number): boolean {
     return mouseX >= x && mouseX <= x + CARD_W && mouseY >= y && mouseY <= y + CARD_H;
 }
 
-export function getClickedCard(mouseX: number, mouseY: number, layout: BoardLayout, handOrder: number[][], field: number[][], stackIds: number[]): number {
+export function getClickedCard(mouseX: number, mouseY: number, layout: BoardLayout, handOrder: number[][], field: number[][], stackIds: number[], continuous: number[][]): number {
     for (let i = 0; i < layout.hand.length; i++) {
         for (let j = 0; j < layout.hand[i].length; j++) {
             if (hitTest(mouseX, mouseY, layout.hand[i][j].x, layout.hand[i][j].y)) return handOrder[i][j];
@@ -86,10 +101,16 @@ export function getClickedCard(mouseX: number, mouseY: number, layout: BoardLayo
             if (hitTest(mouseX, mouseY, layout.field[i][j].x, layout.field[i][j].y)) return field[i][j];
         }
     }
-        
+
+    for (let i = 0; i < layout.continuous.length; i++) {
+        for (let j = 0; j < layout.continuous[i].length; j++) {
+            if (hitTest(mouseX, mouseY, layout.continuous[i][j].x, layout.continuous[i][j].y)) return continuous[i][j];
+        }
+    }
+
     for (let i = 0; i < layout.stack.length; i++) {
         if (hitTest(mouseX, mouseY, layout.stack[i].x, layout.stack[i].y)) return stackIds[i];
     }
-        
+
     return -1;
 }

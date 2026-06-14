@@ -1,7 +1,7 @@
 
 import { get } from "svelte/store";
 import type { GameState, Card, StackItem } from "../engine/gameState"
-import { Phase, PausePhase, CardStatus, AbilityTimerType, Archetype } from "../engine/gameState"
+import { Phase, PausePhase, CardStatus, CardType, AbilityTimerType, Archetype } from "../engine/gameState"
 import type { coordinate, BoardLayout } from "./cardCoordinates"
 import { ping, serverClockOffset } from "../networking/ping";
 import { dlog } from "../engine/debugLog";
@@ -190,10 +190,12 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.fillStyle = SUBTEXT_COLOR;
     ctx.font = "9px sans-serif";
     let cardType = "";
-    if(card.Type === 1) {
+    if (card.Type === CardType.Unit) {
         cardType = "Unit";
-    } else if(card.Type === 3) {
+    } else if (card.Type === CardType.Spell) {
         cardType = "Spell";
+    } else if (card.Type === CardType.Continuous) {
+        cardType = "Continuous";
     }
     if (card.Archetype === Archetype.Tree) {
         cardType += " · Tree";
@@ -269,7 +271,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.stroke();
 
     drawStatBox(ctx, x + CARD_W - 4 - STAT_BOX_W, y + 4, card.Cost, "#0E1E30", "#7AADDF");
-    if (card.Type !== 3) {
+    if (card.Type === CardType.Unit) {
         drawStatBox(ctx, x + CARD_W - 4 - STAT_BOX_W, y + CARD_H - 4 - STAT_BOX_H, card.HP, "#2E0E0E", "#D46B6B");
     }
 
@@ -292,6 +294,30 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     }
 
     ctx.restore();
+}
+
+function drawContinuousZone(ctx: CanvasRenderingContext2D, cards: Card[], continuous: number[], coords: coordinate[], selectedIndex: number): void {
+    for (let i = 0; i < continuous.length; i++) {
+        const cardID = continuous[i];
+        const card = cards[cardID];
+        if (!card) continue;
+        const { x, y } = coords[i];
+        drawFieldCard(ctx, x, y, card, 0, false, selectedIndex === cardID);
+
+        // draw charge pips below the card
+        const pipR = 4;
+        const pipGap = 4;
+        const totalPips = card.Charges;
+        const totalW = totalPips * pipR * 2 + (totalPips - 1) * pipGap;
+        const pipStartX = x + (CARD_W - totalW) / 2 + pipR;
+        const pipY = y + CARD_H + 10;
+        for (let p = 0; p < totalPips; p++) {
+            ctx.beginPath();
+            ctx.arc(pipStartX + p * (pipR * 2 + pipGap), pipY, pipR, 0, Math.PI * 2);
+            ctx.fillStyle = "#7AADDF";
+            ctx.fill();
+        }
+    }
 }
 
 function drawField( ctx: CanvasRenderingContext2D, cards: Card[], field: number[], coords: coordinate[], currentSimTime: number, selectedIndex: number): void {
@@ -431,7 +457,7 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, currentA
     ctx.fillStyle = SUBTEXT_COLOR;
     if (state.PhaseEndInActiveTime > 0) {
         const remainingMs = Math.max(state.PhaseEndInActiveTime - currentActiveTime, 0);
-        ctx.fillText(`Phase ${state.Phase}  ${Math.ceil(remainingMs / 1000)}s`, x, y);
+        ctx.fillText(`Phase ${state.Phase}, ${Math.ceil(remainingMs / 1000)}s remaining`, x, y);
     } else {
         ctx.fillText(`Phase ${state.Phase}`, x, y);
     }
@@ -576,6 +602,10 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
 
     // Player hand
     drawHand(ctx, handOrder[userIndex] ?? [], state.Cards, layout.hand[userIndex] ?? [], false, selectedIndex, currentSimTime);
+
+    // Continuous zones (columns on left/right)
+    drawContinuousZone(ctx, state.Cards, state.Continuous?.[userIndex] ?? [], layout.continuous[userIndex] ?? [], selectedIndex);
+    drawContinuousZone(ctx, state.Cards, state.Continuous?.[opponentIndex] ?? [], layout.continuous[opponentIndex] ?? [], selectedIndex);
 
     drawInfoPanel(ctx, state, currentActiveTime, opponentIndex, userIndex);
 
