@@ -23,7 +23,7 @@ export function declareCard(state: GameState, log: DeclareCardLog) {
         }
         state.Field[teamIndex].push(cardIndex);
         
-    } else if (cardType == 3) { // spell type
+    } else if (cardType == 3 || cardType == 4) { // spell or continuous type
 
         // update card's state
         state.Cards[cardIndex].Zone = 4;
