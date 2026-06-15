@@ -12,7 +12,8 @@ export type GameState = {
     PhaseEndInActiveTime: number; // 0 if no fixed end
 
     PausePhase: number;
-    PauseStack: [number, number];
+    FullPauseStartedAt: number;
+    SimPauseStartedAt: number;
     FullPauseOffset: number;
     SimPauseOffset: number;
     TeamPaused: number;
@@ -166,7 +167,8 @@ export function initGameState(): GameState {
         PhaseEndInActiveTime: 0,
 
         PausePhase: 2,
-        PauseStack: [0, 0],
+        FullPauseStartedAt: 0,
+        SimPauseStartedAt: 0,
         FullPauseOffset: 0,
         SimPauseOffset: 0,
         TeamPaused: -1,
@@ -197,7 +199,8 @@ export function cloneGameState(src: GameState): GameState {
         PhaseEndInActiveTime: src.PhaseEndInActiveTime,
 
         PausePhase: src.PausePhase,
-        PauseStack: [...src.PauseStack] as [number, number],
+        FullPauseStartedAt: src.FullPauseStartedAt,
+        SimPauseStartedAt: src.SimPauseStartedAt,
         FullPauseOffset: src.FullPauseOffset,
         SimPauseOffset: src.SimPauseOffset,
         TeamPaused: src.TeamPaused,

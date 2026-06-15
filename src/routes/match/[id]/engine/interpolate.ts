@@ -14,7 +14,7 @@ function interpolateTimeBank(authoritativeState: GameState, interpolatedState: G
     const team = authoritativeState.TeamPaused;
     if (authoritativeState.PausePhase !== PausePhase.FullPause || team < 0) return;
 
-    const localPauseStart = authoritativeState.PauseStack[PausePhase.FullPause] - get(serverClockOffset);
+    const localPauseStart = authoritativeState.FullPauseStartedAt - get(serverClockOffset);
     const elapsed = currentTime - localPauseStart;
     interpolatedState.TimeBank[team] = Math.max(0, authoritativeState.TimeBank[team] - elapsed);
 }

@@ -393,7 +393,7 @@ const SUMMON_COLOR = "#D3D1C7";
 
 function computeCurrentActiveTime(currentWallTime: number, state: GameState): number {
     if (state.PausePhase === PausePhase.FullPause) {
-        return state.PauseStack[PausePhase.FullPause] - state.FullPauseOffset;
+        return state.FullPauseStartedAt - state.FullPauseOffset;
     }
     return currentWallTime - state.FullPauseOffset;
 }
@@ -403,13 +403,13 @@ function computeCurrentSimTime(currentWallTime: number, state: GameState): numbe
         return currentWallTime - state.SimPauseOffset;
     }
     if (state.PausePhase === PausePhase.SimPause) {
-        return state.PauseStack[PausePhase.SimPause] - state.SimPauseOffset;
+        return state.SimPauseStartedAt - state.SimPauseOffset;
     }
     // FullPause
-    if (state.PauseStack[PausePhase.SimPause] > 0) {
-        return state.PauseStack[PausePhase.SimPause] - state.SimPauseOffset;
+    if (state.SimPauseStartedAt > 0) {
+        return state.SimPauseStartedAt - state.SimPauseOffset;
     }
-    return state.PauseStack[PausePhase.FullPause] - state.SimPauseOffset;
+    return state.FullPauseStartedAt - state.SimPauseOffset;
 }
 
 function drawTimerBar( ctx: CanvasRenderingContext2D, x: number, y: number, startMs: number, endMs: number, currentSimTime: number, label: string ) {
