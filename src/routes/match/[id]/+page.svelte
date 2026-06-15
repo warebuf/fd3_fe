@@ -123,8 +123,8 @@
                             ws?.send(JSON.stringify({ type: "stage", CardIndex: clickedIndex }));
                         }
                     } else if (interpolatedState?.Phase === Phase.Play || interpolatedState?.Phase === Phase.Reveal) {
-                        if (card?.Zone === 5) { // ZoneContinuous
-                            ws?.send(JSON.stringify({ type: "usecontinuous", CardIndex: clickedIndex }));
+                        if (card?.Zone === 5 && card.Team === teamIndex) { // ZoneContinuous
+                            ws?.send(JSON.stringify({ type: "active", CardIndex: clickedIndex }));
                         } else if (card?.AutoSummon > 0) {
                             ws?.send(JSON.stringify({ type: "unautosummon", CardIndex: clickedIndex }));
                         } else {
