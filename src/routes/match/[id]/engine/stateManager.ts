@@ -2,7 +2,7 @@
 import { get } from "svelte/store";
 
 import type { GameState } from "./gameState"
-import { debugDump } from "../debug";
+import { debugDump } from "../debuggers/debug";
 import { cloneGameState } from "./gameState"
 import { MinHeap } from "./stateMinHeap"
 import { applyEffect } from "../effects/ApplyEffect"
@@ -31,7 +31,7 @@ export class StateManager {
                     if (nextEvent.UpdateID <= currentState.UpdateID) {
                         continue;
                     }
-                    debugDump(`applied type=${nextEvent.Type} scheduledAt=${nextEvent.WallTimestamp%1e7} now=${(currentTime+clockOffset)%1e7} lateMs=${(currentTime - (nextEvent.WallTimestamp - clockOffset)).toFixed(1)}`);
+                    //debugDump(`applied type=${nextEvent.Type} scheduledAt=${nextEvent.WallTimestamp%1e7} now=${(currentTime+clockOffset)%1e7} lateMs=${(currentTime - (nextEvent.WallTimestamp - clockOffset)).toFixed(1)}`);
                     applyEffect(currentState, nextEvent);
                     //recordTrace(nextEvent, currentState);
                     significantEvent = true;

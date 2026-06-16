@@ -3,7 +3,7 @@
     import { page } from '$app/stores';
     import { onMount } from 'svelte';
     import { get } from 'svelte/store';
-    import { initDebugDownload } from "./debug";
+    import { initDebugDownload, debugDump } from "./debuggers/debug";
     import { connectWS } from "./networking/ws";
     import { stopPing, serverClockOffset } from "./networking/ping";
 
@@ -147,6 +147,9 @@
                 const canPause   = ps.TimeBank[teamIndex] > 0 && ps.Phase >= Phase.Draw;
                 const canUnpause = ps.PausePhase === PausePhase.FullPause   && ps.TeamPaused === teamIndex;
                 if (canPause || canUnpause) {
+                    const _offset = get(serverClockOffset);
+                    const _now = performance.now() + performance.timeOrigin;
+                    //debugDump(`pressedP: serverWallTime=${(_now + _offset)%1e7} now=${_now%1e7} serverOffset=${_offset.toFixed(1)} action=${canUnpause ? 'unpause' : 'pause'}`);
                     ws?.send(JSON.stringify({ type: "fullPause" }));
                 }
             }

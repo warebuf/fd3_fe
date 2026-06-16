@@ -5,8 +5,8 @@ import { get } from "svelte/store";
 import { StateManager } from "../engine/stateManager";
 import type { EventLog } from "../engine/logs";
 import type { GameState } from "../engine/gameState";
-import { clearTrace } from "../engine/debugTrace";
-import { debugDump } from "../debug";
+import { clearTrace } from "../debuggers/debugTrace";
+import { debugDump } from "../debuggers/debug";
 
 
 export async function connectWS(matchID: string, stateManager: StateManager) {
@@ -44,7 +44,7 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
       case "actions":
         for(let i = 0; i < msg.data.length; i++) {
           const log = msg.data[i] as EventLog;
-          debugDump(`received type=${log.Type} WallTimestamp=${log.WallTimestamp%1e7} now=${(clientReceive+get(serverClockOffset))%1e7}`);
+          //debugDump(`received type=${log.Type} WallTimestamp=${log.WallTimestamp%1e7} now=${(clientReceive+get(serverClockOffset))%1e7}`);
           stateManager.addLog(log);
         }
         break;

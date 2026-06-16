@@ -1,6 +1,6 @@
-import type { GameState } from "./gameState";
-import { cloneGameState } from "./gameState";
-import type { EventLog } from "./logs";
+import type { GameState } from "../engine/gameState";
+import { cloneGameState } from "../engine/gameState";
+import type { EventLog } from "../engine/logs";
 
 export const DEBUG_TRACE = true;
 

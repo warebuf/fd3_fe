@@ -4,7 +4,7 @@ import type { GameState, Card, StackItem } from "../engine/gameState"
 import { Phase, PausePhase, CardStatus, CardType, AbilityTimerType, Archetype } from "../engine/gameState"
 import type { coordinate, BoardLayout } from "./cardCoordinates"
 import { ping, serverClockOffset } from "../networking/ping";
-import { debugDump } from "../debug";
+import { debugDump } from "../debuggers/debug";
 
 export const CARD_W = 150;
 export const CARD_H = 125;
@@ -420,7 +420,7 @@ function drawTimerBar( ctx: CanvasRenderingContext2D, x: number, y: number, star
     const progress = Math.min(Math.max((currentSimTime - startMs) / (endMs - startMs), 0), 1);
     const remainingMs = Math.max(endMs - currentSimTime, 0);
     const countdown = (remainingMs / 1000).toFixed(1);
-    debugDump(`drawTimerBar: label=${label} start=${startMs%1e7} end=${endMs%1e7} currentSimTime=${currentSimTime%1e7} progress=${progress.toFixed(3)} remainingMs=${remainingMs.toFixed(1)}`);
+    //debugDump(`drawTimerBar: label=${label} start=${startMs%1e7} end=${endMs%1e7} currentSimTime=${currentSimTime%1e7} progress=${progress.toFixed(3)} remainingMs=${remainingMs.toFixed(1)}`);
 
     const barY = y - GAP - BAR_H;
 

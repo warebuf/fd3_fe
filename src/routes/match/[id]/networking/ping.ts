@@ -8,15 +8,21 @@ export const serverClockOffset = writable<number>(0);
 
 // TODO: if you navigate away, you should cancel the ping intervals
 
+// shoutout David Mills, who published the first NTP spec in 1985
+// NTP is used for synchronizing clocks over a network
+// using the minimum RTT time, we can have a best estimate of the difference between local and server clock
+// when we want to reduce the lead time, we're going to have to study NTP, implement drift rate estimation, and the other networking ideas
+
 let pingID = 0;
 let intervalID = -1;
 
-let rollingWindowOffset : number[] = [];
+let rollingWindow: { rtt: number, offset: number }[] = [];
 
 
 export function sendPing( ws: WebSocket ) {
 
     stopPing(); // ensure only 1 interval loop running
+    rollingWindow = [];
 
     // send ping immediately
     for(let i = 0; i < 8; i++) {
@@ -52,15 +58,15 @@ export function stopPing( ) {
 
 export function calculateOffset(clientSend: number, serverReceive: number, clientReceive: number) {
     const rtt = clientReceive - clientSend;
-    const oneWay = rtt / 2;
-    const offset = serverReceive - (clientSend + oneWay);
-    if(rollingWindowOffset.length >= 32) {rollingWindowOffset.shift()};
-    rollingWindowOffset.push(offset);
-    let offsetSum = 0;
-    for(let i = 0; i < rollingWindowOffset.length; i++) {
-        offsetSum += rollingWindowOffset[i];
+    const offset = serverReceive - (clientSend + rtt / 2);
+    if (rollingWindow.length >= 32) { rollingWindow.shift(); }
+    rollingWindow.push({ rtt, offset });
+
+    let best = rollingWindow[0];
+    for (let i = 1; i < rollingWindow.length; i++) {
+        if (rollingWindow[i].rtt < best.rtt) best = rollingWindow[i];
     }
 
-    serverClockOffset.set(offsetSum/rollingWindowOffset.length)
+    serverClockOffset.set(best.offset);
     ping.set(rtt);
 }
