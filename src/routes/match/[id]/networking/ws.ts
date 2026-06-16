@@ -6,6 +6,7 @@ import { StateManager } from "../engine/stateManager";
 import type { EventLog } from "../engine/logs";
 import type { GameState } from "../engine/gameState";
 import { clearTrace } from "../engine/debugTrace";
+import { debugDump } from "../debug";
 
 
 export async function connectWS(matchID: string, stateManager: StateManager) {
@@ -43,7 +44,7 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
       case "actions":
         for(let i = 0; i < msg.data.length; i++) {
           const log = msg.data[i] as EventLog;
-          console.log(`received type=${log.Type} WallTimestamp=${log.WallTimestamp%1e7} now=${(clientReceive+get(serverClockOffset))%1e7}`);
+          debugDump(`received type=${log.Type} WallTimestamp=${log.WallTimestamp%1e7} now=${(clientReceive+get(serverClockOffset))%1e7}`);
           stateManager.addLog(log);
         }
         break;

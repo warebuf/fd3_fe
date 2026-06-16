@@ -3,6 +3,7 @@
     import { page } from '$app/stores';
     import { onMount } from 'svelte';
     import { get } from 'svelte/store';
+    import { initDebugDownload } from "./debug";
     import { connectWS } from "./networking/ws";
     import { stopPing, serverClockOffset } from "./networking/ping";
 
@@ -155,6 +156,7 @@
         canvasEl.addEventListener('mouseleave', onLeave);
         canvasEl.addEventListener('click', onClick);
         window.addEventListener('keydown', onKeyDown);
+        const cleanupDebug = initDebugDownload();
 
         authoritativeState = initGameState();
         interpolatedState = cloneGameState(authoritativeState);
@@ -191,6 +193,7 @@
             canvasEl.removeEventListener('mousemove', onMove);
             canvasEl.removeEventListener('mouseleave', onLeave);
             canvasEl.removeEventListener('click', onClick);
+            cleanupDebug();
         };
 
     });
