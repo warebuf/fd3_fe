@@ -11,7 +11,6 @@
     import { interpolate } from './engine/interpolate';
 
     import { drawBoard, drawPhaseAnnouncement } from './ui/drawBoard';
-    import { downloadLogs } from './engine/debugLog';
     import { calcBoardLayout, getClickedCard, mirrorUIWithHand, type BoardLayout } from './ui/cardCoordinates';
     import { PausePhase } from './engine/gameState';
 
@@ -141,8 +140,6 @@
                         ws?.send(JSON.stringify({ type: "ready" }));
                     }
                 }
-            } else if (e.key === 'd' || e.key === 'D') {
-                downloadLogs();
             } else if (e.key === 'p' || e.key === 'P') {
                 const ps = interpolatedState;
                 if (!ps) return;

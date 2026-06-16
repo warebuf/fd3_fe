@@ -1,11 +1,15 @@
 import { PausePhase, type GameState } from "../engine/gameState";
 import type { PauseLog } from "../engine/logs";
+import { get } from "svelte/store";
+import { serverClockOffset } from "../networking/ping";
 
 export function pause(state: GameState, log: PauseLog) {
 
     state.PausePhase = log.PausePhase;
     if (log.PausePhase === PausePhase.FullPause) {
         state.FullPauseStartedAt = log.TimeStart;
+        const M = 1e7; 
+        console.log('Pause: now=', (Date.now()+get(serverClockOffset))%M, 'PauseStart=', log.TimeStart%M, 'SimPauseOffset=', state.SimPauseOffset, 'frozenSimTime=', (log.TimeStart - state.SimPauseOffset)%M);
     } else {
         state.SimPauseStartedAt = log.TimeStart;
     }

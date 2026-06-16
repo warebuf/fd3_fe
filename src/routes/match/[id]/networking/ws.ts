@@ -1,6 +1,7 @@
 
 
-import { sendPing, calculateOffset } from "./ping";
+import { sendPing, calculateOffset, serverClockOffset } from "./ping";
+import { get } from "svelte/store";
 import { StateManager } from "../engine/stateManager";
 import type { EventLog } from "../engine/logs";
 import type { GameState } from "../engine/gameState";
@@ -41,7 +42,9 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
       }
       case "actions":
         for(let i = 0; i < msg.data.length; i++) {
-          stateManager.addLog(msg.data[i] as EventLog);
+          const log = msg.data[i] as EventLog;
+          console.log(`received type=${log.Type} WallTimestamp=${log.WallTimestamp%1e7} now=${(clientReceive+get(serverClockOffset))%1e7}`);
+          stateManager.addLog(log);
         }
         break;
     }
