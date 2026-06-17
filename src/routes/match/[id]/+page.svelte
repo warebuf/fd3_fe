@@ -229,6 +229,14 @@
         {@const canPause   = interpolatedState.TimeBank[teamIndex] > 0 && interpolatedState.Phase >= Phase.Draw}
         {@const canUnpause = interpolatedState.PausePhase === PausePhase.FullPause   && interpolatedState.TeamPaused === teamIndex}
         <div class="controls">
+            <button class="ctrl-btn dimmed" disabled>
+                <span class="key">C</span>
+                Chain
+            </button>
+            <button class="ctrl-btn dimmed" disabled>
+                <span class="key">A</span>
+                AutoSummon
+            </button>
             <button
                 class="ctrl-btn"
                 class:dimmed={!canPause && !canUnpause}
@@ -312,7 +320,7 @@
         display: flex;
         flex-direction: column;
         align-items: flex-end;
-        gap: 4px;
+        gap: 1px;
         pointer-events: none;
     }
 
