@@ -230,12 +230,12 @@
         {@const canUnpause = interpolatedState.PausePhase === PausePhase.FullPause   && interpolatedState.TeamPaused === teamIndex}
         <div class="controls">
             <button class="ctrl-btn dimmed" disabled>
-                <span class="key">C</span>
-                Chain
+                <span class="key">Q</span>
+                Quick Play
             </button>
             <button class="ctrl-btn dimmed" disabled>
                 <span class="key">A</span>
-                AutoSummon
+                Autosummon
             </button>
             <button
                 class="ctrl-btn"
