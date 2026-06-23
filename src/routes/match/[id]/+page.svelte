@@ -249,6 +249,10 @@
         {@const canUnpause = interpolatedState.PausePhase === PausePhase.FullPause   && interpolatedState.TeamPaused === teamIndex}
         <div class="controls">
             <button class="ctrl-btn dimmed" disabled>
+                <span class="key">Space</span>
+                Instant Play, if not Auto Play
+            </button>
+            <button class="ctrl-btn dimmed" disabled>
                 <span class="key">I</span>
                 Instant Play
             </button>
