@@ -141,15 +141,34 @@
                         ws?.send(JSON.stringify({ type: "ready" }));
                     }
                 }
+            } else if (e.key === 'a' || e.key === 'A') {
+                
+                if (clickedIndex === -1) return;
+                if (interpolatedState?.Phase !== Phase.Play && interpolatedState?.Phase !== Phase.Reveal) return;
+
+                const card = interpolatedState.Cards[clickedIndex];
+                if (card?.Zone !== 1 || card.Team !== teamIndex) return; // ZoneHand
+                
+                ws?.send(JSON.stringify({ type: card.AutoSummon > 0 ? "unautosummon" : "autosummon", CardIndex: clickedIndex }));
+                clickedIndex = -1;
+
+            } else if (e.key === 'i' || e.key === 'I') {
+                
+                if (clickedIndex === -1) return;
+                if (interpolatedState?.Phase !== Phase.Play && interpolatedState?.Phase !== Phase.Reveal) return;
+                
+                const card = interpolatedState.Cards[clickedIndex];
+                if (card?.Zone !== 1 || card.Team !== teamIndex) return; // ZoneHand
+                
+                ws?.send(JSON.stringify({ type: "instant", CardIndex: clickedIndex }));
+                clickedIndex = -1;
+
             } else if (e.key === 'p' || e.key === 'P') {
                 const ps = interpolatedState;
                 if (!ps) return;
                 const canPause   = ps.TimeBank[teamIndex] > 0 && ps.Phase >= Phase.Draw;
                 const canUnpause = ps.PausePhase === PausePhase.FullPause   && ps.TeamPaused === teamIndex;
                 if (canPause || canUnpause) {
-                    const _offset = get(serverClockOffset);
-                    const _now = performance.now() + performance.timeOrigin;
-                    //debugDump(`pressedP: serverWallTime=${(_now + _offset)%1e7} now=${_now%1e7} serverOffset=${_offset.toFixed(1)} action=${canUnpause ? 'unpause' : 'pause'}`);
                     ws?.send(JSON.stringify({ type: "fullPause" }));
                 }
             }
@@ -230,8 +249,8 @@
         {@const canUnpause = interpolatedState.PausePhase === PausePhase.FullPause   && interpolatedState.TeamPaused === teamIndex}
         <div class="controls">
             <button class="ctrl-btn dimmed" disabled>
-                <span class="key">Q</span>
-                Quick Play
+                <span class="key">I</span>
+                Instant Play
             </button>
             <button class="ctrl-btn dimmed" disabled>
                 <span class="key">A</span>
