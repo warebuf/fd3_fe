@@ -247,18 +247,23 @@
     {#if interpolatedState}
         {@const canPause   = interpolatedState.TimeBank[teamIndex] > 0 && interpolatedState.Phase >= Phase.Draw}
         {@const canUnpause = interpolatedState.PausePhase === PausePhase.FullPause   && interpolatedState.TeamPaused === teamIndex}
+        {@const spaceLabel = interpolatedState.Phase === Phase.BoardSetup ? 'Stage' : 'Instant Play, if not Auto Play'}
         <div class="controls">
-            <button class="ctrl-btn dimmed" disabled>
-                <span class="key">Space</span>
-                Instant Play, if not Auto Play
-            </button>
             <button class="ctrl-btn dimmed" disabled>
                 <span class="key">I</span>
                 Instant Play
             </button>
             <button class="ctrl-btn dimmed" disabled>
                 <span class="key">A</span>
-                Autosummon
+                Auto Play
+            </button>
+            <button
+                class="ctrl-btn"
+                class:dimmed={interpolatedState.Phase !== Phase.BoardSetup}
+                disabled={interpolatedState.Phase !== Phase.BoardSetup}
+            >
+                <span class="key">Space</span>
+                {spaceLabel}
             </button>
             <button
                 class="ctrl-btn"

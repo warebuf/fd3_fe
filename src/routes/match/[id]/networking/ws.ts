@@ -44,6 +44,7 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
       case "actions":
         for(let i = 0; i < msg.data.length; i++) {
           const log = msg.data[i] as EventLog;
+          console.log("received log", log);
           //debugDump(`received type=${log.Type} WallTimestamp=${log.WallTimestamp%1e7} now=${(clientReceive+get(serverClockOffset))%1e7}`);
           stateManager.addLog(log);
         }

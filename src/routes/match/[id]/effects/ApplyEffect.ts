@@ -28,7 +28,37 @@ import { playContinuous } from "./PlayContinuous";
 import { removeContinuous } from "./RemoveContinuous";
 import { removeCharge } from "./RemoveCharge";
 
+const logTypeNames: Record<number, string> = {
+    0:  "incrementPhase",
+    1:  "drawCard",
+    2:  "declareCard",
+    3:  "summonUnit",
+    4:  "addStack",
+    5:  "removeStack",
+    6:  "destroyCard",
+    7:  "gainMana",
+    8:  "spendMana",
+    9:  "attack",
+    10: "heal",
+    11: "ready",
+    12: "unready",
+    13: "stage",
+    14: "autoSummon",
+    15: "pause",
+    16: "unpause",
+    17: "addAbilityTimer",
+    18: "clearAbilityTimer",
+    19: "gameOver",
+    20: "counterStack",
+    21: "refreshStack",
+    22: "playContinuous",
+    23: "removeContinuous",
+    24: "removeCharge",
+};
+
 export function applyEffect(state: GameState, log: EventLog) {
+
+    if (log.Type !== 7) console.log("applyEffect", logTypeNames[log.Type] ?? log.Type, log);
 
     let applied = true;
     switch(log.Type) {
