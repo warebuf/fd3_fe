@@ -22,15 +22,15 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
   const resJSON = await res.json();
   const teamIndex = resJSON.teamIndex;
 
-  const ws = new WebSocket( `${window.location.origin.replace(/^http/, "ws")}/backend/ws?matchID=${encodeURIComponent(matchID)}` );
+  const ws = new WebSocket(`${window.location.origin.replace(/^http/, "ws")}/backend/ws?matchID=${encodeURIComponent(matchID)}`);
 
   await new Promise(resolve => ws.addEventListener("open", resolve, { once: true })); // when the websocket connection opens, stop awaiting
   console.log("Connected to server");
   sendPing(ws);
-  
+
   ws.addEventListener("message", (event) => {
-    
-    const clientReceive = Date.now(); 
+
+    const clientReceive = Date.now();
     const msg = JSON.parse(event.data);
     switch (msg.type) {
       case "p":
@@ -42,7 +42,7 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
         break;
       }
       case "actions":
-        for(let i = 0; i < msg.data.length; i++) {
+        for (let i = 0; i < msg.data.length; i++) {
           const log = msg.data[i] as EventLog;
           //debugDump(`received type=${log.Type} WallTimestamp=${log.WallTimestamp%1e7} now=${(clientReceive+get(serverClockOffset))%1e7}`);
           stateManager.addLog(log);
@@ -54,7 +54,7 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
   ws.addEventListener("close", (event) => {
     console.log("Connection closed");
 
-    if(event.reason === "second connection") {
+    if (event.reason === "second connection") {
       window.location.href = "/misc/second-connection";
     }
 
@@ -65,6 +65,6 @@ export async function connectWS(matchID: string, stateManager: StateManager) {
     // stopPing();
   });
 
-  return {ws, teamIndex};
+  return { ws, teamIndex };
 
 }
