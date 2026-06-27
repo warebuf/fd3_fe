@@ -1,16 +1,12 @@
 
 import type { SummonResolutionLog } from "../engine/logs";
-import { CardStatus, type GameState } from "../engine/gameState"
+import { Zone, CardStatus, type GameState } from "../engine/gameState"
 
 export function summonUnit(state: GameState, log: SummonResolutionLog) {
+    const cardIndex = log.CardIndex;
+    const teamIndex = log.TeamIndex;
 
-    let teamIndex = log.TeamIndex;
-    let cardIndex = log.CardIndex;
-
+    state.Cards[cardIndex].Zone = Zone.Field;
     state.Cards[cardIndex].Status = CardStatus.UnitActive;
-
-    // apply any effects
-    // apply any triggers
-
-
+    state.Field[teamIndex].push(cardIndex);
 }

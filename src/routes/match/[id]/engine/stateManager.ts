@@ -29,7 +29,7 @@ export class StateManager {
                 this.scheduled.pop();
                 if("Type" in nextEvent) { // EventResult
                     if (nextEvent.UpdateID <= currentState.UpdateID) {
-                        console.warn("skipped log: type=", nextEvent.Type, "updateID=", nextEvent.UpdateID, "stateUpdateID=", currentState.UpdateID, nextEvent);
+                        console.warn("skipped log: type=", nextEvent.Type, "updateID=", nextEvent.UpdateID, "stateUpdateID=", currentState.UpdateID, "WallTimestamp=", nextEvent.WallTimestamp);
                         continue;
                     }
                     //debugDump(`applied type=${nextEvent.Type} scheduledAt=${nextEvent.WallTimestamp%1e7} now=${(currentTime+clockOffset)%1e7} lateMs=${(currentTime - (nextEvent.WallTimestamp - clockOffset)).toFixed(1)}`);

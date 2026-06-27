@@ -64,6 +64,7 @@ export const StackItemType = {
     Ability: 1,
     Spell: 2,
     ContinuousActivation: 3,
+    Summon: 4,
 } as const;
 
 export const CardType = {

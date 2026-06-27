@@ -13,4 +13,5 @@ export function removeStack(state: GameState, log: RemoveStackLog) {
         card.Status = CardStatus.Default;
         state.Grave[card.Team].push(log.CardID);
     }
+    
 }
