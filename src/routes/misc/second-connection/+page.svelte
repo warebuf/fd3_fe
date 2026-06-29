@@ -6,11 +6,11 @@
     }
 </style>
 
-<script>
+<script lang="ts">
     import { onMount } from "svelte";
 
     onMount(() => {
-        const handler = (e) => {
+        const handler = (e: KeyboardEvent) => {
             if (e.code === "Space") {
                 e.preventDefault();
                 window.location.href = "/";

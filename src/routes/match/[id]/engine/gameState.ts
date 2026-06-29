@@ -76,13 +76,15 @@ export const CardType = {
 } as const;
 
 export const EffectType = {
-    Attack:           1,
-    Heal:             2,
-    Draw:             3,
-    Mana:             4,
-    Silence:          5,
-    GrantAbility:     6,
-    Destroy:          7,
+    Attack:      1,
+    Heal:        2,
+    Draw:        3,
+    Mana:        4,
+    Silence:     5,
+    GrantAbility: 6,
+    Destroy:     7,
+    Counter:     8,
+    GainCharge:  9,
 } as const;
 
 export interface Structure {
@@ -92,7 +94,6 @@ export interface Structure {
 
 export const AbilityTimerType = {
     Normal: 0,
-    Summon: 1,
 } as const;
 
 export interface AbilityTimer {
@@ -134,6 +135,8 @@ export interface Card {
     AutoSummon: number;
     AbilityTimers: AbilityTimer[];
     Charges: number;
+    MaxCharges: number;
+    Targets: [number];
     AuraModifiers: AuraModifier[];
 }
 
@@ -207,7 +210,7 @@ export function cloneGameState(src: GameState): GameState {
         TeamPaused: src.TeamPaused,
         TimeBank: [...src.TimeBank],
 
-        Cards: src.Cards.map(card => ({ ...card, AbilityTimers: card.AbilityTimers?.map(t => ({ ...t })) ?? [], AuraModifiers: card.AuraModifiers?.map(m => ({ ...m })) ?? [] })),
+        Cards: src.Cards.map(card => ({ ...card, AbilityTimers: card.AbilityTimers?.map(t => ({ ...t })) ?? [], AuraModifiers: card.AuraModifiers?.map(m => ({ ...m })) ?? [], Targets: [...card.Targets] as [number] })),
         Deck: src.Deck.map(d => [...d]),
         Hand: src.Hand.map(h => [...h]),
         Field: src.Field.map(f => [...f]),

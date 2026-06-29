@@ -1,8 +1,8 @@
 
 import { get } from "svelte/store";
 import type { GameState, Card, StackItem } from "../engine/gameState"
-import { Phase, PausePhase, CardStatus, CardType, AbilityTimerType, Archetype } from "../engine/gameState"
-import type { coordinate, BoardLayout } from "./cardCoordinates"
+import { Phase, PausePhase, CardStatus, CardType, Archetype, Zone } from "../engine/gameState"
+import type { coordinate } from "./cardCoordinates"
 import { ping, serverClockOffset } from "../networking/ping";
 import { debugDump } from "../debuggers/debug";
 
@@ -213,16 +213,8 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
         drawWrappedText(ctx, card.Description, tx, divY + 10, CARD_W - P_PAD_W * 2, 11, contentBot - 4);
     }
 
-    // draw summoning bar above card
-    if (card.Status === CardStatus.Summoning) {
-        const summonTimer = card.AbilityTimers?.find(t => t.Type === AbilityTimerType.Summon);
-        if (summonTimer) {
-            drawTimerBar(ctx, x, y, summonTimer.StartAtSimTime, summonTimer.ExecuteAtSimTime, currentSimTime, "Summoning");
-        }
-    }
-
     // draw ability timer above card
-    const abilityTimer = card.AbilityTimers?.find(t => t.Type === AbilityTimerType.Normal);
+    const abilityTimer = card.AbilityTimers?.find(t => t.Type === 0);
     if (abilityTimer) {
         drawTimerBar(ctx, x, y, abilityTimer.StartAtSimTime, abilityTimer.ExecuteAtSimTime, currentSimTime, "Ability");
     }
@@ -296,47 +288,62 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.restore();
 }
 
-function drawContinuousZone(ctx: CanvasRenderingContext2D, cards: Card[], continuous: number[], coords: coordinate[], selectedIndex: number): void {
-    for (let i = 0; i < continuous.length; i++) {
-        const cardID = continuous[i];
-        const card = cards[cardID];
-        if (!card) continue;
-        const { x, y } = coords[i];
-        drawFieldCard(ctx, x, y, card, 0, false, selectedIndex === cardID);
-
-        // draw charge pips below the card
-        const pipR = 4;
-        const pipGap = 4;
-        const totalPips = card.Charges;
-        const totalW = totalPips * pipR * 2 + (totalPips - 1) * pipGap;
-        const pipStartX = x + (CARD_W - totalW) / 2 + pipR;
-        const pipY = y + CARD_H + 10;
-        for (let p = 0; p < totalPips; p++) {
-            ctx.beginPath();
-            ctx.arc(pipStartX + p * (pipR * 2 + pipGap), pipY, pipR, 0, Math.PI * 2);
+function drawChargePips(ctx: CanvasRenderingContext2D, x: number, y: number, card: Card): void {
+    const maxPips = card.MaxCharges;
+    if (maxPips <= 0) return;
+    const pipR = 4;
+    const pipGap = 4;
+    const totalW = maxPips * pipR * 2 + (maxPips - 1) * pipGap;
+    const pipStartX = x + (CARD_W - totalW) / 2 + pipR;
+    const pipY = y + CARD_H + 16;
+    for (let p = 0; p < maxPips; p++) {
+        const cx = pipStartX + p * (pipR * 2 + pipGap);
+        ctx.beginPath();
+        ctx.arc(cx, pipY, pipR, 0, Math.PI * 2);
+        if (p < card.Charges) {
             ctx.fillStyle = "#7AADDF";
             ctx.fill();
+        } else {
+            ctx.strokeStyle = "#7AADDF";
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
         }
     }
 }
 
-function drawField( ctx: CanvasRenderingContext2D, cards: Card[], field: number[], coords: coordinate[], currentSimTime: number, selectedIndex: number): void {
-    for (let i = 0; i < field.length; i++) {
-        drawFieldCard(ctx, coords[i].x, coords[i].y, cards[field[i]], currentSimTime, false, selectedIndex === field[i]);
+function drawContinuousZone(ctx: CanvasRenderingContext2D, cards: Card[], continuous: number[], positions: coordinate[], selectedIndex: number): void {
+    for (const cardID of continuous) {
+        const pos = positions[cardID];
+        if (!pos) continue;
+        const card = cards[cardID];
+        drawFieldCard(ctx, pos.x, pos.y, card, 0, false, selectedIndex === cardID);
+        drawChargePips(ctx, pos.x, pos.y, card);
     }
 }
 
-function drawStackZone( ctx: CanvasRenderingContext2D, stack: StackItem[], cards: Card[], coords: coordinate[], currentActiveTime: number ): void {
+function drawField(ctx: CanvasRenderingContext2D, cards: Card[], field: number[], positions: coordinate[], currentSimTime: number, selectedIndex: number): void {
+    for (const cardID of field) {
+        const pos = positions[cardID];
+        if (!pos) continue;
+        const card = cards[cardID];
+        drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, false, selectedIndex === cardID);
+        drawChargePips(ctx, pos.x, pos.y, card);
+    }
+}
+
+function drawStackZone(ctx: CanvasRenderingContext2D, stack: StackItem[], cards: Card[], positions: coordinate[], stackCoords: coordinate[], currentActiveTime: number): void {
     const topIndex = stack.length - 1;
     for (let i = 0; i < stack.length; i++) {
         const item = stack[i];
         const card = cards[item.CardID];
         if (!card) continue;
-        drawFieldCard(ctx, coords[i].x, coords[i].y, card, 0); // no sim-time timers on stack cards
+        const pos = card.Zone === Zone.Stack ? positions[item.CardID] : stackCoords[i];
+        if (!pos) continue;
+        drawFieldCard(ctx, pos.x, pos.y, card, 0);
         if (i === topIndex) {
-            drawTimerBar(ctx, coords[i].x, coords[i].y, item.StartAtActiveTime, item.ExecuteAtActiveTime, currentActiveTime, "Stack");
+            drawTimerBar(ctx, pos.x, pos.y, item.StartAtActiveTime, item.ExecuteAtActiveTime, currentActiveTime, "Stack");
         } else {
-            drawStackPositionBadge(ctx, coords[i].x, coords[i].y, i + 1);
+            drawStackPositionBadge(ctx, pos.x, pos.y, i + 1);
         }
     }
 }
@@ -367,9 +374,11 @@ function drawStackPositionBadge(ctx: CanvasRenderingContext2D, x: number, y: num
     ctx.fillText(`Stack ${position}`, badgeX + BADGE_W / 2, badgeY + BADGE_H / 2);
 }
 
-function drawHand( ctx: CanvasRenderingContext2D, handOrder: number[], cards: Card[], handCoords: coordinate[], faceDown: boolean, selectedIndex: number, currentSimTime: number ) {
-    for (let i = 0; i < handOrder.length; i++) {
-        drawFieldCard( ctx, handCoords[i].x, handCoords[i].y, cards[handOrder[i]], currentSimTime, faceDown, selectedIndex === handOrder[i]);
+function drawHand(ctx: CanvasRenderingContext2D, handOrder: number[], cards: Card[], positions: coordinate[], faceDown: boolean, selectedIndex: number, currentSimTime: number): void {
+    for (const cardID of handOrder) {
+        const pos = positions[cardID];
+        if (!pos) continue;
+        drawFieldCard(ctx, pos.x, pos.y, cards[cardID], currentSimTime, faceDown, selectedIndex === cardID);
     }
 }
 
@@ -576,7 +585,7 @@ function drawPause(ctx: CanvasRenderingContext2D, state: GameState, userIndex: n
     ctx.restore();
 }
 
-export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, layout: BoardLayout, handOrder: number[][], selectedIndex: number) {
+export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, positions: coordinate[], stackCoords: coordinate[], handOrder: number[][], selectedIndex: number) {
     const opponentIndex = userIndex === 0 ? 1 : 0;
     if (state.Phase === Phase.GameEnd) currentWallTime = state.WallTimestamp;
 
@@ -584,23 +593,23 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     const currentActiveTime = computeCurrentActiveTime(currentWallTime, state);
 
     // Opponent hand
-    drawHand(ctx, handOrder[opponentIndex] ?? [], state.Cards, layout.hand[opponentIndex] ?? [], true, selectedIndex, currentSimTime);
+    drawHand(ctx, handOrder[opponentIndex] ?? [], state.Cards, positions, true, selectedIndex, currentSimTime);
 
     // Opponent field
-    drawField(ctx, state.Cards, state.Field[opponentIndex], layout.field[opponentIndex] ?? [], currentSimTime, selectedIndex);
+    drawField(ctx, state.Cards, state.Field[opponentIndex], positions, currentSimTime, selectedIndex);
 
     // Stack zone
-    drawStackZone(ctx, state.Stack, state.Cards, layout.stack, currentActiveTime);
+    drawStackZone(ctx, state.Stack, state.Cards, positions, stackCoords, currentActiveTime);
 
     // Player field
-    drawField(ctx, state.Cards, state.Field[userIndex], layout.field[userIndex] ?? [], currentSimTime, selectedIndex);
+    drawField(ctx, state.Cards, state.Field[userIndex], positions, currentSimTime, selectedIndex);
 
     // Player hand
-    drawHand(ctx, handOrder[userIndex] ?? [], state.Cards, layout.hand[userIndex] ?? [], false, selectedIndex, currentSimTime);
+    drawHand(ctx, handOrder[userIndex] ?? [], state.Cards, positions, false, selectedIndex, currentSimTime);
 
     // Continuous zones (columns on left/right)
-    drawContinuousZone(ctx, state.Cards, state.Continuous?.[userIndex] ?? [], layout.continuous[userIndex] ?? [], selectedIndex);
-    drawContinuousZone(ctx, state.Cards, state.Continuous?.[opponentIndex] ?? [], layout.continuous[opponentIndex] ?? [], selectedIndex);
+    drawContinuousZone(ctx, state.Cards, state.Continuous?.[userIndex] ?? [], positions, selectedIndex);
+    drawContinuousZone(ctx, state.Cards, state.Continuous?.[opponentIndex] ?? [], positions, selectedIndex);
 
     drawInfoPanel(ctx, state, currentActiveTime, opponentIndex, userIndex);
 

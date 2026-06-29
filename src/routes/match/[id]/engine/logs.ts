@@ -25,6 +25,8 @@ export type RefreshStackLog       = Timestamp & { Type: 21; CardID: number; Star
 export type PlayContinuousLog     = Timestamp & { Type: 22; TeamIndex: number; CardID: number; Charges: number; }
 export type RemoveContinuousLog   = Timestamp & { Type: 23; TeamIndex: number; CardID: number; }
 export type RemoveChargeLog       = Timestamp & { Type: 24; TeamIndex: number; CardID: number; ChargesRemaining: number; }
+export type AddChargeLog          = Timestamp & { Type: 25; TeamIndex: number; CardID: number; Charges: number; }
+export type PreselectLog          = Timestamp & { Type: 26; TeamIndex: number; CardID: number; TargetCardIndex: number; }
 
 export type EventLog =
     | PhaseLog
@@ -51,4 +53,6 @@ export type EventLog =
     | RefreshStackLog
     | PlayContinuousLog
     | RemoveContinuousLog
-    | RemoveChargeLog;
+    | RemoveChargeLog
+    | AddChargeLog
+    | PreselectLog;

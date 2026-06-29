@@ -8,11 +8,11 @@
     import { stopPing, serverClockOffset } from "./networking/ping";
 
     import { StateManager } from "./engine/stateManager"
-    import { initGameState, cloneGameState, type GameState, Phase } from './engine/gameState';
+    import { initGameState, cloneGameState, type GameState, Phase, Zone } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
     import { drawBoard, drawPhaseAnnouncement } from './ui/drawBoard';
-    import { calcBoardLayout, getClickedCard, mirrorUIWithHand, type BoardLayout } from './ui/cardCoordinates';
+    import { calcBoardLayout, getClickedCard, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
     import { PausePhase } from './engine/gameState';
 
     // drawing related
@@ -34,9 +34,11 @@
     let interpolatedState: GameState;
 
     // ui
-    let clickedIndex: number = -1; // is unitIdx
+    let clickedIndex: number = -1;
+    let preselecting: number = -1; // field unit index awaiting a target click
     let handOrder: number[][] = [];
-    let layout: BoardLayout = { hand: [[], []], field: [[], []], stack: [], continuous: [[], []] };
+    let positions: coordinate[] = [];
+    let stackCoords: coordinate[] = [];
 
     let phaseShown = -1;
     let phaseMessageStart = -Infinity;
@@ -50,7 +52,8 @@
         canvasEl.height = Math.max(1, Math.round(height * dpr));
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        layout = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], interpolatedState?.Stack?.length ?? 0, interpolatedState?.Continuous ?? [[], []]);
+        const stackItems = (interpolatedState?.Stack ?? []).map(item => ({ cardID: item.CardID, isCard: interpolatedState?.Cards[item.CardID]?.Zone === Zone.Stack }));
+        ({ positions, stackCoords } = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], stackItems, interpolatedState?.Continuous ?? [[], []]));
     }
 
     function loop(now: number) { // now is current time relative to page load
@@ -66,7 +69,8 @@
         // update derived states
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
-            layout = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState.Field, interpolatedState.Stack.length, interpolatedState.Continuous ?? [[], []]);
+            const stackItems = interpolatedState.Stack.map(item => ({ cardID: item.CardID, isCard: interpolatedState.Cards[item.CardID]?.Zone === Zone.Stack }));
+            ({ positions, stackCoords } = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState.Field, stackItems, interpolatedState.Continuous ?? [[], []]));
 
             if (authoritativeState.Phase !== phaseShown) {
                 if (phaseShown !== -1) {
@@ -79,7 +83,7 @@
         // draw
         ctx.clearRect(0, 0, canvasEl.clientWidth, canvasEl.clientHeight);
         const currentWallTime = now + performance.timeOrigin + get(serverClockOffset);
-        drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, layout, handOrder, clickedIndex);
+        drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, positions, stackCoords, handOrder, clickedIndex);
         drawPhaseAnnouncement(ctx, authoritativeState.Phase, phaseMessageStart, now);
 
         // schedule next frame
@@ -108,7 +112,15 @@
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
 
-            clickedIndex = getClickedCard(x, y, layout, handOrder, interpolatedState?.Field ?? [[], []], interpolatedState?.Stack?.map(c => c.CardID) ?? [], interpolatedState?.Continuous ?? [[], []]);
+            const hit = getClickedCard(x, y, positions, interpolatedState?.Stack ?? [], stackCoords);
+
+            if (preselecting >= 0 && hit >= 0) {
+                ws?.send(JSON.stringify({ type: "preselect", CardIndex: preselecting, TargetCardIndex: hit }));
+                preselecting = -1;
+                clickedIndex = -1;
+            } else {
+                clickedIndex = hit;
+            }
         };
 
         const onKeyDown = (e: KeyboardEvent) => {
@@ -161,6 +173,27 @@
                 if (card?.Zone !== 1 || card.Team !== teamIndex) return; // ZoneHand
                 
                 ws?.send(JSON.stringify({ type: "instant", CardIndex: clickedIndex }));
+                clickedIndex = -1;
+
+            } else if (e.key === 't' || e.key === 'T') {
+
+                if (clickedIndex === -1) return;
+                const card = interpolatedState?.Cards[clickedIndex];
+                if (card?.Zone !== 2 || card.Team !== teamIndex) return; // ZoneField
+
+                preselecting = clickedIndex;
+                clickedIndex = -1;
+
+            } else if (e.key === 'u' || e.key === 'U') {
+
+                if (clickedIndex === -1) return;
+                if (interpolatedState?.Phase !== Phase.Play) return;
+
+                const card = interpolatedState.Cards[clickedIndex];
+                if (card?.Zone !== 2 || card.Team !== teamIndex) return; // ZoneField
+                if (card.Charges <= 0) return;
+
+                ws?.send(JSON.stringify({ type: "unitAbility", CardIndex: clickedIndex }));
                 clickedIndex = -1;
 
             } else if (e.key === 'p' || e.key === 'P') {

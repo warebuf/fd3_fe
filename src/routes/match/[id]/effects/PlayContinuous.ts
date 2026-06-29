@@ -7,7 +7,6 @@ export function playContinuous(state: GameState, log: PlayContinuousLog) {
 
     card.Zone = Zone.Continuous;
     card.Status = CardStatus.ContinuousActive;
-    card.Charges = log.Charges;
 
     state.Continuous[log.TeamIndex].push(log.CardID);
 }
