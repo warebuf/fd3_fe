@@ -104,6 +104,30 @@ export interface AbilityTimer {
     ExecuteAtSimTime: number;
 }
 
+export const TargetFlags = {
+    Self:     1 << 0,
+    OwnField: 1 << 1,
+    OppField: 1 << 2,
+    OwnHand:  1 << 3,
+    OppHand:  1 << 4,
+    OwnCont:  1 << 5,
+    OppCont:  1 << 6,
+} as const;
+
+export function isValidTarget(cards: Card[], targetFlags: number, sourceIdx: number, targetIdx: number, teamIndex: number): boolean {
+    if (targetFlags === 0 || targetIdx < 0 || targetIdx >= cards.length) return false;
+    const target = cards[targetIdx];
+    if (!target) return false;
+    if (targetIdx === sourceIdx) return (targetFlags & TargetFlags.Self) !== 0;
+    if (target.Team === teamIndex && target.Zone === Zone.Field)      return (targetFlags & TargetFlags.OwnField) !== 0;
+    if (target.Team !== teamIndex && target.Zone === Zone.Field)      return (targetFlags & TargetFlags.OppField) !== 0;
+    if (target.Team === teamIndex && target.Zone === Zone.Hand)       return (targetFlags & TargetFlags.OwnHand) !== 0;
+    if (target.Team !== teamIndex && target.Zone === Zone.Hand)       return (targetFlags & TargetFlags.OppHand) !== 0;
+    if (target.Team === teamIndex && target.Zone === Zone.Continuous) return (targetFlags & TargetFlags.OwnCont) !== 0;
+    if (target.Team !== teamIndex && target.Zone === Zone.Continuous) return (targetFlags & TargetFlags.OppCont) !== 0;
+    return false;
+}
+
 export const Archetype = {
     None: 0,
     Tree: 1,
@@ -136,6 +160,7 @@ export interface Card {
     AbilityTimers: AbilityTimer[];
     Charges: number;
     MaxCharges: number;
+    TargetFlags: number;
     Targets: [number];
     AuraModifiers: AuraModifier[];
 }

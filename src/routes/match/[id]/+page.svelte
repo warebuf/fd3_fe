@@ -13,7 +13,7 @@
 
     import { drawBoard, drawPhaseAnnouncement } from './ui/drawBoard';
     import { calcBoardLayout, getClickedCard, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
-    import { PausePhase } from './engine/gameState';
+    import { PausePhase, isValidTarget } from './engine/gameState';
 
     // drawing related
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
@@ -114,7 +114,7 @@
 
             const hit = getClickedCard(x, y, positions, interpolatedState?.Stack ?? [], stackCoords);
 
-            if (preselecting >= 0 && hit >= 0) {
+            if (preselecting >= 0 && hit >= 0 && isValidTarget(interpolatedState.Cards, interpolatedState.Cards[preselecting].TargetFlags, preselecting, hit, teamIndex)) {
                 ws?.send(JSON.stringify({ type: "preselect", CardIndex: preselecting, TargetCardIndex: hit }));
                 preselecting = -1;
                 clickedIndex = -1;
@@ -180,6 +180,7 @@
                 if (clickedIndex === -1) return;
                 const card = interpolatedState?.Cards[clickedIndex];
                 if (card?.Zone !== 2 || card.Team !== teamIndex) return; // ZoneField
+                if (!card.TargetFlags) return;
 
                 preselecting = clickedIndex;
                 clickedIndex = -1;
