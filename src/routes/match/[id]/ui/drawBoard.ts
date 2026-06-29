@@ -664,7 +664,7 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     // Preselect UI: arrows from source to confirmed target
     for (let cardID = 0; cardID < state.Cards.length; cardID++) {
         const card = state.Cards[cardID];
-        if (!card || !card.Targets?.[0]) continue;
+        if (!card || card.Targets[0] < 0) continue;
         const srcPos = positions[cardID];
         const dstPos = positions[card.Targets[0]];
         if (!srcPos || !dstPos) continue;
