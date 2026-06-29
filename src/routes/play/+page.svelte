@@ -6,8 +6,8 @@
   let es: EventSource | null;
   let finding = false;
 
-  //let deckInput = "10,10,10";
-  let deckInput = "1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8,9,9,9";
+  let deckInput = "10,10,10,10,10";
+  //let deckInput = "1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8,9,9,9";
   let startingHandInput = "";
   let structNo = 1;
 

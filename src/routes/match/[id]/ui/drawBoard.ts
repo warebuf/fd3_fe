@@ -289,18 +289,19 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
 }
 
 function drawChargePips(ctx: CanvasRenderingContext2D, x: number, y: number, card: Card): void {
-    const maxPips = card.MaxCharges;
-    if (maxPips <= 0) return;
+    const unlimited = card.MaxCharges > 20;
+    const pipCount = unlimited ? card.Charges : card.MaxCharges;
+    if (pipCount <= 0) return;
     const pipR = 4;
     const pipGap = 4;
-    const totalW = maxPips * pipR * 2 + (maxPips - 1) * pipGap;
+    const totalW = pipCount * pipR * 2 + (pipCount - 1) * pipGap;
     const pipStartX = x + (CARD_W - totalW) / 2 + pipR;
     const pipY = y + CARD_H + 16;
-    for (let p = 0; p < maxPips; p++) {
+    for (let p = 0; p < pipCount; p++) {
         const cx = pipStartX + p * (pipR * 2 + pipGap);
         ctx.beginPath();
         ctx.arc(cx, pipY, pipR, 0, Math.PI * 2);
-        if (p < card.Charges) {
+        if (unlimited || p < card.Charges) {
             ctx.fillStyle = "#7AADDF";
             ctx.fill();
         } else {
@@ -585,7 +586,45 @@ function drawPause(ctx: CanvasRenderingContext2D, state: GameState, userIndex: n
     ctx.restore();
 }
 
-export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, positions: coordinate[], stackCoords: coordinate[], handOrder: number[][], selectedIndex: number) {
+function drawPreselectHighlight(ctx: CanvasRenderingContext2D, x: number, y: number) {
+    ctx.save();
+    ctx.strokeStyle = "#F5A623";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 3]);
+    roundRect(ctx, x - 3, y - 3, CARD_W + 6, CARD_H + 6, CARD_RADIUS + 2);
+    ctx.stroke();
+    ctx.restore();
+}
+
+function drawPreselectArrow(ctx: CanvasRenderingContext2D, sx: number, sy: number, tx: number, ty: number) {
+    const startX = sx + CARD_W / 2;
+    const startY = sy + CARD_H / 2;
+    const endX = tx + CARD_W / 2;
+    const endY = ty + CARD_H / 2;
+    const angle = Math.atan2(endY - startY, endX - startX);
+    const arrowLen = 8;
+    const arrowAngle = Math.PI / 6;
+
+    ctx.save();
+    ctx.strokeStyle = "#F5A623";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(endX, endY);
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(endX, endY);
+    ctx.lineTo(endX - arrowLen * Math.cos(angle - arrowAngle), endY - arrowLen * Math.sin(angle - arrowAngle));
+    ctx.moveTo(endX, endY);
+    ctx.lineTo(endX - arrowLen * Math.cos(angle + arrowAngle), endY - arrowLen * Math.sin(angle + arrowAngle));
+    ctx.stroke();
+    ctx.restore();
+}
+
+export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, positions: coordinate[], stackCoords: coordinate[], handOrder: number[][], selectedIndex: number, preselecting: number) {
     const opponentIndex = userIndex === 0 ? 1 : 0;
     if (state.Phase === Phase.GameEnd) currentWallTime = state.WallTimestamp;
 
@@ -615,4 +654,20 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
 
     if (state.Phase === Phase.GameEnd) drawGameOver(ctx, state, userIndex);
     if (state.PausePhase === PausePhase.FullPause) drawPause(ctx, state, userIndex);
+
+    // Preselect UI: highlight the card awaiting a target click
+    if (preselecting >= 0) {
+        const pos = positions[preselecting];
+        if (pos) drawPreselectHighlight(ctx, pos.x, pos.y);
+    }
+
+    // Preselect UI: arrows from source to confirmed target
+    for (let cardID = 0; cardID < state.Cards.length; cardID++) {
+        const card = state.Cards[cardID];
+        if (!card || !card.Targets?.[0]) continue;
+        const srcPos = positions[cardID];
+        const dstPos = positions[card.Targets[0]];
+        if (!srcPos || !dstPos) continue;
+        drawPreselectArrow(ctx, srcPos.x, srcPos.y, dstPos.x, dstPos.y);
+    }
 }
