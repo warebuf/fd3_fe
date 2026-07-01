@@ -12,7 +12,7 @@
     import { interpolate } from './engine/interpolate';
 
     import { drawBoard, drawPhaseAnnouncement } from './ui/drawBoard';
-    import { calcBoardLayout, getClickedCard, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
+    import { calcBoardLayout, getClickedCard, getClickedSwitch, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
     import { PausePhase, isValidTarget } from './engine/gameState';
 
     // drawing related
@@ -111,6 +111,13 @@
             const r = canvasEl.getBoundingClientRect();
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
+
+            const switchHit = getClickedSwitch(x, y, positions, handOrder[teamIndex] ?? []);
+            if (switchHit >= 0 && (interpolatedState?.Phase === Phase.Play || interpolatedState?.Phase === Phase.Reveal)) {
+                const card = interpolatedState.Cards[switchHit];
+                ws?.send(JSON.stringify({ type: card.AutoSummon > 0 ? "unautosummon" : "autosummon", CardIndex: switchHit }));
+                return;
+            }
 
             const hit = getClickedCard(x, y, positions, interpolatedState?.Stack ?? [], stackCoords);
 

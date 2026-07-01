@@ -125,3 +125,20 @@ export function getClickedCard(
     }
     return -1;
 }
+
+export function getClickedSwitch(
+    mouseX: number,
+    mouseY: number,
+    positions: coordinate[],
+    handCardIDs: number[]
+): number {
+    for (const cardID of handCardIDs) {
+        const pos = positions[cardID];
+        if (!pos) continue;
+        if (mouseX >= pos.x && mouseX <= pos.x + CARD_W &&
+            mouseY >= pos.y + CARD_H + 4 && mouseY <= pos.y + CARD_H + 26) {
+            return cardID;
+        }
+    }
+    return -1;
+}

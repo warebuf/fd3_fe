@@ -375,11 +375,53 @@ function drawStackPositionBadge(ctx: CanvasRenderingContext2D, x: number, y: num
     ctx.fillText(`Stack ${position}`, badgeX + BADGE_W / 2, badgeY + BADGE_H / 2);
 }
 
+const SWITCH_W = 28;
+const SWITCH_H = 12;
+const SWITCH_R = 6;
+
+function drawSwitch(ctx: CanvasRenderingContext2D, x: number, y: number, on: boolean, label: string): void {
+    ctx.save();
+
+    ctx.font = "8px sans-serif";
+    const labelW = ctx.measureText(label).width;
+    const LABEL_GAP = 5;
+    const totalW = labelW + LABEL_GAP + SWITCH_W;
+    const startX = x + (CARD_W - totalW) / 2;
+    const sy = y + CARD_H + 10;
+
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = on ? SUBTEXT_COLOR : "#444";
+    ctx.fillText(label, startX, sy + SWITCH_H / 2);
+
+    const tx = startX + labelW + LABEL_GAP;
+    roundRect(ctx, tx, sy, SWITCH_W, SWITCH_H, SWITCH_R);
+    ctx.fillStyle = on ? "#3A8F5A" : "#222220";
+    ctx.fill();
+    ctx.strokeStyle = on ? "#3A8F5A" : "#3a3a38";
+    ctx.lineWidth = 0.5;
+    roundRect(ctx, tx, sy, SWITCH_W, SWITCH_H, SWITCH_R);
+    ctx.stroke();
+
+    const knobR = SWITCH_H / 2 - 2;
+    const knobX = on ? tx + SWITCH_W - SWITCH_R : tx + SWITCH_R;
+    ctx.beginPath();
+    ctx.arc(knobX, sy + SWITCH_H / 2, knobR, 0, Math.PI * 2);
+    ctx.fillStyle = on ? "#D3D1C7" : "#555";
+    ctx.fill();
+
+    ctx.restore();
+}
+
 function drawHand(ctx: CanvasRenderingContext2D, handOrder: number[], cards: Card[], positions: coordinate[], faceDown: boolean, selectedIndex: number, currentSimTime: number): void {
     for (const cardID of handOrder) {
         const pos = positions[cardID];
         if (!pos) continue;
-        drawFieldCard(ctx, pos.x, pos.y, cards[cardID], currentSimTime, faceDown, selectedIndex === cardID);
+        const card = cards[cardID];
+        drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, faceDown, selectedIndex === cardID);
+        if (!faceDown) {
+            drawSwitch(ctx, pos.x, pos.y, card.AutoSummon > 0, "Auto");
+        }
     }
 }
 
