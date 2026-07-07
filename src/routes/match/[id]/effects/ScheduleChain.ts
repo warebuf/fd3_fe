@@ -5,7 +5,7 @@ export function addStack(state: GameState, log: AddStackLog) {
 
     state.Stack.push({
         Type: log.StackType,
-        CardID: log.CardID,
+        CardIndex: log.CardIndex,
         StartAtActiveTime: log.StartAtActiveTime,
         PopAtActiveTime: log.PopAtActiveTime,
         ExecuteAtActiveTime: log.ExecuteAtActiveTime,

@@ -92,16 +92,30 @@ export interface Structure {
     HP: number;
 }
 
-export const AbilityTimerType = {
-    Normal: 0,
+export const TickCondition = {
+    Indefinite: 0,
+    UntilChargeMax: 1,
 } as const;
 
-export interface AbilityTimer {
-    AbilityID: number;
-    AbilityIdx: number;
-    Type: number;
+// mirrors engine/state.TickAbility: one slot per Card.OnTick[3] index, zero-valued when inactive
+export interface TickAbility {
+    Active: boolean;
+    Condition: number;
+    ActiveIndex: number; // which Actives[] slot this Condition checks against, -1 if not applicable
     StartAtSimTime: number;
     ExecuteAtSimTime: number;
+}
+
+// mirrors engine/state.ActiveAbility: one slot per Card.Actives[3] index
+export interface ActiveAbility {
+    Charges: number;
+    MaxCharges: number;
+    Target: number; // preselected target for this ability slot, -1 if none
+    TargetFlags: number;
+    Cons: [number, number, number];
+    Cost: number;
+    Pending: number; // activations currently in flight on the stack, not yet resolved
+    AutoAbility: boolean;
 }
 
 export const TargetFlags = {
@@ -142,6 +156,16 @@ export const CardStatus = {
     ContinuousActive:  5, // continuous spell: in continuous zone
 } as const;
 
+// Status isn't sent by the backend; it's a client-side view derived from Zone/Type.
+export function getCardStatus(card: Card): number {
+    if (card.Type === CardType.Unit) {
+        if (card.Zone === Zone.Stack) return CardStatus.Summoning;
+        if (card.Zone === Zone.Field) return CardStatus.UnitActive;
+    }
+    if (card.Zone === Zone.Continuous) return CardStatus.ContinuousActive;
+    return CardStatus.Default;
+}
+
 export interface Card {
     DefNo: number;
     Name: string;
@@ -154,19 +178,15 @@ export interface Card {
     Team: number;
     Type: number;
     Zone: number;
-    Status: number;
     StageOrder: number;
     AutoSummon: number;
-    AbilityTimers: AbilityTimer[];
-    Charges: number;
-    MaxCharges: number;
-    TargetFlags: number;
-    Targets: [number];
+    OnTick: TickAbility[];
+    Actives: ActiveAbility[];
     AuraModifiers: AuraModifier[];
 }
 
 export interface AuraModifier {
-    SourceCardID: number;
+    SourceCardIndex: number;
     Stat: number;
     Amount: number;
 }
@@ -180,7 +200,7 @@ export interface Effect {
 
 export interface StackItem {
     Type: number;
-    CardID: number;
+    CardIndex: number;
     StartAtActiveTime: number;
     PopAtActiveTime: number;
     ExecuteAtActiveTime: number;
@@ -235,7 +255,12 @@ export function cloneGameState(src: GameState): GameState {
         TeamPaused: src.TeamPaused,
         TimeBank: [...src.TimeBank],
 
-        Cards: src.Cards.map(card => ({ ...card, AbilityTimers: card.AbilityTimers?.map(t => ({ ...t })) ?? [], AuraModifiers: card.AuraModifiers?.map(m => ({ ...m })) ?? [], Targets: [...card.Targets] as [number] })),
+        Cards: src.Cards.map(card => ({
+            ...card,
+            OnTick: card.OnTick.map(t => ({ ...t })),
+            Actives: card.Actives.map(a => ({ ...a, Cons: [...a.Cons] as [number, number, number] })),
+            AuraModifiers: card.AuraModifiers?.map(m => ({ ...m })) ?? [],
+        })),
         Deck: src.Deck.map(d => [...d]),
         Hand: src.Hand.map(h => [...h]),
         Field: src.Field.map(f => [...f]),

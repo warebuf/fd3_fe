@@ -4,8 +4,8 @@ import type { GameState } from "../engine/gameState"
 
 export function autoSummon(state: GameState, log: AutoSummonLog) {
 
-    if (log.AutoSummonIdx > 0) {
-        state.Cards[log.CardIndex].AutoSummon = log.AutoSummonIdx;
+    if (log.AutoSummonPriority > 0) {
+        state.Cards[log.CardIndex].AutoSummon = log.AutoSummonPriority;
     } else {
         const cleared = state.Cards[log.CardIndex].AutoSummon;
         state.Cards[log.CardIndex].AutoSummon = 0;

@@ -52,7 +52,7 @@
         canvasEl.height = Math.max(1, Math.round(height * dpr));
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        const stackItems = (interpolatedState?.Stack ?? []).map(item => ({ cardID: item.CardID, isCard: interpolatedState?.Cards[item.CardID]?.Zone === Zone.Stack }));
+        const stackItems = (interpolatedState?.Stack ?? []).map(item => ({ cardID: item.CardIndex, isCard: interpolatedState?.Cards[item.CardIndex]?.Zone === Zone.Stack }));
         ({ positions, stackCoords } = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], stackItems, interpolatedState?.Continuous ?? [[], []]));
     }
 
@@ -69,7 +69,7 @@
         // update derived states
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
-            const stackItems = interpolatedState.Stack.map(item => ({ cardID: item.CardID, isCard: interpolatedState.Cards[item.CardID]?.Zone === Zone.Stack }));
+            const stackItems = interpolatedState.Stack.map(item => ({ cardID: item.CardIndex, isCard: interpolatedState.Cards[item.CardIndex]?.Zone === Zone.Stack }));
             ({ positions, stackCoords } = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState.Field, stackItems, interpolatedState.Continuous ?? [[], []]));
 
             if (authoritativeState.Phase !== phaseShown) {
@@ -121,7 +121,7 @@
 
             const hit = getClickedCard(x, y, positions, interpolatedState?.Stack ?? [], stackCoords);
 
-            if (preselecting >= 0 && hit >= 0 && isValidTarget(interpolatedState.Cards, interpolatedState.Cards[preselecting].TargetFlags, preselecting, hit, teamIndex)) {
+            if (preselecting >= 0 && hit >= 0 && isValidTarget(interpolatedState.Cards, interpolatedState.Cards[preselecting].Actives[0].TargetFlags, preselecting, hit, teamIndex)) {
                 ws?.send(JSON.stringify({ type: "preselect", CardIndex: preselecting, TargetCardIndex: hit }));
                 preselecting = -1;
                 clickedIndex = -1;
@@ -161,14 +161,20 @@
                     }
                 }
             } else if (e.key === 'a' || e.key === 'A') {
-                
+
                 if (clickedIndex === -1) return;
                 if (interpolatedState?.Phase !== Phase.Play && interpolatedState?.Phase !== Phase.Reveal) return;
 
                 const card = interpolatedState.Cards[clickedIndex];
-                if (card?.Zone !== 1 || card.Team !== teamIndex) return; // ZoneHand
-                
-                ws?.send(JSON.stringify({ type: card.AutoSummon > 0 ? "unautosummon" : "autosummon", CardIndex: clickedIndex }));
+                if (card?.Team !== teamIndex) return;
+
+                if (card.Zone === Zone.Hand) {
+                    ws?.send(JSON.stringify({ type: card.AutoSummon > 0 ? "unautosummon" : "autosummon", CardIndex: clickedIndex }));
+                } else if (card.Zone === Zone.Field || card.Zone === Zone.Continuous) {
+                    ws?.send(JSON.stringify({ type: "toggleAutoAbility", CardIndex: clickedIndex }));
+                } else {
+                    return;
+                }
                 clickedIndex = -1;
 
             } else if (e.key === 'i' || e.key === 'I') {
@@ -187,7 +193,7 @@
                 if (clickedIndex === -1) return;
                 const card = interpolatedState?.Cards[clickedIndex];
                 if (card?.Zone !== 2 || card.Team !== teamIndex) return; // ZoneField
-                if (!card.TargetFlags) return;
+                if (!card.Actives[0].TargetFlags) return;
 
                 preselecting = clickedIndex;
                 clickedIndex = -1;
@@ -199,7 +205,7 @@
 
                 const card = interpolatedState.Cards[clickedIndex];
                 if (card?.Zone !== 2 || card.Team !== teamIndex) return; // ZoneField
-                if (card.Charges <= 0) return;
+                if (card.Actives[0].Charges <= 0) return;
 
                 ws?.send(JSON.stringify({ type: "unitAbility", CardIndex: clickedIndex }));
                 clickedIndex = -1;

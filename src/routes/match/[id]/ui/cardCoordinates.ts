@@ -112,7 +112,7 @@ export function getClickedCard(
     mouseX: number,
     mouseY: number,
     positions: coordinate[],
-    stack: Array<{ CardID: number }>,
+    stack: Array<{ CardIndex: number }>,
     stackCoords: coordinate[]
 ): number {
     for (let cardID = 0; cardID < positions.length; cardID++) {
@@ -121,7 +121,7 @@ export function getClickedCard(
     }
     for (let i = 0; i < stackCoords.length; i++) {
         const pos = stackCoords[i];
-        if (pos && hitTest(mouseX, mouseY, pos.x, pos.y)) return stack[i].CardID;
+        if (pos && hitTest(mouseX, mouseY, pos.x, pos.y)) return stack[i].CardIndex;
     }
     return -1;
 }

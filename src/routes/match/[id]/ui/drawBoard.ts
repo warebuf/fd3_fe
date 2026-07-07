@@ -1,7 +1,7 @@
 
 import { get } from "svelte/store";
 import type { GameState, Card, StackItem } from "../engine/gameState"
-import { Phase, PausePhase, CardStatus, CardType, Archetype, Zone } from "../engine/gameState"
+import { Phase, PausePhase, CardStatus, CardType, Archetype, Zone, getCardStatus } from "../engine/gameState"
 import type { coordinate } from "./cardCoordinates"
 import { ping, serverClockOffset } from "../networking/ping";
 import { debugDump } from "../debuggers/debug";
@@ -214,7 +214,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     }
 
     // draw ability timer above card
-    const abilityTimer = card.AbilityTimers?.find(t => t.Type === 0);
+    const abilityTimer = card.OnTick?.find(t => t.Active);
     if (abilityTimer) {
         drawTimerBar(ctx, x, y, abilityTimer.StartAtSimTime, abilityTimer.ExecuteAtSimTime, currentSimTime, "Ability");
     }
@@ -222,10 +222,11 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     // determine status
     let statusText: string;
     let statusColor: string;
-    if (card.Status === CardStatus.Summoning) {
+    const status = getCardStatus(card);
+    if (status === CardStatus.Summoning) {
         statusText = "Summoning";
         statusColor = "#BFA43A";
-    } else if (card.Status === CardStatus.UnitActive) {
+    } else if (status === CardStatus.UnitActive) {
         statusText = "Active";
         statusColor = "#3A8F5A";
     } else {
@@ -289,8 +290,9 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
 }
 
 function drawChargePips(ctx: CanvasRenderingContext2D, x: number, y: number, card: Card): void {
-    const unlimited = card.MaxCharges > 20;
-    const pipCount = unlimited ? card.Charges : card.MaxCharges;
+    const active = card.Actives[0];
+    const unlimited = active.MaxCharges > 20;
+    const pipCount = unlimited ? active.Charges : active.MaxCharges;
     if (pipCount <= 0) return;
     const pipR = 4;
     const pipGap = 4;
@@ -301,7 +303,7 @@ function drawChargePips(ctx: CanvasRenderingContext2D, x: number, y: number, car
         const cx = pipStartX + p * (pipR * 2 + pipGap);
         ctx.beginPath();
         ctx.arc(cx, pipY, pipR, 0, Math.PI * 2);
-        if (unlimited || p < card.Charges) {
+        if (unlimited || p < active.Charges) {
             ctx.fillStyle = "#7AADDF";
             ctx.fill();
         } else {
@@ -336,9 +338,9 @@ function drawStackZone(ctx: CanvasRenderingContext2D, stack: StackItem[], cards:
     const topIndex = stack.length - 1;
     for (let i = 0; i < stack.length; i++) {
         const item = stack[i];
-        const card = cards[item.CardID];
+        const card = cards[item.CardIndex];
         if (!card) continue;
-        const pos = card.Zone === Zone.Stack ? positions[item.CardID] : stackCoords[i];
+        const pos = card.Zone === Zone.Stack ? positions[item.CardIndex] : stackCoords[i];
         if (!pos) continue;
         drawFieldCard(ctx, pos.x, pos.y, card, 0);
         if (i === topIndex) {
@@ -706,9 +708,9 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     // Preselect UI: arrows from source to confirmed target
     for (let cardID = 0; cardID < state.Cards.length; cardID++) {
         const card = state.Cards[cardID];
-        if (!card || card.Targets[0] < 0) continue;
+        if (!card || card.Actives[0].Target < 0) continue;
         const srcPos = positions[cardID];
-        const dstPos = positions[card.Targets[0]];
+        const dstPos = positions[card.Actives[0].Target];
         if (!srcPos || !dstPos) continue;
         drawPreselectArrow(ctx, srcPos.x, srcPos.y, dstPos.x, dstPos.y);
     }
