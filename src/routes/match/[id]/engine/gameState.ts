@@ -26,7 +26,7 @@ export type GameState = {
     Grave: number[][];
     Continuous: number[][];
 
-    Stack: StackItem[];
+    ReactionStack: StackItem[];
 
     Mana: number[];
     Structures: Structure[];
@@ -230,7 +230,7 @@ export function initGameState(): GameState {
         Grave: [[], []],
         Continuous: [[], []],
 
-        Stack: [],
+        ReactionStack: [],
 
         Mana: [],
         Structures: [],
@@ -267,7 +267,7 @@ export function cloneGameState(src: GameState): GameState {
         Grave: src.Grave.map(g => [...g]),
         Continuous: src.Continuous.map(c => [...c]),
 
-        Stack: src.Stack.map(item => ({ ...item, Effects: [...item.Effects] })),
+        ReactionStack: src.ReactionStack.map(item => ({ ...item, Effects: [...item.Effects] })),
 
         Mana: [...src.Mana],
         Structures: src.Structures.map(s => ({ ...s })),

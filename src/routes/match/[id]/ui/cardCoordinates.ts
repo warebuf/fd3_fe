@@ -53,7 +53,7 @@ function columnCoords(count: number, startY: number, x: number): coordinate[] {
 }
 
 // positions: sparse array indexed by card ID — positions[cardID] = screen coordinate
-// stackCoords: parallel to state.Stack — only populated for non-card stack items (abilities, etc.)
+// stackCoords: parallel to state.ReactionStack — only populated for non-card stack items (abilities, etc.)
 export function calcBoardLayout(
     canvasWidth: number,
     playerNum: number,
@@ -130,13 +130,15 @@ export function getClickedSwitch(
     mouseX: number,
     mouseY: number,
     positions: coordinate[],
-    handCardIDs: number[]
+    cardIDs: number[],
+    yMin: number = 4,
+    yMax: number = 26
 ): number {
-    for (const cardID of handCardIDs) {
+    for (const cardID of cardIDs) {
         const pos = positions[cardID];
         if (!pos) continue;
         if (mouseX >= pos.x && mouseX <= pos.x + CARD_W &&
-            mouseY >= pos.y + CARD_H + 4 && mouseY <= pos.y + CARD_H + 26) {
+            mouseY >= pos.y + CARD_H + yMin && mouseY <= pos.y + CARD_H + yMax) {
             return cardID;
         }
     }

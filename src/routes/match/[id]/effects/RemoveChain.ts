@@ -4,8 +4,8 @@ import type { RemoveStackLog } from "../engine/logs";
 
 export function removeStack(state: GameState, log: RemoveStackLog) {
 
-    const i = state.Stack.findIndex(item => item.CardIndex === log.CardIndex);
-    if (i !== -1) state.Stack.splice(i, 1);
+    const i = state.ReactionStack.findIndex(item => item.CardIndex === log.CardIndex);
+    if (i !== -1) state.ReactionStack.splice(i, 1);
 
     const card = state.Cards[log.CardIndex];
     if (card && card.Zone === Zone.Stack) {

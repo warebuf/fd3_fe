@@ -321,6 +321,9 @@ function drawContinuousZone(ctx: CanvasRenderingContext2D, cards: Card[], contin
         const card = cards[cardID];
         drawFieldCard(ctx, pos.x, pos.y, card, 0, false, selectedIndex === cardID);
         drawChargePips(ctx, pos.x, pos.y, card);
+        if (card.Actives[0].MaxCharges > 0) {
+            drawSwitch(ctx, pos.x, pos.y, card.Actives[0].AutoAbility, "Auto", 26);
+        }
     }
 }
 
@@ -331,6 +334,9 @@ function drawField(ctx: CanvasRenderingContext2D, cards: Card[], field: number[]
         const card = cards[cardID];
         drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, false, selectedIndex === cardID);
         drawChargePips(ctx, pos.x, pos.y, card);
+        if (card.Actives[0].MaxCharges > 0) {
+            drawSwitch(ctx, pos.x, pos.y, card.Actives[0].AutoAbility, "Auto", 26);
+        }
     }
 }
 
@@ -381,7 +387,7 @@ const SWITCH_W = 28;
 const SWITCH_H = 12;
 const SWITCH_R = 6;
 
-function drawSwitch(ctx: CanvasRenderingContext2D, x: number, y: number, on: boolean, label: string): void {
+function drawSwitch(ctx: CanvasRenderingContext2D, x: number, y: number, on: boolean, label: string, yOffset: number = 10): void {
     ctx.save();
 
     ctx.font = "8px sans-serif";
@@ -389,7 +395,7 @@ function drawSwitch(ctx: CanvasRenderingContext2D, x: number, y: number, on: boo
     const LABEL_GAP = 5;
     const totalW = labelW + LABEL_GAP + SWITCH_W;
     const startX = x + (CARD_W - totalW) / 2;
-    const sy = y + CARD_H + 10;
+    const sy = y + CARD_H + yOffset;
 
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
@@ -682,7 +688,7 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     drawField(ctx, state.Cards, state.Field[opponentIndex], positions, currentSimTime, selectedIndex);
 
     // Stack zone
-    drawStackZone(ctx, state.Stack, state.Cards, positions, stackCoords, currentActiveTime);
+    drawStackZone(ctx, state.ReactionStack, state.Cards, positions, stackCoords, currentActiveTime);
 
     // Player field
     drawField(ctx, state.Cards, state.Field[userIndex], positions, currentSimTime, selectedIndex);

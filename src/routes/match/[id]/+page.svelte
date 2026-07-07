@@ -52,7 +52,7 @@
         canvasEl.height = Math.max(1, Math.round(height * dpr));
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        const stackItems = (interpolatedState?.Stack ?? []).map(item => ({ cardID: item.CardIndex, isCard: interpolatedState?.Cards[item.CardIndex]?.Zone === Zone.Stack }));
+        const stackItems = (interpolatedState?.ReactionStack ?? []).map(item => ({ cardID: item.CardIndex, isCard: interpolatedState?.Cards[item.CardIndex]?.Zone === Zone.Stack }));
         ({ positions, stackCoords } = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], stackItems, interpolatedState?.Continuous ?? [[], []]));
     }
 
@@ -69,7 +69,7 @@
         // update derived states
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
-            const stackItems = interpolatedState.Stack.map(item => ({ cardID: item.CardIndex, isCard: interpolatedState.Cards[item.CardIndex]?.Zone === Zone.Stack }));
+            const stackItems = interpolatedState.ReactionStack.map(item => ({ cardID: item.CardIndex, isCard: interpolatedState.Cards[item.CardIndex]?.Zone === Zone.Stack }));
             ({ positions, stackCoords } = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState.Field, stackItems, interpolatedState.Continuous ?? [[], []]));
 
             if (authoritativeState.Phase !== phaseShown) {
@@ -119,7 +119,15 @@
                 return;
             }
 
-            const hit = getClickedCard(x, y, positions, interpolatedState?.Stack ?? [], stackCoords);
+            const fieldCardIDs = [...(interpolatedState?.Field[teamIndex] ?? []), ...(interpolatedState?.Continuous[teamIndex] ?? [])]
+                .filter(id => interpolatedState!.Cards[id].Actives[0].MaxCharges > 0);
+            const fieldSwitchHit = getClickedSwitch(x, y, positions, fieldCardIDs, 20, 42);
+            if (fieldSwitchHit >= 0 && (interpolatedState?.Phase === Phase.Play || interpolatedState?.Phase === Phase.Reveal)) {
+                ws?.send(JSON.stringify({ type: "toggleAutoAbility", CardIndex: fieldSwitchHit }));
+                return;
+            }
+
+            const hit = getClickedCard(x, y, positions, interpolatedState?.ReactionStack ?? [], stackCoords);
 
             if (preselecting >= 0 && hit >= 0 && isValidTarget(interpolatedState.Cards, interpolatedState.Cards[preselecting].Actives[0].TargetFlags, preselecting, hit, teamIndex)) {
                 ws?.send(JSON.stringify({ type: "preselect", CardIndex: preselecting, TargetCardIndex: hit }));

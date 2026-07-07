@@ -3,7 +3,7 @@ import type { AddStackLog } from "../engine/logs";
 
 export function addStack(state: GameState, log: AddStackLog) {
 
-    state.Stack.push({
+    state.ReactionStack.push({
         Type: log.StackType,
         CardIndex: log.CardIndex,
         StartAtActiveTime: log.StartAtActiveTime,
