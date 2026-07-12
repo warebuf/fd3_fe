@@ -140,7 +140,7 @@ function drawWrappedText(ctx: CanvasRenderingContext2D, text: string, x: number,
     return currentY;
 }
 
-function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, currentSimTime: number, faceDown?: boolean, selected?: boolean ) {
+function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, currentSimTime: number, faceDown?: boolean, selected?: boolean, showAbilityTimer: boolean = true ) {
     ctx.save();
 
     // adjust for blurry half pixel borders
@@ -214,7 +214,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     }
 
     // draw ability timer above card
-    const abilityTimer = card.OnTick?.find(t => t.Active);
+    const abilityTimer = showAbilityTimer ? card.OnTick?.find(t => t.Active) : undefined;
     if (abilityTimer) {
         drawTimerBar(ctx, x, y, abilityTimer.StartAtSimTime, abilityTimer.ExecuteAtSimTime, currentSimTime, "Ability");
     }
@@ -348,7 +348,7 @@ function drawStackZone(ctx: CanvasRenderingContext2D, stack: StackItem[], cards:
         if (!card) continue;
         const pos = card.Zone === Zone.Stack ? positions[item.CardIndex] : stackCoords[i];
         if (!pos) continue;
-        drawFieldCard(ctx, pos.x, pos.y, card, 0);
+        drawFieldCard(ctx, pos.x, pos.y, card, 0, false, false, false);
         if (i === topIndex) {
             drawTimerBar(ctx, pos.x, pos.y, item.StartAtActiveTime, item.ExecuteAtActiveTime, currentActiveTime, "Stack");
         } else {
