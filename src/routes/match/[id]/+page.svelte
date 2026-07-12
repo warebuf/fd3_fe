@@ -112,13 +112,6 @@
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
 
-            const switchHit = getClickedSwitch(x, y, positions, handOrder[teamIndex] ?? []);
-            if (switchHit >= 0 && (interpolatedState?.Phase === Phase.Play || interpolatedState?.Phase === Phase.Reveal)) {
-                const card = interpolatedState.Cards[switchHit];
-                ws?.send(JSON.stringify({ type: card.AutoSummon > 0 ? "unautosummon" : "autosummon", CardIndex: switchHit }));
-                return;
-            }
-
             const fieldCardIDs = [...(interpolatedState?.Field[teamIndex] ?? []), ...(interpolatedState?.Continuous[teamIndex] ?? [])]
                 .filter(id => interpolatedState!.Cards[id].Actives[0].MaxCharges > 0);
             const fieldSwitchHit = getClickedSwitch(x, y, positions, fieldCardIDs, 20, 42);

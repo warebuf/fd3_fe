@@ -427,9 +427,6 @@ function drawHand(ctx: CanvasRenderingContext2D, handOrder: number[], cards: Car
         if (!pos) continue;
         const card = cards[cardID];
         drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, faceDown, selectedIndex === cardID);
-        if (!faceDown) {
-            drawSwitch(ctx, pos.x, pos.y, card.AutoSummon > 0, "Auto");
-        }
     }
 }
 
