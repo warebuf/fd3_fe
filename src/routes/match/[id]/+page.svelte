@@ -53,7 +53,7 @@
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
         const stackItems = (interpolatedState?.ReactionStack ?? []).map(item => ({ cardID: item.CardIndex, isCard: interpolatedState?.Cards[item.CardIndex]?.Zone === Zone.Stack }));
-        ({ positions, stackCoords } = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], stackItems, interpolatedState?.Continuous ?? [[], []]));
+        ({ positions, stackCoords } = calcBoardLayout(ctx.canvas.clientWidth, ctx.canvas.clientHeight, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], stackItems, interpolatedState?.Continuous ?? [[], []]));
     }
 
     function loop(now: number) { // now is current time relative to page load
@@ -70,7 +70,7 @@
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
             const stackItems = interpolatedState.ReactionStack.map(item => ({ cardID: item.CardIndex, isCard: interpolatedState.Cards[item.CardIndex]?.Zone === Zone.Stack }));
-            ({ positions, stackCoords } = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState.Field, stackItems, interpolatedState.Continuous ?? [[], []]));
+            ({ positions, stackCoords } = calcBoardLayout(ctx.canvas.clientWidth, ctx.canvas.clientHeight, teamIndex, handOrder, interpolatedState.Field, stackItems, interpolatedState.Continuous ?? [[], []]));
 
             if (authoritativeState.Phase !== phaseShown) {
                 if (phaseShown !== -1) {

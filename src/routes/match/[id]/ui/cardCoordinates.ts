@@ -41,10 +41,12 @@ function rowCoords(count: number, canvasWidth: number, cardY: number): coordinat
     return coords;
 }
 
-const CONT_COL_START_Y = START_Y;
 const CONT_COL_X_LEFT  = 6;
 
-function columnCoords(count: number, startY: number, x: number): coordinate[] {
+function columnCoords(count: number, canvasHeight: number, x: number): coordinate[] {
+    if (count === 0) return [];
+    const totalH = count * CARD_H + (count - 1) * CARD_GAP;
+    const startY = (canvasHeight - totalH) / 2;
     const coords: coordinate[] = [];
     for (let i = 0; i < count; i++) {
         coords.push({ x, y: startY + i * (CARD_H + CARD_GAP) });
@@ -56,6 +58,7 @@ function columnCoords(count: number, startY: number, x: number): coordinate[] {
 // stackCoords: parallel to state.ReactionStack — only populated for non-card stack items (abilities, etc.)
 export function calcBoardLayout(
     canvasWidth: number,
+    canvasHeight: number,
     playerNum: number,
     handOrder: number[][],
     field: number[][],
@@ -87,7 +90,7 @@ export function calcBoardLayout(
 
         const contCards  = continuous[t] ?? [];
         const colX       = isPlayer ? CONT_COL_X_LEFT : canvasWidth - CARD_W - 6;
-        const contSlots  = columnCoords(contCards.length, CONT_COL_START_Y, colX);
+        const contSlots  = columnCoords(contCards.length, canvasHeight, colX);
         for (let i = 0; i < contCards.length; i++) positions[contCards[i]] = contSlots[i];
     }
 
