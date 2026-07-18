@@ -110,6 +110,7 @@ export interface TickAbility {
 export interface ActiveAbility {
     Charges: number;
     MaxCharges: number;
+    Unlimited: boolean; // if true, this ability ignores Charges/Pending entirely and is always available
     Target: number; // preselected target for this ability slot, -1 if none
     TargetFlags: number;
     Cons: [number, number, number];
