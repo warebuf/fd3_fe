@@ -206,7 +206,7 @@
 
                 const card = interpolatedState.Cards[clickedIndex];
                 if (card?.Zone !== 2 || card.Team !== teamIndex) return; // ZoneField
-                // TODO: hardcoded duplicate of the backend's charge-gating rule (handleUnitAbility in HandlerInputAbility.go) for responsive UI; keep in sync
+                // TODO: hardcoded duplicate of the backend's charge-gating rule (handleUnitAbility in InputHandlerAbility.go) for responsive UI; keep in sync
                 if (!card.Actives[0].Unlimited && card.Charges <= 0) return;
 
                 ws?.send(JSON.stringify({ type: "unitAbility", CardIndex: clickedIndex }));
