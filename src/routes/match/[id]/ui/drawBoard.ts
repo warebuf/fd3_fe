@@ -290,9 +290,8 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
 }
 
 function drawChargePips(ctx: CanvasRenderingContext2D, x: number, y: number, card: Card): void {
-    const active = card.Actives[0];
-    const unlimited = active.MaxCharges > 20;
-    const pipCount = unlimited ? active.Charges : active.MaxCharges;
+    const unlimited = card.MaxCharges > 20;
+    const pipCount = unlimited ? card.Charges : card.MaxCharges;
     if (pipCount <= 0) return;
     const pipR = 4;
     const pipGap = 4;
@@ -303,7 +302,7 @@ function drawChargePips(ctx: CanvasRenderingContext2D, x: number, y: number, car
         const cx = pipStartX + p * (pipR * 2 + pipGap);
         ctx.beginPath();
         ctx.arc(cx, pipY, pipR, 0, Math.PI * 2);
-        if (unlimited || p < active.Charges) {
+        if (unlimited || p < card.Charges) {
             ctx.fillStyle = "#7AADDF";
             ctx.fill();
         } else {
@@ -321,7 +320,7 @@ function drawContinuousZone(ctx: CanvasRenderingContext2D, cards: Card[], contin
         const card = cards[cardID];
         drawFieldCard(ctx, pos.x, pos.y, card, 0, false, selectedIndex === cardID);
         drawChargePips(ctx, pos.x, pos.y, card);
-        if (card.Actives[0].MaxCharges > 0) {
+        if (card.MaxCharges > 0) {
             drawSwitch(ctx, pos.x, pos.y, card.Actives[0].AutoAbility, "Auto", 26);
         }
     }
@@ -334,7 +333,7 @@ function drawField(ctx: CanvasRenderingContext2D, cards: Card[], field: number[]
         const card = cards[cardID];
         drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, false, selectedIndex === cardID);
         drawChargePips(ctx, pos.x, pos.y, card);
-        if (card.Actives[0].MaxCharges > 0) {
+        if (card.MaxCharges > 0) {
             drawSwitch(ctx, pos.x, pos.y, card.Actives[0].AutoAbility, "Auto", 26);
         }
     }

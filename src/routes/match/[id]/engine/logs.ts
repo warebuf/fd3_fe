@@ -24,8 +24,8 @@ export type CounterStackLog       = Timestamp & { Type: 20; SourceCardIndex: num
 export type RefreshStackLog       = Timestamp & { Type: 21; CardIndex: number; StartAtActiveTime: number; PopAtActiveTime: number; ExecuteAtActiveTime: number; }
 export type PlayContinuousLog     = Timestamp & { Type: 22; TeamIndex: number; CardIndex: number; Charges: number; }
 export type RemoveContinuousLog   = Timestamp & { Type: 23; TeamIndex: number; CardIndex: number; }
-export type RemoveChargeLog       = Timestamp & { Type: 24; TeamIndex: number; CardIndex: number; AbilityIndex: number; ChargesRemaining: number; }
-export type AddChargeLog          = Timestamp & { Type: 25; TeamIndex: number; CardIndex: number; AbilityIndex: number; Charges: number; }
+export type RemoveChargeLog       = Timestamp & { Type: 24; TeamIndex: number; CardIndex: number; ChargesRemaining: number; }
+export type AddChargeLog          = Timestamp & { Type: 25; TeamIndex: number; CardIndex: number; Charges: number; }
 export type PreselectLog          = Timestamp & { Type: 26; TeamIndex: number; CardIndex: number; AbilityIndex: number; TargetCardIndex: number; }
 export type ToggleAutoAbilityLog  = Timestamp & { Type: 27; TeamIndex: number; CardIndex: number; AbilityIndex: number; On: boolean; }
 

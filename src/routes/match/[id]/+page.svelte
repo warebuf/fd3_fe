@@ -113,7 +113,7 @@
             const y = e.clientY - r.top;
 
             const fieldCardIDs = [...(interpolatedState?.Field[teamIndex] ?? []), ...(interpolatedState?.Continuous[teamIndex] ?? [])]
-                .filter(id => interpolatedState!.Cards[id].Actives[0].MaxCharges > 0 || interpolatedState!.Cards[id].Actives[0].Unlimited);
+                .filter(id => interpolatedState!.Cards[id].MaxCharges > 0 || interpolatedState!.Cards[id].Actives[0].Unlimited);
             const fieldSwitchHit = getClickedSwitch(x, y, positions, fieldCardIDs, 20, 42);
             if (fieldSwitchHit >= 0 && (interpolatedState?.Phase === Phase.Play || interpolatedState?.Phase === Phase.Reveal)) {
                 ws?.send(JSON.stringify({ type: "toggleAutoAbility", CardIndex: fieldSwitchHit }));
@@ -207,7 +207,7 @@
                 const card = interpolatedState.Cards[clickedIndex];
                 if (card?.Zone !== 2 || card.Team !== teamIndex) return; // ZoneField
                 // TODO: hardcoded duplicate of the backend's charge-gating rule (handleUnitAbility in HandlerInputAbility.go) for responsive UI; keep in sync
-                if (!card.Actives[0].Unlimited && card.Actives[0].Charges <= 0) return;
+                if (!card.Actives[0].Unlimited && card.Charges <= 0) return;
 
                 ws?.send(JSON.stringify({ type: "unitAbility", CardIndex: clickedIndex }));
                 clickedIndex = -1;

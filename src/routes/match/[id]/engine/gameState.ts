@@ -108,14 +108,11 @@ export interface TickAbility {
 
 // mirrors engine/state.ActiveAbility: one slot per Card.Actives[3] index
 export interface ActiveAbility {
-    Charges: number;
-    MaxCharges: number;
-    Unlimited: boolean; // if true, this ability ignores Charges/Pending entirely and is always available
+    Unlimited: boolean; // if true, this ability ignores the card's Charges entirely and is always available
     Target: number; // preselected target for this ability slot, -1 if none
     TargetFlags: number;
     Cons: [number, number, number];
     Cost: number;
-    Pending: number; // activations currently in flight on the stack, not yet resolved
     AutoAbility: boolean;
 }
 
@@ -179,6 +176,12 @@ export interface Card {
     Team: number;
     Type: number;
     Zone: number;
+
+    // charge related - shared pool for this card; any ability slot may gain or spend from it
+    Charges: number;
+    MaxCharges: number;
+    PendingCharges: number; // activations currently in flight on the stack across all Active slots, not yet resolved
+
     StageOrder: number;
     AutoSummon: number;
     OnTick: TickAbility[];
