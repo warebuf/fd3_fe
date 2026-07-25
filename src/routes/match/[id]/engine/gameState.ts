@@ -90,6 +90,7 @@ export const EffectType = {
     Consume:     11,
     SelfDestruct: 12,
     ConvertToTokens: 13,
+    AddCharges: 14,
 } as const;
 
 export interface Structure {
