@@ -89,6 +89,7 @@ export const EffectType = {
     Sacrifice:   10,
     Consume:     11,
     SelfDestruct: 12,
+    ConvertToTokens: 13,
 } as const;
 
 export interface Structure {
@@ -190,6 +191,7 @@ export interface Card {
     Team: number;
     Type: number;
     Zone: number;
+    IsToken: boolean;
 
     // charge related - shared pool for this card; any ability slot may gain or spend from it
     Charges: number;

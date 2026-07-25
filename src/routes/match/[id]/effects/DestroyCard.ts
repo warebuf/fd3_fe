@@ -15,7 +15,9 @@ export function destroyCard(state: GameState, log: DestroyCardLog) {
             for(let j = 0; j < state.Field[i].length; j++) {
                 const idx = state.Field[i][j];
                 state.Cards[idx].Zone = 3;
-                state.Grave[i].push(idx);
+                if (!state.Cards[idx].IsToken) {
+                    state.Grave[i].push(idx);
+                }
             }
             state.Field[i] = [];
         }
@@ -32,7 +34,9 @@ export function destroyCard(state: GameState, log: DestroyCardLog) {
         }
 
         // add to grave
-        state.Grave[targetTeam].push(targetCard);
+        if (!state.Cards[targetCard].IsToken) {
+            state.Grave[targetTeam].push(targetCard);
+        }
     }
 
     // tbh temporary hack to send casting card to grave, many ways to do this, including adding a field to log data structure, or creating a new effect entirely
