@@ -59,12 +59,13 @@ export const Zone = {
     Continuous: 5,
 } as const;
 
+// mirrors engine/state.ReactionType
 export const StackItemType = {
-    Card: 0,
-    Ability: 1,
+    UnitAbility: 1,
     Spell: 2,
-    ContinuousActivation: 3,
+    ContinuousAbility: 3,
     Summon: 4,
+    ContinuousResolution: 5,
 } as const;
 
 export const CardType = {
@@ -85,6 +86,9 @@ export const EffectType = {
     Destroy:     7,
     Counter:     8,
     GainCharge:  9,
+    Sacrifice:   10,
+    Consume:     11,
+    SelfDestruct: 12,
 } as const;
 
 export interface Structure {
@@ -101,7 +105,6 @@ export const TickCondition = {
 export interface TickAbility {
     Active: boolean;
     Condition: number;
-    ActiveIndex: number; // which Actives[] slot this Condition checks against, -1 if not applicable
     StartAtSimTime: number;
     ExecuteAtSimTime: number;
 }
@@ -114,6 +117,12 @@ export interface ActiveAbility {
     Cons: [number, number, number];
     Cost: number;
     AutoAbility: boolean;
+    Bonus: number;
+}
+
+export interface OnPlayAbility {
+    Target: number; // preselected target for this OnPlay slot, -1 if none
+    TargetFlags: number;
 }
 
 export const TargetFlags = {
@@ -138,6 +147,11 @@ export function isValidTarget(cards: Card[], targetFlags: number, sourceIdx: num
     if (target.Team === teamIndex && target.Zone === Zone.Continuous) return (targetFlags & TargetFlags.OwnCont) !== 0;
     if (target.Team !== teamIndex && target.Zone === Zone.Continuous) return (targetFlags & TargetFlags.OppCont) !== 0;
     return false;
+}
+
+// which ability array a card's preselect targets, depending on which zone it's in
+export function preselectableAbilities(card: Card): (ActiveAbility | OnPlayAbility)[] {
+    return card.Zone === Zone.Hand ? card.OnPlay : card.Actives;
 }
 
 export const Archetype = {
@@ -186,13 +200,7 @@ export interface Card {
     AutoSummon: number;
     OnTick: TickAbility[];
     Actives: ActiveAbility[];
-    AuraModifiers: AuraModifier[];
-}
-
-export interface AuraModifier {
-    SourceCardIndex: number;
-    Stat: number;
-    Amount: number;
+    OnPlay: OnPlayAbility[];
 }
 
 export interface Effect {
@@ -205,6 +213,7 @@ export interface Effect {
 export interface StackItem {
     Type: number;
     CardIndex: number;
+    ActiveIndex: number; // which Actives[] slot this item's activation came from, -1 if not an Active ability
     StartAtActiveTime: number;
     PopAtActiveTime: number;
     ExecuteAtActiveTime: number;
@@ -263,7 +272,7 @@ export function cloneGameState(src: GameState): GameState {
             ...card,
             OnTick: card.OnTick.map(t => ({ ...t })),
             Actives: card.Actives.map(a => ({ ...a, Cons: [...a.Cons] as [number, number, number] })),
-            AuraModifiers: card.AuraModifiers?.map(m => ({ ...m })) ?? [],
+            OnPlay: card.OnPlay.map(o => ({ ...o })),
         })),
         Deck: src.Deck.map(d => [...d]),
         Hand: src.Hand.map(h => [...h]),

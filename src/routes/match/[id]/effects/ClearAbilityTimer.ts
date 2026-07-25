@@ -5,7 +5,6 @@ export function clearAbilityTimer(state: GameState, log: ClearAbilityTimerLog) {
     state.Cards[log.CardIndex].OnTick[log.AbilityIndex] = {
         Active: false,
         Condition: 0,
-        ActiveIndex: -1,
         StartAtSimTime: 0,
         ExecuteAtSimTime: 0,
     };

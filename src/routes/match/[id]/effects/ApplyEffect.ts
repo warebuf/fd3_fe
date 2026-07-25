@@ -30,6 +30,7 @@ import { removeCharge } from "./RemoveCharge";
 import { addCharge } from "./AddCharge";
 import { preselect } from "./Preselect";
 import { toggleAutoAbility } from "./ToggleAutoAbility";
+import { consume } from "./Consume";
 
 export function applyEffect(state: GameState, log: EventLog) {
 
@@ -63,6 +64,7 @@ export function applyEffect(state: GameState, log: EventLog) {
         case 25: addCharge(state, log); break;
         case 26: preselect(state, log); break;
         case 27: toggleAutoAbility(state, log); break;
+        case 28: consume(state, log); break;
 
         default: console.log("could not apply log", log); applied = false; break;
     }

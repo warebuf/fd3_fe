@@ -13,7 +13,7 @@
 
     import { drawBoard, drawPhaseAnnouncement } from './ui/drawBoard';
     import { calcBoardLayout, getClickedCard, getClickedSwitch, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
-    import { PausePhase, isValidTarget } from './engine/gameState';
+    import { PausePhase, isValidTarget, preselectableAbilities } from './engine/gameState';
 
     // drawing related
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
@@ -35,7 +35,8 @@
 
     // ui
     let clickedIndex: number = -1;
-    let preselecting: number = -1; // field unit index awaiting a target click
+    let preselecting: number = -1; // card index awaiting a target click (field unit's Active, or hand card's OnPlay)
+    let preselectingIndex: number = -1; // which ability slot on that card (Actives or OnPlay, per its zone)
     let handOrder: number[][] = [];
     let positions: coordinate[] = [];
     let stackCoords: coordinate[] = [];
@@ -122,9 +123,12 @@
 
             const hit = getClickedCard(x, y, positions, interpolatedState?.ReactionStack ?? [], stackCoords);
 
-            if (preselecting >= 0 && hit >= 0 && isValidTarget(interpolatedState.Cards, interpolatedState.Cards[preselecting].Actives[0].TargetFlags, preselecting, hit, teamIndex)) {
-                ws?.send(JSON.stringify({ type: "preselect", CardIndex: preselecting, TargetCardIndex: hit }));
+            const preselectFlags = preselecting >= 0 ? preselectableAbilities(interpolatedState.Cards[preselecting])[preselectingIndex].TargetFlags : 0;
+
+            if (preselecting >= 0 && hit >= 0 && isValidTarget(interpolatedState.Cards, preselectFlags, preselecting, hit, teamIndex)) {
+                ws?.send(JSON.stringify({ type: "preselect", CardIndex: preselecting, TargetCardIndex: hit, AbilityIndex: preselectingIndex }));
                 preselecting = -1;
+                preselectingIndex = -1;
                 clickedIndex = -1;
             } else {
                 clickedIndex = hit;
@@ -193,10 +197,20 @@
 
                 if (clickedIndex === -1) return;
                 const card = interpolatedState?.Cards[clickedIndex];
-                if (card?.Zone !== 2 || card.Team !== teamIndex) return; // ZoneField
-                if (!card.Actives[0].TargetFlags) return;
+                if (card?.Team !== teamIndex) return;
+                if (card.Zone !== Zone.Field && card.Zone !== Zone.Hand) return;
+
+                const abilities = preselectableAbilities(card);
+                const startAt = preselecting === clickedIndex ? preselectingIndex + 1 : 0;
+                let nextIndex = -1;
+                for (let step = 0; step < abilities.length; step++) {
+                    const i = (startAt + step) % abilities.length;
+                    if (abilities[i].TargetFlags !== 0) { nextIndex = i; break; }
+                }
+                if (nextIndex === -1) return;
 
                 preselecting = clickedIndex;
+                preselectingIndex = nextIndex;
                 clickedIndex = -1;
 
             } else if (e.key === 'u' || e.key === 'U') {

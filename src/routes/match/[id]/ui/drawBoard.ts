@@ -710,10 +710,14 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     // Preselect UI: arrows from source to confirmed target
     for (let cardID = 0; cardID < state.Cards.length; cardID++) {
         const card = state.Cards[cardID];
-        if (!card || card.Actives[0].Target < 0) continue;
+        if (!card) continue;
         const srcPos = positions[cardID];
-        const dstPos = positions[card.Actives[0].Target];
-        if (!srcPos || !dstPos) continue;
-        drawPreselectArrow(ctx, srcPos.x, srcPos.y, dstPos.x, dstPos.y);
+        if (!srcPos) continue;
+        for (const ability of [...card.Actives, ...card.OnPlay]) {
+            if (ability.Target < 0) continue;
+            const dstPos = positions[ability.Target];
+            if (!dstPos) continue;
+            drawPreselectArrow(ctx, srcPos.x, srcPos.y, dstPos.x, dstPos.y);
+        }
     }
 }
