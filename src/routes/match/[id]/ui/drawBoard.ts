@@ -78,10 +78,11 @@ function roundRect( ctx: CanvasRenderingContext2D, x: number, y: number, w: numb
 export function drawStructureDrawButton(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number): { x: number; y: number; w: number; h: number } | null {
     const canDraw = state.Phase === Phase.Play && (state.Mana[userIndex] ?? 0) >= 100;
 
-    const x = 6;
-    const y = ctx.canvas.clientHeight - 30;
     const w = 96;
     const h = 18;
+    const x = (ctx.canvas.clientWidth - w) / 2;
+    const playerHandCardY = START_Y + (ZONE_H + ZONE_GAP) * 4 + (ZONE_H - CARD_H) / 2;
+    const y = playerHandCardY - h - 6;
 
     roundRect(ctx, x, y, w, h, 4);
     ctx.fillStyle = canDraw ? "#2C2C2A" : "#222220";
@@ -370,10 +371,31 @@ function drawStackZone(ctx: CanvasRenderingContext2D, stack: StackItem[], cards:
     for (let i = 0; i < stack.length; i++) {
         const item = stack[i];
         const card = cards[item.CardIndex];
-        if (!card) continue;
-        const pos = card.Zone === Zone.Stack ? positions[item.CardIndex] : stackCoords[i];
-        if (!pos) continue;
-        drawFieldCard(ctx, pos.x, pos.y, card, 0, false, false, false);
+
+        let pos: coordinate | undefined;
+        if (card) {
+            pos = card.Zone === Zone.Stack ? positions[item.CardIndex] : stackCoords[i];
+            if (!pos) continue;
+            drawFieldCard(ctx, pos.x, pos.y, card, 0, false, false, false);
+        } else {
+            pos = stackCoords[i];
+            if (!pos) continue;
+            roundRect(ctx, pos.x, pos.y, CARD_W, CARD_H, CARD_RADIUS);
+            ctx.fillStyle = CARD_COLOR;
+            ctx.fill();
+            ctx.strokeStyle = CARD_BORDER;
+            ctx.lineWidth = 1;
+            roundRect(ctx, pos.x, pos.y, CARD_W, CARD_H, CARD_RADIUS);
+            ctx.stroke();
+            ctx.fillStyle = TEXT_COLOR;
+            ctx.font = "12px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("Structure Ability", pos.x + CARD_W / 2, pos.y + CARD_H / 2);
+            ctx.textAlign = "left";
+            ctx.textBaseline = "top";
+        }
+
         if (i === topIndex) {
             drawTimerBar(ctx, pos.x, pos.y, item.StartAtActiveTime, item.ExecuteAtActiveTime, currentActiveTime, "Stack");
         } else {
