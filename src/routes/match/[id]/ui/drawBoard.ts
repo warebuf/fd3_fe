@@ -387,8 +387,8 @@ function drawStackZone(ctx: CanvasRenderingContext2D, stack: StackItem[], cards:
             ctx.lineWidth = 1;
             roundRect(ctx, pos.x, pos.y, CARD_W, CARD_H, CARD_RADIUS);
             ctx.stroke();
-            ctx.fillStyle = TEXT_COLOR;
-            ctx.font = "12px sans-serif";
+            ctx.fillStyle = SUBTEXT_COLOR;
+            ctx.font = "italic 9px sans-serif";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText("Structure Ability", pos.x + CARD_W / 2, pos.y + CARD_H / 2);
