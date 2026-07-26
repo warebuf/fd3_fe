@@ -75,6 +75,32 @@ function roundRect( ctx: CanvasRenderingContext2D, x: number, y: number, w: numb
     ctx.closePath();
 }
 
+export function drawStructureDrawButton(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number): { x: number; y: number; w: number; h: number } | null {
+    const canDraw = state.Phase === Phase.Play && (state.Mana[userIndex] ?? 0) >= 100;
+
+    const x = 6;
+    const y = ctx.canvas.clientHeight - 30;
+    const w = 96;
+    const h = 18;
+
+    roundRect(ctx, x, y, w, h, 4);
+    ctx.fillStyle = canDraw ? "#2C2C2A" : "#222220";
+    ctx.fill();
+    ctx.strokeStyle = canDraw ? CARD_BORDER : "#3a3a38";
+    ctx.lineWidth = 0.5;
+    roundRect(ctx, x, y, w, h, 4);
+    ctx.stroke();
+
+    ctx.font = "10px sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = canDraw ? TEXT_COLOR : "#555";
+    ctx.fillText("Draw (100) [D]", x + 6, y + h / 2);
+    ctx.textBaseline = "top";
+
+    return canDraw ? { x, y, w, h } : null;
+}
+
 function drawCrosshair(ctx: CanvasRenderingContext2D, x: number, y: number) {
   const w = CARD_W;
   const h = CARD_H;

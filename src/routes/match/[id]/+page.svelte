@@ -11,7 +11,7 @@
     import { initGameState, cloneGameState, type GameState, Phase, Zone } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
-    import { drawBoard, drawPhaseAnnouncement } from './ui/drawBoard';
+    import { drawBoard, drawPhaseAnnouncement, drawStructureDrawButton } from './ui/drawBoard';
     import { calcBoardLayout, getClickedCard, getClickedSwitch, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
     import { PausePhase, isValidTarget, preselectableAbilities } from './engine/gameState';
 
@@ -40,6 +40,7 @@
     let handOrder: number[][] = [];
     let positions: coordinate[] = [];
     let stackCoords: coordinate[] = [];
+    let drawButtonRect: { x: number; y: number; w: number; h: number } | null = null;
 
     let phaseShown = -1;
     let phaseMessageStart = -Infinity;
@@ -85,6 +86,7 @@
         ctx.clearRect(0, 0, canvasEl.clientWidth, canvasEl.clientHeight);
         const currentWallTime = now + performance.timeOrigin + get(serverClockOffset);
         drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, positions, stackCoords, handOrder, clickedIndex, preselecting);
+        drawButtonRect = drawStructureDrawButton(ctx, interpolatedState, teamIndex);
         drawPhaseAnnouncement(ctx, authoritativeState.Phase, phaseMessageStart, now);
 
         // schedule next frame
@@ -112,6 +114,12 @@
             const r = canvasEl.getBoundingClientRect();
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
+
+            if (drawButtonRect && x >= drawButtonRect.x && x <= drawButtonRect.x + drawButtonRect.w
+                && y >= drawButtonRect.y && y <= drawButtonRect.y + drawButtonRect.h) {
+                ws?.send(JSON.stringify({ type: "structureDraw" }));
+                return;
+            }
 
             const fieldCardIDs = [...(interpolatedState?.Field[teamIndex] ?? []), ...(interpolatedState?.Continuous[teamIndex] ?? [])]
                 .filter(id => interpolatedState!.Cards[id].MaxCharges > 0 || interpolatedState!.Cards[id].Actives[0].Unlimited);
@@ -234,6 +242,10 @@
                 if (canPause || canUnpause) {
                     ws?.send(JSON.stringify({ type: "fullPause" }));
                 }
+            } else if (e.key === 'd' || e.key === 'D') {
+                if (interpolatedState?.Phase !== Phase.Play) return;
+                if ((interpolatedState?.Mana[teamIndex] ?? 0) < 100) return;
+                ws?.send(JSON.stringify({ type: "structureDraw" }));
             }
         };
 
