@@ -297,7 +297,7 @@ function drawChargePips(ctx: CanvasRenderingContext2D, x: number, y: number, car
     const pipGap = 4;
     const totalW = pipCount * pipR * 2 + (pipCount - 1) * pipGap;
     const pipStartX = x + (CARD_W - totalW) / 2 + pipR;
-    const pipY = y + CARD_H + 16;
+    const pipY = y + CARD_H / 2;
     for (let p = 0; p < pipCount; p++) {
         const cx = pipStartX + p * (pipR * 2 + pipGap);
         ctx.beginPath();
