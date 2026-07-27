@@ -4,8 +4,6 @@ import type { GameState } from "../engine/gameState"
 
 export function destroyCard(state: GameState, log: DestroyCardLog) {
 
-    let teamIndex = log.TeamIndex;
-    let cardIndex = log.CardIndex;
     let targetAll = log.TargetAll;
     let targetTeam = log.TargetTeamIndex;
     let targetCard = log.TargetCardIndex;
@@ -38,14 +36,5 @@ export function destroyCard(state: GameState, log: DestroyCardLog) {
             state.Grave[targetTeam].push(targetCard);
         }
     }
-
-    // tbh temporary hack to send casting card to grave, many ways to do this, including adding a field to log data structure, or creating a new effect entirely
-    if(state.Cards[cardIndex].Zone === 4) { // in TemporaryUnaccessible zone
-        state.Cards[cardIndex].Zone = 3; // send to grave
-        state.Grave[teamIndex].push(cardIndex);
-    } else {
-        console.log("quick hack in destroy card...");
-    }
-
 
 }
