@@ -1,5 +1,5 @@
 
-import { CARD_GAP, ZONE_H, CARD_W, CARD_H, ZONE_GAP, START_Y } from "./drawBoard"
+import { CARD_GAP, ZONE_H, CARD_W, CARD_H, ZONE_GAP, START_Y, SWITCH_H, SWITCH_Y_OFFSET, SWITCH_HIT_W } from "./drawBoard"
 
 export type coordinate = {
     x: number
@@ -129,19 +129,24 @@ export function getClickedCard(
     return -1;
 }
 
+const SWITCH_HIT_PAD = 2;
+
+// the switch now sits inside the card footer, so this box has to stay narrow enough
+// to leave the rest of the card clickable for selection
 export function getClickedSwitch(
     mouseX: number,
     mouseY: number,
     positions: coordinate[],
-    cardIDs: number[],
-    yMin: number = 4,
-    yMax: number = 26
+    cardIDs: number[]
 ): number {
+    const xMin = (CARD_W - SWITCH_HIT_W) / 2;
+    const yMin = CARD_H + SWITCH_Y_OFFSET - SWITCH_HIT_PAD;
+    const yMax = CARD_H + SWITCH_Y_OFFSET + SWITCH_H + SWITCH_HIT_PAD;
     for (const cardID of cardIDs) {
         const pos = positions[cardID];
         if (!pos) continue;
-        if (mouseX >= pos.x && mouseX <= pos.x + CARD_W &&
-            mouseY >= pos.y + CARD_H + yMin && mouseY <= pos.y + CARD_H + yMax) {
+        if (mouseX >= pos.x + xMin && mouseX <= pos.x + xMin + SWITCH_HIT_W &&
+            mouseY >= pos.y + yMin && mouseY <= pos.y + yMax) {
             return cardID;
         }
     }

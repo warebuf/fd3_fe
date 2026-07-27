@@ -118,6 +118,7 @@ export interface ActiveAbility {
     TargetFlags: number;
     Cons: [number, number, number];
     Cost: number;
+    CanAutoFire: boolean; // whether this ability may be toggled to auto-fire at all
     AutoAbility: boolean;
     Bonus: number;
 }

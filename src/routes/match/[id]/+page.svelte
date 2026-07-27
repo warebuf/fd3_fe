@@ -122,8 +122,8 @@
             }
 
             const fieldCardIDs = [...(interpolatedState?.Field[teamIndex] ?? []), ...(interpolatedState?.Continuous[teamIndex] ?? [])]
-                .filter(id => interpolatedState!.Cards[id].MaxCharges > 0 || interpolatedState!.Cards[id].Actives[0].Unlimited);
-            const fieldSwitchHit = getClickedSwitch(x, y, positions, fieldCardIDs, 20, 42);
+                .filter(id => interpolatedState!.Cards[id].Actives[0]?.CanAutoFire);
+            const fieldSwitchHit = getClickedSwitch(x, y, positions, fieldCardIDs);
             if (fieldSwitchHit >= 0 && (interpolatedState?.Phase === Phase.Play || interpolatedState?.Phase === Phase.Reveal)) {
                 ws?.send(JSON.stringify({ type: "toggleAutoAbility", CardIndex: fieldSwitchHit }));
                 return;
@@ -183,7 +183,7 @@
 
                 if (card.Zone === Zone.Hand) {
                     ws?.send(JSON.stringify({ type: card.AutoSummon > 0 ? "unautosummon" : "autosummon", CardIndex: clickedIndex }));
-                } else if (card.Zone === Zone.Field || card.Zone === Zone.Continuous) {
+                } else if ((card.Zone === Zone.Field || card.Zone === Zone.Continuous) && card.Actives[0]?.CanAutoFire) {
                     ws?.send(JSON.stringify({ type: "toggleAutoAbility", CardIndex: clickedIndex }));
                 } else {
                     return;

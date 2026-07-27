@@ -1,7 +1,7 @@
 
 import { get } from "svelte/store";
 import type { GameState, Card, StackItem } from "../engine/gameState"
-import { Phase, PausePhase, CardStatus, CardType, Archetype, Zone, getCardStatus } from "../engine/gameState"
+import { Phase, PausePhase, CardType, Archetype, Zone } from "../engine/gameState"
 import type { coordinate } from "./cardCoordinates"
 import { ping, serverClockOffset } from "../networking/ping";
 import { debugDump } from "../debuggers/debug";
@@ -17,7 +17,6 @@ const CARD_COLOR = "#2C2C2A";
 const CARD_BORDER = "#6E6D69";
 const TEXT_COLOR = "#D3D1C7";
 const SUBTEXT_COLOR = "#888780";
-const DIVIDER_COLOR = "#6F6E68";
 
 const CROSSHAIR_COLOR = "#D3D1C7";
 const CROSSHAIR_BORDER = "rgba(211,209,199,0.5)";
@@ -229,7 +228,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     }
     ctx.fillText(cardType, tx, ty);
 
-    const contentBot = y + CARD_H - P_PAD_H - 12 - P_PAD_H; // top of footer divider
+    const contentBot = y + CARD_H - P_PAD_H - 12 - P_PAD_H; // top of the footer band the Auto switch sits in
 
     // draw description
     const divY = ty + 8;
@@ -245,50 +244,6 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     if (abilityTimer) {
         drawTimerBar(ctx, x, y, abilityTimer.StartAtSimTime, abilityTimer.ExecuteAtSimTime, currentSimTime, "Ability");
     }
-
-    // determine status
-    let statusText: string;
-    let statusColor: string;
-    const status = getCardStatus(card);
-    if (status === CardStatus.Summoning) {
-        statusText = "Summoning";
-        statusColor = "#BFA43A";
-    } else if (status === CardStatus.UnitActive) {
-        statusText = "Active";
-        statusColor = "#3A8F5A";
-    } else {
-        statusText = "Available";
-        statusColor = "#3A8F5A";
-    }
-
-    // draw status at footer
-    const statusX = x + (CARD_W/2);
-    const statusY = y + CARD_H - P_PAD_H;
-    ctx.fillStyle = SUBTEXT_COLOR;
-    ctx.font = "9px sans-serif";
-    ctx.textAlign = "center"
-    ctx.textBaseline = "bottom";
-    ctx.fillText(statusText, statusX, statusY);
-
-    // draw status indicator
-    const textW = ctx.measureText(statusText).width;
-    const indicatorX = statusX - (textW/2) - 8;
-    const indicatorY = statusY - 6;
-    ctx.beginPath();
-    ctx.arc(indicatorX, indicatorY, 2, 0, Math.PI * 2);
-    ctx.fillStyle = statusColor;
-    ctx.fill();
-
-    // draw footer divider
-    const lineY = statusY - P_PAD_H - 12;
-    const lineX1 = x + P_PAD_W;
-    const lineX2 = x + CARD_W - P_PAD_W;
-    ctx.beginPath();
-    ctx.moveTo(lineX1, lineY);
-    ctx.lineTo(lineX2, lineY);
-    ctx.strokeStyle = DIVIDER_COLOR;
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
 
     drawStatBox(ctx, x + CARD_W - 4 - STAT_BOX_W, y + 4, card.Cost, "#0E1E30", "#7AADDF");
     if (card.Type === CardType.Unit) {
@@ -347,8 +302,8 @@ function drawContinuousZone(ctx: CanvasRenderingContext2D, cards: Card[], contin
         const card = cards[cardID];
         drawFieldCard(ctx, pos.x, pos.y, card, 0, false, selectedIndex === cardID);
         drawChargePips(ctx, pos.x, pos.y, card);
-        if (card.MaxCharges > 0) {
-            drawSwitch(ctx, pos.x, pos.y, card.Actives[0].AutoAbility, "Auto", 26);
+        if (card.Actives[0]?.CanAutoFire) { // spawned tokens arrive with an empty Actives until the next fullState
+            drawSwitch(ctx, pos.x, pos.y, card.Actives[0].AutoAbility, "Auto", SWITCH_Y_OFFSET);
         }
     }
 }
@@ -360,8 +315,8 @@ function drawField(ctx: CanvasRenderingContext2D, cards: Card[], field: number[]
         const card = cards[cardID];
         drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, false, selectedIndex === cardID);
         drawChargePips(ctx, pos.x, pos.y, card);
-        if (card.MaxCharges > 0) {
-            drawSwitch(ctx, pos.x, pos.y, card.Actives[0].AutoAbility, "Auto", 26);
+        if (card.Actives[0]?.CanAutoFire) { // spawned tokens arrive with an empty Actives until the next fullState
+            drawSwitch(ctx, pos.x, pos.y, card.Actives[0].AutoAbility, "Auto", SWITCH_Y_OFFSET);
         }
     }
 }
@@ -431,8 +386,14 @@ function drawStackPositionBadge(ctx: CanvasRenderingContext2D, x: number, y: num
 }
 
 const SWITCH_W = 28;
-const SWITCH_H = 12;
+export const SWITCH_H = 12;
 const SWITCH_R = 6;
+
+// the Auto switch sits in the card's footer band, where the status text used to be.
+// negative offset because drawSwitch measures from the card's bottom edge.
+export const SWITCH_Y_OFFSET = -(P_PAD_H + SWITCH_H);
+// the control is ~50px wide centred on the card; keep the hit box clear of the HP stat box
+export const SWITCH_HIT_W = 76;
 
 function drawSwitch(ctx: CanvasRenderingContext2D, x: number, y: number, on: boolean, label: string, yOffset: number = 10): void {
     ctx.save();
