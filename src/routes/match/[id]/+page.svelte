@@ -11,7 +11,7 @@
     import { initGameState, cloneGameState, type GameState, Phase, Zone } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
-    import { drawBoard, drawPhaseAnnouncement, drawStructureDrawButton } from './ui/drawBoard';
+    import { drawBoard, drawPhaseAnnouncement, drawStructureDrawButton, drawStructureAutoToggle } from './ui/drawBoard';
     import { calcBoardLayout, getClickedCard, getClickedSwitch, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
     import { PausePhase, isValidTarget, preselectableAbilities } from './engine/gameState';
 
@@ -41,6 +41,7 @@
     let positions: coordinate[] = [];
     let stackCoords: coordinate[] = [];
     let drawButtonRect: { x: number; y: number; w: number; h: number } | null = null;
+    let autoToggleRect: { x: number; y: number; w: number; h: number } | null = null;
 
     let phaseShown = -1;
     let phaseMessageStart = -Infinity;
@@ -87,6 +88,7 @@
         const currentWallTime = now + performance.timeOrigin + get(serverClockOffset);
         drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, positions, stackCoords, handOrder, clickedIndex, preselecting);
         drawButtonRect = drawStructureDrawButton(ctx, interpolatedState, teamIndex);
+        autoToggleRect = drawStructureAutoToggle(ctx, interpolatedState, teamIndex);
         drawPhaseAnnouncement(ctx, authoritativeState.Phase, phaseMessageStart, now);
 
         // schedule next frame
@@ -118,6 +120,12 @@
             if (drawButtonRect && x >= drawButtonRect.x && x <= drawButtonRect.x + drawButtonRect.w
                 && y >= drawButtonRect.y && y <= drawButtonRect.y + drawButtonRect.h) {
                 ws?.send(JSON.stringify({ type: "structureDraw" }));
+                return;
+            }
+
+            if (autoToggleRect && x >= autoToggleRect.x && x <= autoToggleRect.x + autoToggleRect.w
+                && y >= autoToggleRect.y && y <= autoToggleRect.y + autoToggleRect.h) {
+                ws?.send(JSON.stringify({ type: "toggleStructureAutoAbility" }));
                 return;
             }
 

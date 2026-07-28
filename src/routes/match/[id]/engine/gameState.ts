@@ -96,6 +96,7 @@ export const EffectType = {
 export interface Structure {
     DefNo: number;
     HP: number;
+    AutoAbility: boolean;
 }
 
 export const TickCondition = {

@@ -101,6 +101,34 @@ export function drawStructureDrawButton(ctx: CanvasRenderingContext2D, state: Ga
     return canDraw ? { x, y, w, h } : null;
 }
 
+export function drawStructureAutoToggle(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number): { x: number; y: number; w: number; h: number } {
+    const on = state.Structures[userIndex]?.AutoAbility ?? false;
+
+    const w = 96;
+    const h = 18;
+    const x = (ctx.canvas.clientWidth - w) / 2;
+    const playerHandCardY = START_Y + (ZONE_H + ZONE_GAP) * 4 + (ZONE_H - CARD_H) / 2;
+    const drawButtonY = playerHandCardY - 18 - 6;
+    const y = drawButtonY - h - 4;
+
+    roundRect(ctx, x, y, w, h, 4);
+    ctx.fillStyle = on ? "#24361F" : "#2C2C2A";
+    ctx.fill();
+    ctx.strokeStyle = on ? "#3A8F5A" : CARD_BORDER;
+    ctx.lineWidth = 0.5;
+    roundRect(ctx, x, y, w, h, 4);
+    ctx.stroke();
+
+    ctx.font = "10px sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = on ? "#6abf6a" : TEXT_COLOR;
+    ctx.fillText(`Auto Draw: ${on ? "ON" : "OFF"}`, x + 6, y + h / 2);
+    ctx.textBaseline = "top";
+
+    return { x, y, w, h };
+}
+
 function drawCrosshair(ctx: CanvasRenderingContext2D, x: number, y: number) {
   const w = CARD_W;
   const h = CARD_H;
