@@ -219,6 +219,7 @@ export interface StackItem {
     Type: number;
     CardIndex: number;
     ActiveIndex: number; // which Actives[] slot this item's activation came from, -1 if not an Active ability
+    TeamIndex: number;
     StartAtActiveTime: number;
     PopAtActiveTime: number;
     ExecuteAtActiveTime: number;
