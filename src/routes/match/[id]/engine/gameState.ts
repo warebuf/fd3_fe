@@ -66,6 +66,7 @@ export const StackItemType = {
     ContinuousAbility: 3,
     Summon: 4,
     ContinuousResolution: 5,
+    StructureAbility: 6,
 } as const;
 
 export const CardType = {
@@ -76,21 +77,20 @@ export const CardType = {
     Continuous: 4,
 } as const;
 
+// mirrors engine/state.EffectType
 export const EffectType = {
     Attack:      1,
     Heal:        2,
     Draw:        3,
     Mana:        4,
-    Silence:     5,
-    GrantAbility: 6,
-    Destroy:     7,
-    Counter:     8,
-    GainCharge:  9,
-    Sacrifice:   10,
-    Consume:     11,
-    SelfDestruct: 12,
-    ConvertToTokens: 13,
-    AddCharges: 14,
+    Destroy:     5,
+    Counter:     6,
+    ChargeSelf:  7,
+    Sacrifice:   8,
+    Consume:     9,
+    SelfDestruct: 10,
+    ConvertToTokens: 11,
+    ChargeTarget: 12,
 } as const;
 
 export interface Structure {
