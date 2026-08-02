@@ -132,7 +132,7 @@
             const fieldCardIDs = [...(interpolatedState?.Field[teamIndex] ?? []), ...(interpolatedState?.Continuous[teamIndex] ?? [])]
                 .filter(id => interpolatedState!.Cards[id].Actives[0]?.CanAutoFire);
             const fieldSwitchHit = getClickedSwitch(x, y, positions, fieldCardIDs);
-            if (fieldSwitchHit >= 0 && (interpolatedState?.Phase === Phase.Play || interpolatedState?.Phase === Phase.Reveal)) {
+            if (fieldSwitchHit >= 0 && interpolatedState?.Phase === Phase.Play) {
                 ws?.send(JSON.stringify({ type: "toggleAutoAbility", CardIndex: fieldSwitchHit }));
                 return;
             }
@@ -156,13 +156,7 @@
                 e.preventDefault(); // prevent page scroll
                 if (clickedIndex !== -1) {
                     const card = interpolatedState?.Cards[clickedIndex];
-                    if (interpolatedState?.Phase === Phase.BoardSetup) {
-                        if (card?.StageOrder > 0) {
-                            ws?.send(JSON.stringify({ type: "unstage", CardIndex: clickedIndex }));
-                        } else {
-                            ws?.send(JSON.stringify({ type: "stage", CardIndex: clickedIndex }));
-                        }
-                    } else if (interpolatedState?.Phase === Phase.Play || interpolatedState?.Phase === Phase.Reveal) {
+                    if (interpolatedState?.Phase === Phase.Play) {
                         if (card?.Zone === 5 && card.Team === teamIndex) { // ZoneContinuous
                             ws?.send(JSON.stringify({ type: "active", CardIndex: clickedIndex }));
                         } else if (card?.AutoSummon > 0) {
@@ -173,18 +167,10 @@
                     }
                     clickedIndex = -1;
                 }
-            } else if (e.key === 'r' || e.key === 'R') {
-                if (interpolatedState?.Phase === Phase.BoardSetup) {
-                    if (interpolatedState?.Ready[teamIndex]) {
-                        ws?.send(JSON.stringify({ type: "unready" }));
-                    } else {
-                        ws?.send(JSON.stringify({ type: "ready" }));
-                    }
-                }
             } else if (e.key === 'a' || e.key === 'A') {
 
                 if (clickedIndex === -1) return;
-                if (interpolatedState?.Phase !== Phase.Play && interpolatedState?.Phase !== Phase.Reveal) return;
+                if (interpolatedState?.Phase !== Phase.Play) return;
 
                 const card = interpolatedState.Cards[clickedIndex];
                 if (card?.Team !== teamIndex) return;
@@ -201,8 +187,8 @@
             } else if (e.key === 'i' || e.key === 'I') {
                 
                 if (clickedIndex === -1) return;
-                if (interpolatedState?.Phase !== Phase.Play && interpolatedState?.Phase !== Phase.Reveal) return;
-                
+                if (interpolatedState?.Phase !== Phase.Play) return;
+
                 const card = interpolatedState.Cards[clickedIndex];
                 if (card?.Zone !== 1 || card.Team !== teamIndex) return; // ZoneHand
                 
@@ -307,30 +293,9 @@
 
 <div class="wrap">
     <canvas bind:this={canvasEl}></canvas>
-    {#if interpolatedState?.Phase === Phase.BoardSetup}
-        <div class="ready-overlay">
-            <button
-                class="ready-btn"
-                on:click={() => {
-                    if (interpolatedState?.Ready[teamIndex]) {
-                        ws?.send(JSON.stringify({ type: "unready" }));
-                    } else {
-                        ws?.send(JSON.stringify({ type: "ready" }));
-                    }
-                }}
-            >
-                {#if interpolatedState?.Ready[teamIndex]}
-                    <span class="ready-icon">✓</span> Unready (r)
-                {:else}
-                    <span class="ready-icon">✓</span> Ready (r)
-                {/if}
-            </button>
-        </div>
-    {/if}
     {#if interpolatedState}
         {@const canPause   = interpolatedState.TimeBank[teamIndex] > 0 && interpolatedState.Phase >= Phase.Draw}
         {@const canUnpause = interpolatedState.PausePhase === PausePhase.FullPause   && interpolatedState.TeamPaused === teamIndex}
-        {@const spaceLabel = interpolatedState.Phase === Phase.BoardSetup ? 'Stage' : 'Instant Play, if not Auto Play'}
         <div class="controls">
             <button class="ctrl-btn dimmed" disabled>
                 <span class="key">I</span>
@@ -342,11 +307,11 @@
             </button>
             <button
                 class="ctrl-btn"
-                class:dimmed={interpolatedState.Phase !== Phase.BoardSetup}
-                disabled={interpolatedState.Phase !== Phase.BoardSetup}
+                class:dimmed={interpolatedState.Phase !== Phase.Play}
+                disabled={interpolatedState.Phase !== Phase.Play}
             >
                 <span class="key">Space</span>
-                {spaceLabel}
+                Instant Play, if not Auto Play
             </button>
             <button
                 class="ctrl-btn"
@@ -378,50 +343,6 @@
         height: 100%;
         display: block;
         background: #1a1a1a;
-    }
-
-    .ready-overlay {
-        position: absolute;
-        top: 45%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-    }
-
-    .ready-btn {
-        pointer-events: all;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        padding: 5px 12px;
-        background: #1e1e1c;
-        border: 1px solid #444442;
-        border-radius: 4px;
-        color: #aaa;
-        font-size: 11px;
-        cursor: pointer;
-        transition: border-color 0.15s, color 0.15s;
-        white-space: nowrap;
-    }
-
-    .ready-icon {
-        color: #6abf6a;
-        font-size: 11px;
-    }
-
-    .ready-btn:hover:not(:disabled) {
-        border-color: #777;
-        color: #D3D1C7;
-    }
-
-    .ready-btn:disabled {
-        color: #444;
-        cursor: default;
-        border-color: #2a2a28;
-    }
-
-    .ready-btn:disabled .ready-icon {
-        color: #333;
     }
 
     .controls {

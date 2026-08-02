@@ -20,7 +20,6 @@ export function spawnToken(state: GameState, log: SpawnTokenLog) {
         MaxCharges: 0,
         PendingCharges: 0,
 
-        StageOrder: 0,
         AutoSummon: 0,
         OnTick: [],
         Actives: [],

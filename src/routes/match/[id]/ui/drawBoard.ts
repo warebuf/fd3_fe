@@ -280,14 +280,14 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
 
     if (selected) drawCrosshair(ctx, x, y);
 
-    const badgeNum = card.StageOrder > 0 ? card.StageOrder : card.AutoSummon > 0 ? card.AutoSummon : 0;
+    const badgeNum = card.AutoSummon > 0 ? card.AutoSummon : 0;
     if (!faceDown && badgeNum > 0) {
         const badgeR = 7;
         const badgeX = x;
         const badgeY = y;
         ctx.beginPath();
         ctx.arc(badgeX, badgeY, badgeR, 0, Math.PI * 2);
-        ctx.fillStyle = card.StageOrder > 0 ? "#F5C518" : "#6abf6a";
+        ctx.fillStyle = "#6abf6a";
         ctx.fill();
         ctx.fillStyle = "#1a1a1a";
         ctx.font = "bold 7px sans-serif";
@@ -574,12 +574,6 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, currentA
     ctx.fillText(`Graveyard ${state.Grave[opponentIndex].length}`, x, y);
     y += LINE_H;
     ctx.fillText(`Time Bank ${Math.floor((state.TimeBank[opponentIndex] ?? 0) / 1000)}`, x, y);
-    if (state.Phase === Phase.BoardSetup) {
-        y += LINE_H;
-        const oppReady = state.Ready[opponentIndex] ?? false;
-        ctx.fillStyle = oppReady ? "#3A8F5A" : SUBTEXT_COLOR;
-        ctx.fillText(oppReady ? "Ready" : "Not ready", x, y);
-    }
     y += LINE_H * 2;
 
     ctx.fillStyle = SUBTEXT_COLOR;
@@ -597,19 +591,11 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, currentA
     ctx.fillText(`Graveyard ${state.Grave[userIndex].length}`, x, y);
     y += LINE_H;
     ctx.fillText(`Time Bank ${Math.floor((state.TimeBank[userIndex] ?? 0) / 1000)}`, x, y);
-    if (state.Phase === Phase.BoardSetup) {
-        y += LINE_H;
-        const userReady = state.Ready[userIndex] ?? false;
-        ctx.fillStyle = userReady ? "#3A8F5A" : SUBTEXT_COLOR;
-        ctx.fillText(userReady ? "Ready" : "Not ready", x, y);
-    }
 }
 
 const phaseLabels: Record<number, string> = {
     1: 'Draw Phase',
-    2: 'Setup Phase',
-    3: 'Reveal Phase',
-    4: 'Play Phase',
+    2: 'Play Phase',
 };
 export const PHASE_MESSAGE_DURATION = 2500;
 

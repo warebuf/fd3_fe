@@ -44,10 +44,8 @@ export const PausePhase = {
 export const Phase = {
     PreMatch: 0,
     Draw: 1,
-    BoardSetup: 2,
-    Reveal: 3,
-    Play: 4,
-    GameEnd: 5,
+    Play: 2,
+    GameEnd: 3,
 } as const;
 
 export const Zone = {
@@ -201,7 +199,6 @@ export interface Card {
     MaxCharges: number;
     PendingCharges: number; // activations currently in flight on the stack across all Active slots, not yet resolved
 
-    StageOrder: number;
     AutoSummon: number;
     OnTick: TickAbility[];
     Actives: ActiveAbility[];
