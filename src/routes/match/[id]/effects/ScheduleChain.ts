@@ -13,4 +13,7 @@ export function addStack(state: GameState, log: AddStackLog) {
         ExecuteAtActiveTime: log.ExecuteAtActiveTime,
         Effects: log.Effects,
     });
+
+    // mirrors the backend: every successful push flips priority to the opponent of the acting team
+    state.Priority = 1 - log.TeamIndex;
 }

@@ -42,6 +42,8 @@
     let stackCoords: coordinate[] = [];
     let drawButtonRect: { x: number; y: number; w: number; h: number } | null = null;
     let autoToggleRect: { x: number; y: number; w: number; h: number } | null = null;
+    let pendingInstantCardIndex: number = -1; // hand card locally submitted as a hidden reaction this window, cleared once the window resolves
+    let pendingInstantWindowStart: number = -1;
 
     let phaseShown = -1;
     let phaseMessageStart = -Infinity;
@@ -57,6 +59,21 @@
 
         const stackItems = (interpolatedState?.ReactionStack ?? []).map(item => ({ cardID: item.CardIndex, isCard: interpolatedState?.Cards[item.CardIndex]?.Zone === Zone.Stack }));
         ({ positions, stackCoords } = calcBoardLayout(ctx.canvas.clientWidth, ctx.canvas.clientHeight, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], stackItems, interpolatedState?.Continuous ?? [[], []]));
+    }
+
+    function sendInstant(cardIndex: number) {
+        if (!interpolatedState) return;
+        ws?.send(JSON.stringify({ type: "instant", CardIndex: cardIndex }));
+
+        // a window is already open: this submission is held hidden by the server until the
+        // window resolves, so there's no log to react to. track it locally so we can badge it.
+        if (interpolatedState.PausePhase === PausePhase.SimPause) {
+            const top = interpolatedState.ReactionStack[interpolatedState.ReactionStack.length - 1];
+            if (top) {
+                pendingInstantCardIndex = cardIndex;
+                pendingInstantWindowStart = top.StartAtActiveTime;
+            }
+        }
     }
 
     function loop(now: number) { // now is current time relative to page load
@@ -75,6 +92,15 @@
             const stackItems = interpolatedState.ReactionStack.map(item => ({ cardID: item.CardIndex, isCard: interpolatedState.Cards[item.CardIndex]?.Zone === Zone.Stack }));
             ({ positions, stackCoords } = calcBoardLayout(ctx.canvas.clientWidth, ctx.canvas.clientHeight, teamIndex, handOrder, interpolatedState.Field, stackItems, interpolatedState.Continuous ?? [[], []]));
 
+            // the window this reaction was submitted for has resolved (revealed or not); clear the badge
+            if (pendingInstantCardIndex !== -1) {
+                const top = interpolatedState.ReactionStack[interpolatedState.ReactionStack.length - 1];
+                if (!top || top.StartAtActiveTime !== pendingInstantWindowStart) {
+                    pendingInstantCardIndex = -1;
+                    pendingInstantWindowStart = -1;
+                }
+            }
+
             if (authoritativeState.Phase !== phaseShown) {
                 if (phaseShown !== -1) {
                     phaseMessageStart = now;
@@ -86,7 +112,7 @@
         // draw
         ctx.clearRect(0, 0, canvasEl.clientWidth, canvasEl.clientHeight);
         const currentWallTime = now + performance.timeOrigin + get(serverClockOffset);
-        drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, positions, stackCoords, handOrder, clickedIndex, preselecting);
+        drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, positions, stackCoords, handOrder, clickedIndex, preselecting, pendingInstantCardIndex);
         drawButtonRect = drawStructureDrawButton(ctx, interpolatedState, teamIndex);
         autoToggleRect = drawStructureAutoToggle(ctx, interpolatedState, teamIndex);
         drawPhaseAnnouncement(ctx, authoritativeState.Phase, phaseMessageStart, now);
@@ -191,8 +217,8 @@
 
                 const card = interpolatedState.Cards[clickedIndex];
                 if (card?.Zone !== 1 || card.Team !== teamIndex) return; // ZoneHand
-                
-                ws?.send(JSON.stringify({ type: "instant", CardIndex: clickedIndex }));
+
+                sendInstant(clickedIndex);
                 clickedIndex = -1;
 
             } else if (e.key === 't' || e.key === 'T') {

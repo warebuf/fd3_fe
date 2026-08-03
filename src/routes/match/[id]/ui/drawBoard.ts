@@ -194,7 +194,7 @@ function drawWrappedText(ctx: CanvasRenderingContext2D, text: string, x: number,
     return currentY;
 }
 
-function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, currentSimTime: number, faceDown?: boolean, selected?: boolean, showAbilityTimer: boolean = true ) {
+function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, currentSimTime: number, faceDown?: boolean, selected?: boolean, showAbilityTimer: boolean = true, pendingInstant?: boolean ) {
     ctx.save();
 
     // adjust for blurry half pixel borders
@@ -294,6 +294,26 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(String(badgeNum), badgeX, badgeY);
+    }
+
+    // hidden reaction submitted this window, awaiting reveal (client-local; not confirmed by the server)
+    if (!faceDown && pendingInstant) {
+        const boxW = 42;
+        const boxH = 12;
+        const boxX = x + CARD_W - boxW - 2;
+        const boxY = y + 2;
+        roundRect(ctx, boxX, boxY, boxW, boxH, 3);
+        ctx.fillStyle = "#3a2a00";
+        ctx.fill();
+        ctx.strokeStyle = "#F5A623";
+        ctx.lineWidth = 0.5;
+        roundRect(ctx, boxX, boxY, boxW, boxH, 3);
+        ctx.stroke();
+        ctx.fillStyle = "#F5A623";
+        ctx.font = "bold 7px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("Instant", boxX + boxW / 2, boxY + boxH / 2);
     }
 
     ctx.restore();
@@ -457,12 +477,12 @@ function drawSwitch(ctx: CanvasRenderingContext2D, x: number, y: number, on: boo
     ctx.restore();
 }
 
-function drawHand(ctx: CanvasRenderingContext2D, handOrder: number[], cards: Card[], positions: coordinate[], faceDown: boolean, selectedIndex: number, currentSimTime: number): void {
+function drawHand(ctx: CanvasRenderingContext2D, handOrder: number[], cards: Card[], positions: coordinate[], faceDown: boolean, selectedIndex: number, currentSimTime: number, pendingInstantCardIndex: number = -1): void {
     for (const cardID of handOrder) {
         const pos = positions[cardID];
         if (!pos) continue;
         const card = cards[cardID];
-        drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, faceDown, selectedIndex === cardID);
+        drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, faceDown, selectedIndex === cardID, true, cardID === pendingInstantCardIndex);
     }
 }
 
@@ -535,6 +555,50 @@ function drawTimerBar( ctx: CanvasRenderingContext2D, x: number, y: number, star
     ctx.strokeStyle = "#ffffff";
     ctx.lineWidth = 1;
     ctx.strokeRect(Math.round(barX) + 0.5, Math.round(barY) + 0.5, BAR_W, BAR_H);
+}
+
+function drawPriorityIndicator(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number) {
+    const canvasW = ctx.canvas.clientWidth;
+
+    const isYou = state.Priority === userIndex;
+    const oppHandCardY    = START_Y + (ZONE_H - CARD_H) / 2;
+    const playerHandCardY = START_Y + (ZONE_H + ZONE_GAP) * 4 + (ZONE_H - CARD_H) / 2;
+
+    const x = canvasW / 2 + 2.5 * CARD_W;
+    const w = 26;
+    const h = 16;
+    const GAP = 10; // clearance between the triangle's point and the hand cards it points at
+
+    // sit toward the board's center relative to whichever hand row holds priority: above the
+    // player's hand (bottom of screen, pointing down into it), below the opponent's hand
+    // (top of screen, pointing up into it)
+    let apexY: number, baseY: number;
+    if (isYou) {
+        apexY = playerHandCardY - GAP;
+        baseY = apexY - h;
+    } else {
+        apexY = oppHandCardY + CARD_H + GAP;
+        baseY = apexY + h;
+    }
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x, apexY);
+    ctx.lineTo(x - w / 2, baseY);
+    ctx.lineTo(x + w / 2, baseY);
+    ctx.closePath();
+    ctx.fillStyle = "#2C2C2A";
+    ctx.fill();
+    ctx.strokeStyle = TEXT_COLOR;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.fillStyle = TEXT_COLOR;
+    ctx.font = "bold 7px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("PRIO", x, baseY + (isYou ? 6 : -6));
+    ctx.restore();
 }
 
 function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, currentActiveTime: number, opponentIndex: number, userIndex: number) {
@@ -693,7 +757,7 @@ function drawPreselectArrow(ctx: CanvasRenderingContext2D, sx: number, sy: numbe
     ctx.restore();
 }
 
-export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, positions: coordinate[], stackCoords: coordinate[], handOrder: number[][], selectedIndex: number, preselecting: number) {
+export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, positions: coordinate[], stackCoords: coordinate[], handOrder: number[][], selectedIndex: number, preselecting: number, pendingInstantCardIndex: number = -1) {
     const opponentIndex = userIndex === 0 ? 1 : 0;
     if (state.Phase === Phase.GameEnd) currentWallTime = state.WallTimestamp;
 
@@ -713,13 +777,14 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     drawField(ctx, state.Cards, state.Field[userIndex], positions, currentSimTime, selectedIndex);
 
     // Player hand
-    drawHand(ctx, handOrder[userIndex] ?? [], state.Cards, positions, false, selectedIndex, currentSimTime);
+    drawHand(ctx, handOrder[userIndex] ?? [], state.Cards, positions, false, selectedIndex, currentSimTime, pendingInstantCardIndex);
 
     // Continuous zones (columns on left/right)
     drawContinuousZone(ctx, state.Cards, state.Continuous?.[userIndex] ?? [], positions, selectedIndex);
     drawContinuousZone(ctx, state.Cards, state.Continuous?.[opponentIndex] ?? [], positions, selectedIndex);
 
     drawInfoPanel(ctx, state, currentActiveTime, opponentIndex, userIndex);
+    drawPriorityIndicator(ctx, state, userIndex);
 
     if (state.Phase === Phase.GameEnd) drawGameOver(ctx, state, userIndex);
     if (state.PausePhase === PausePhase.FullPause) drawPause(ctx, state, userIndex);

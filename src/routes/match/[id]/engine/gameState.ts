@@ -28,6 +28,8 @@ export type GameState = {
 
     ReactionStack: StackItem[];
 
+    Priority: number; // team index with priority to react during an open window
+
     Mana: number[];
     Structures: Structure[];
     Ready: boolean[];
@@ -248,6 +250,8 @@ export function initGameState(): GameState {
 
         ReactionStack: [],
 
+        Priority: 0,
+
         Mana: [],
         Structures: [],
         Ready: [false, false],
@@ -284,6 +288,8 @@ export function cloneGameState(src: GameState): GameState {
         Continuous: src.Continuous.map(c => [...c]),
 
         ReactionStack: src.ReactionStack.map(item => ({ ...item, Effects: [...item.Effects] })),
+
+        Priority: src.Priority,
 
         Mana: [...src.Mana],
         Structures: src.Structures.map(s => ({ ...s })),
