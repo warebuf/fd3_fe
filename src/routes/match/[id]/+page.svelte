@@ -11,7 +11,7 @@
     import { initGameState, cloneGameState, type GameState, Phase, Zone } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
-    import { drawBoard, drawPhaseAnnouncement, drawStructureDrawButton, drawStructureAutoToggle } from './ui/drawBoard';
+    import { drawBoard, drawPhaseAnnouncement, drawStructureDrawButton, drawStructureAutoToggle, drawReadyButton } from './ui/drawBoard';
     import { calcBoardLayout, getClickedCard, getClickedSwitch, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
     import { PausePhase, isValidTarget, preselectableAbilities } from './engine/gameState';
 
@@ -42,6 +42,7 @@
     let stackCoords: coordinate[] = [];
     let drawButtonRect: { x: number; y: number; w: number; h: number } | null = null;
     let autoToggleRect: { x: number; y: number; w: number; h: number } | null = null;
+    let readyButtonRect: { x: number; y: number; w: number; h: number } | null = null;
     let pendingInstantCardIndex: number = -1; // hand card locally submitted as a hidden reaction this window, cleared once the window resolves
     let pendingInstantWindowStart: number = -1;
 
@@ -115,6 +116,7 @@
         drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, positions, stackCoords, handOrder, clickedIndex, preselecting, pendingInstantCardIndex);
         drawButtonRect = drawStructureDrawButton(ctx, interpolatedState, teamIndex);
         autoToggleRect = drawStructureAutoToggle(ctx, interpolatedState, teamIndex);
+        readyButtonRect = drawReadyButton(ctx, interpolatedState, teamIndex);
         drawPhaseAnnouncement(ctx, authoritativeState.Phase, phaseMessageStart, now);
 
         // schedule next frame
@@ -152,6 +154,12 @@
             if (autoToggleRect && x >= autoToggleRect.x && x <= autoToggleRect.x + autoToggleRect.w
                 && y >= autoToggleRect.y && y <= autoToggleRect.y + autoToggleRect.h) {
                 ws?.send(JSON.stringify({ type: "toggleStructureAutoAbility" }));
+                return;
+            }
+
+            if (readyButtonRect && x >= readyButtonRect.x && x <= readyButtonRect.x + readyButtonRect.w
+                && y >= readyButtonRect.y && y <= readyButtonRect.y + readyButtonRect.h) {
+                ws?.send(JSON.stringify({ type: interpolatedState?.Ready[teamIndex] ? "unready" : "ready" }));
                 return;
             }
 
