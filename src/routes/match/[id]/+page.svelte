@@ -182,10 +182,12 @@
                 e.preventDefault(); // prevent page scroll
                 if (clickedIndex !== -1) {
                     const card = interpolatedState?.Cards[clickedIndex];
-                    if (interpolatedState?.Phase === Phase.Play) {
-                        if (card?.Zone === 5 && card.Team === teamIndex) { // ZoneContinuous
-                            ws?.send(JSON.stringify({ type: "active", CardIndex: clickedIndex }));
-                        } else if (card?.AutoSummon > 0) {
+                    const isPlay = interpolatedState?.Phase === Phase.Play;
+                    const isStaging = isPlay || interpolatedState?.Phase === Phase.Draw;
+                    if (isPlay && card?.Zone === Zone.Continuous && card.Team === teamIndex) {
+                        ws?.send(JSON.stringify({ type: "active", CardIndex: clickedIndex }));
+                    } else if (isStaging) {
+                        if (card?.AutoSummon > 0) {
                             ws?.send(JSON.stringify({ type: "unautosummon", CardIndex: clickedIndex }));
                         } else {
                             ws?.send(JSON.stringify({ type: "autosummon", CardIndex: clickedIndex }));
@@ -196,14 +198,17 @@
             } else if (e.key === 'a' || e.key === 'A') {
 
                 if (clickedIndex === -1) return;
-                if (interpolatedState?.Phase !== Phase.Play) return;
+                if (!interpolatedState) return;
+                if (interpolatedState.Phase !== Phase.Play && interpolatedState.Phase !== Phase.Draw) return;
 
                 const card = interpolatedState.Cards[clickedIndex];
                 if (card?.Team !== teamIndex) return;
 
+                const isPlay = interpolatedState.Phase === Phase.Play;
+
                 if (card.Zone === Zone.Hand) {
                     ws?.send(JSON.stringify({ type: card.AutoSummon > 0 ? "unautosummon" : "autosummon", CardIndex: clickedIndex }));
-                } else if ((card.Zone === Zone.Field || card.Zone === Zone.Continuous) && card.Actives[0]?.CanAutoFire) {
+                } else if (isPlay && (card.Zone === Zone.Field || card.Zone === Zone.Continuous) && card.Actives[0]?.CanAutoFire) {
                     ws?.send(JSON.stringify({ type: "toggleAutoAbility", CardIndex: clickedIndex }));
                 } else {
                     return;
