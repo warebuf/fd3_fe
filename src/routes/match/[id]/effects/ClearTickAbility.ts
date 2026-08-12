@@ -1,7 +1,7 @@
 import type { GameState } from "../engine/gameState";
-import type { ClearAbilityTimerLog } from "../engine/logs";
+import type { ClearTickAbilityLog } from "../engine/logs";
 
-export function clearAbilityTimer(state: GameState, log: ClearAbilityTimerLog) {
+export function clearTickAbility(state: GameState, log: ClearTickAbilityLog) {
     state.Cards[log.CardIndex].OnTick[log.AbilityIndex] = {
         Active: false,
         Condition: 0,

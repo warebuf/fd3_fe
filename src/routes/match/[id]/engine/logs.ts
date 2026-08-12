@@ -16,8 +16,8 @@ export type UnreadyLog            = Timestamp & { Type: 12; TeamIndex: number; }
 export type AutoSummonLog         = Timestamp & { Type: 13; TeamIndex: number; CardIndex: number; AutoSummonPriority: number; }
 export type PauseLog              = Timestamp & { Type: 14; PausePhase: number; TeamIndex: number; TimeStart: number; TimeRemaining: number; }
 export type UnpauseLog            = Timestamp & { Type: 15; TimeRemaining: number; }
-export type AddAbilityTimerLog    = Timestamp & { Type: 16; CardIndex: number; AbilityIndex: number; Condition: number; StartAtSimTime: number; ExecuteAtSimTime: number; }
-export type ClearAbilityTimerLog  = Timestamp & { Type: 17; CardIndex: number; AbilityIndex: number; }
+export type AddTickAbilityLog     = Timestamp & { Type: 16; CardIndex: number; AbilityIndex: number; Condition: number; StartAtSimTime: number; ExecuteAtSimTime: number; }
+export type ClearTickAbilityLog   = Timestamp & { Type: 17; CardIndex: number; AbilityIndex: number; }
 export type GameOverLog           = Timestamp & { Type: 18; Winner: number; }
 export type CounterChainLog       = Timestamp & { Type: 19; SourceCardIndex: number; TargetCardIndex: number; }
 export type RefreshChainLog       = Timestamp & { Type: 20; CardIndex: number; StartAtActiveTime: number; PopAtActiveTime: number; ExecuteAtActiveTime: number; }
@@ -48,8 +48,8 @@ export type EventLog =
     | AutoSummonLog
     | PauseLog
     | UnpauseLog
-    | AddAbilityTimerLog
-    | ClearAbilityTimerLog
+    | AddTickAbilityLog
+    | ClearTickAbilityLog
     | GameOverLog
     | CounterChainLog
     | RefreshChainLog
