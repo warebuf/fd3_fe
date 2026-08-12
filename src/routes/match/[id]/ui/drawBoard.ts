@@ -292,11 +292,13 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     if (card.Archetype === Archetype.Tree) {
         cardType += " · Tree";
     }
-    cardType += " · " + chainEntryLabel(card.ChainEntry);
+    if (card.ChainEntry !== ChainEntry.Dual) {
+        cardType += " · " + chainEntryLabel(card.ChainEntry);
+    }
     ctx.fillText(cardType, tx, ty);
 
     // the card's Active carries its own entry label, only real ability slots have Target set
-    const active = card.Actives?.find(a => a.Target === -1);
+    const active = card.Actives?.find(a => a.Target === -1 && a.ChainEntry !== ChainEntry.Dual);
     if (active) {
         ty += 11;
         ctx.fillText("Use · " + chainEntryLabel(active.ChainEntry), tx, ty);
