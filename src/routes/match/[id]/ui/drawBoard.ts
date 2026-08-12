@@ -1,7 +1,7 @@
 
 import { get } from "svelte/store";
 import type { GameState, Card, ChainItem } from "../engine/gameState"
-import { Phase, PausePhase, CardType, Archetype, Zone } from "../engine/gameState"
+import { Phase, PausePhase, CardType, Archetype, Zone, ChainEntry } from "../engine/gameState"
 import type { coordinate } from "./cardCoordinates"
 import { ping, serverClockOffset } from "../networking/ping";
 import { debugDump } from "../debuggers/debug";
@@ -292,7 +292,15 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     if (card.Archetype === Archetype.Tree) {
         cardType += " · Tree";
     }
+    cardType += " · " + chainEntryLabel(card.ChainEntry);
     ctx.fillText(cardType, tx, ty);
+
+    // the card's Active carries its own entry label, only real ability slots have Target set
+    const active = card.Actives?.find(a => a.Target === -1);
+    if (active) {
+        ty += 11;
+        ctx.fillText("Use · " + chainEntryLabel(active.ChainEntry), tx, ty);
+    }
 
     const contentBot = y + CARD_H - P_PAD_H - 12 - P_PAD_H; // top of the footer band the Auto switch sits in
 
@@ -355,6 +363,12 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     }
 
     ctx.restore();
+}
+
+function chainEntryLabel(entry: number): string {
+    if (entry === ChainEntry.Action) return "Action";
+    if (entry === ChainEntry.Reaction) return "Reaction";
+    return "Dual";
 }
 
 function drawChargePips(ctx: CanvasRenderingContext2D, x: number, y: number, card: Card): void {

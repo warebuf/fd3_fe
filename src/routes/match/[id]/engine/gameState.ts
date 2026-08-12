@@ -59,6 +59,13 @@ export const Zone = {
     Continuous: 5,
 } as const;
 
+// mirrors engine/state.ChainEntry
+export const ChainEntry = {
+    Dual: 0,
+    Action: 1,
+    Reaction: 2,
+} as const;
+
 // mirrors engine/state.ChainType
 export const ChainItemType = {
     UnitAbility: 1,
@@ -121,6 +128,7 @@ export interface ActiveAbility {
     Cost: number;
     CanAutoFire: boolean; // whether this ability may be toggled to auto-fire at all
     AutoAbility: boolean;
+    ChainEntry: number;
     Bonus: number;
 }
 
@@ -195,6 +203,7 @@ export interface Card {
     Type: number;
     Zone: number;
     IsToken: boolean;
+    ChainEntry: number;
 
     // charge related - shared pool for this card; any ability slot may gain or spend from it
     Charges: number;

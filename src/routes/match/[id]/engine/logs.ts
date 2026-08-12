@@ -28,7 +28,7 @@ export type AddChargeLog          = Timestamp & { Type: 24; TeamIndex: number; C
 export type PreselectLog          = Timestamp & { Type: 25; TeamIndex: number; CardIndex: number; AbilityIndex: number; TargetCardIndex: number; }
 export type ToggleAutoAbilityLog  = Timestamp & { Type: 26; TeamIndex: number; CardIndex: number; AbilityIndex: number; On: boolean; }
 export type ConsumeLog            = Timestamp & { Type: 27; SourceCardIndex: number; TargetCardIndex: number; AbilityIndex: number; Bonus: number; }
-export type SpawnTokenLog         = Timestamp & { Type: 28; TeamIndex: number; CardIndex: number; DefNo: number; Name: string; Description: string; HP: number; Cost: number; Archetype: number; CardType: number; IsToken: boolean; }
+export type SpawnTokenLog         = Timestamp & { Type: 28; TeamIndex: number; CardIndex: number; DefNo: number; Name: string; Description: string; HP: number; Cost: number; Archetype: number; CardType: number; IsToken: boolean; ChainEntry: number; }
 export type ToggleStructureAutoAbilityLog = Timestamp & { Type: 29; TeamIndex: number; On: boolean; }
 
 export type EventLog =

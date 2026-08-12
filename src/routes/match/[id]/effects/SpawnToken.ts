@@ -15,6 +15,7 @@ export function spawnToken(state: GameState, log: SpawnTokenLog) {
         Type: log.CardType,
         Zone: Zone.Field,
         IsToken: log.IsToken,
+        ChainEntry: log.ChainEntry,
 
         Charges: 0,
         MaxCharges: 0,
