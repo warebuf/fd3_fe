@@ -26,7 +26,7 @@ export type GameState = {
     Grave: number[][];
     Continuous: number[][];
 
-    ReactionStack: StackItem[];
+    Chain: ChainItem[];
 
     Priority: number; // team index with priority to react during an open window
 
@@ -55,12 +55,12 @@ export const Zone = {
     Hand: 1,
     Field: 2,
     Graveyard: 3,
-    Stack: 4,
+    Chain: 4,
     Continuous: 5,
 } as const;
 
-// mirrors engine/state.ReactionType
-export const StackItemType = {
+// mirrors engine/state.ChainType
+export const ChainItemType = {
     UnitAbility: 1,
     Spell: 2,
     ContinuousAbility: 3,
@@ -175,7 +175,7 @@ export const CardStatus = {
 // Status isn't sent by the backend; it's a client-side view derived from Zone/Type.
 export function getCardStatus(card: Card): number {
     if (card.Type === CardType.Unit) {
-        if (card.Zone === Zone.Stack) return CardStatus.Summoning;
+        if (card.Zone === Zone.Chain) return CardStatus.Summoning;
         if (card.Zone === Zone.Field) return CardStatus.UnitActive;
     }
     if (card.Zone === Zone.Continuous) return CardStatus.ContinuousActive;
@@ -199,7 +199,7 @@ export interface Card {
     // charge related - shared pool for this card; any ability slot may gain or spend from it
     Charges: number;
     MaxCharges: number;
-    PendingCharges: number; // activations currently in flight on the stack across all Active slots, not yet resolved
+    PendingCharges: number; // activations currently in flight on the chain across all Active slots, not yet resolved
 
     AutoSummon: number;
     OnTick: TickAbility[];
@@ -214,7 +214,7 @@ export interface Effect {
     C: number;
 }
 
-export interface StackItem {
+export interface ChainItem {
     Type: number;
     CardIndex: number;
     ActiveIndex: number; // which Actives[] slot this item's activation came from, -1 if not an Active ability
@@ -248,7 +248,7 @@ export function initGameState(): GameState {
         Grave: [[], []],
         Continuous: [[], []],
 
-        ReactionStack: [],
+        Chain: [],
 
         Priority: 0,
 
@@ -287,7 +287,7 @@ export function cloneGameState(src: GameState): GameState {
         Grave: src.Grave.map(g => [...g]),
         Continuous: src.Continuous.map(c => [...c]),
 
-        ReactionStack: src.ReactionStack.map(item => ({ ...item, Effects: [...item.Effects] })),
+        Chain: src.Chain.map(item => ({ ...item, Effects: [...item.Effects] })),
 
         Priority: src.Priority,
 

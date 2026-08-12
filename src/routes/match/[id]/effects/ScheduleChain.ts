@@ -1,10 +1,10 @@
 import type { GameState } from "../engine/gameState";
-import type { AddStackLog } from "../engine/logs";
+import type { AddChainLog } from "../engine/logs";
 
-export function addStack(state: GameState, log: AddStackLog) {
+export function addChain(state: GameState, log: AddChainLog) {
 
-    state.ReactionStack.push({
-        Type: log.StackType,
+    state.Chain.push({
+        Type: log.ChainType,
         CardIndex: log.CardIndex,
         ActiveIndex: log.ActiveIndex,
         TeamIndex: log.TeamIndex,

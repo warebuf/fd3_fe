@@ -1,6 +1,6 @@
 
 import { get } from "svelte/store";
-import type { GameState, Card, StackItem } from "../engine/gameState"
+import type { GameState, Card, ChainItem } from "../engine/gameState"
 import { Phase, PausePhase, CardType, Archetype, Zone } from "../engine/gameState"
 import type { coordinate } from "./cardCoordinates"
 import { ping, serverClockOffset } from "../networking/ping";
@@ -334,7 +334,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
         ctx.fillText(String(badgeNum), badgeX, badgeY);
     }
 
-    // hidden reaction submitted this window, awaiting reveal (client-local; not confirmed by the server)
+    // hidden chain item submitted this window, awaiting reveal (client-local; not confirmed by the server)
     if (!faceDown && pendingInstant) {
         const boxW = 42;
         const boxH = 12;
@@ -407,19 +407,19 @@ function drawField(ctx: CanvasRenderingContext2D, cards: Card[], field: number[]
     }
 }
 
-function drawStackZone(ctx: CanvasRenderingContext2D, stack: StackItem[], cards: Card[], positions: coordinate[], stackCoords: coordinate[], currentActiveTime: number): void {
-    const topIndex = stack.length - 1;
-    for (let i = 0; i < stack.length; i++) {
-        const item = stack[i];
+function drawChainZone(ctx: CanvasRenderingContext2D, chain: ChainItem[], cards: Card[], positions: coordinate[], chainCoords: coordinate[], currentActiveTime: number): void {
+    const topIndex = chain.length - 1;
+    for (let i = 0; i < chain.length; i++) {
+        const item = chain[i];
         const card = cards[item.CardIndex];
 
         let pos: coordinate | undefined;
         if (card) {
-            pos = card.Zone === Zone.Stack ? positions[item.CardIndex] : stackCoords[i];
+            pos = card.Zone === Zone.Chain ? positions[item.CardIndex] : chainCoords[i];
             if (!pos) continue;
             drawFieldCard(ctx, pos.x, pos.y, card, 0, false, false, false);
         } else {
-            pos = stackCoords[i];
+            pos = chainCoords[i];
             if (!pos) continue;
             roundRect(ctx, pos.x, pos.y, CARD_W, CARD_H, CARD_RADIUS);
             ctx.fillStyle = CARD_COLOR;
@@ -438,14 +438,14 @@ function drawStackZone(ctx: CanvasRenderingContext2D, stack: StackItem[], cards:
         }
 
         if (i === topIndex) {
-            drawTimerBar(ctx, pos.x, pos.y, item.StartAtActiveTime, item.ExecuteAtActiveTime, currentActiveTime, "Stack");
+            drawTimerBar(ctx, pos.x, pos.y, item.StartAtActiveTime, item.ExecuteAtActiveTime, currentActiveTime, "Chain");
         } else {
-            drawStackPositionBadge(ctx, pos.x, pos.y, i + 1);
+            drawChainPositionBadge(ctx, pos.x, pos.y, i + 1);
         }
     }
 }
 
-function drawStackPositionBadge(ctx: CanvasRenderingContext2D, x: number, y: number, position: number): void {
+function drawChainPositionBadge(ctx: CanvasRenderingContext2D, x: number, y: number, position: number): void {
     const GAP = 12;
     const BAR_H = 4;
     const BADGE_W = 50;
@@ -468,7 +468,7 @@ function drawStackPositionBadge(ctx: CanvasRenderingContext2D, x: number, y: num
     ctx.font = "bold 9px monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(`Stack ${position}`, badgeX + BADGE_W / 2, badgeY + BADGE_H / 2);
+    ctx.fillText(`Chain ${position}`, badgeX + BADGE_W / 2, badgeY + BADGE_H / 2);
 }
 
 const SWITCH_W = 28;
@@ -795,7 +795,7 @@ function drawPreselectArrow(ctx: CanvasRenderingContext2D, sx: number, sy: numbe
     ctx.restore();
 }
 
-export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, positions: coordinate[], stackCoords: coordinate[], handOrder: number[][], selectedIndex: number, preselecting: number, pendingInstantCardIndex: number = -1) {
+export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, positions: coordinate[], chainCoords: coordinate[], handOrder: number[][], selectedIndex: number, preselecting: number, pendingInstantCardIndex: number = -1) {
     const opponentIndex = userIndex === 0 ? 1 : 0;
     if (state.Phase === Phase.GameEnd) currentWallTime = state.WallTimestamp;
 
@@ -808,8 +808,8 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     // Opponent field
     drawField(ctx, state.Cards, state.Field[opponentIndex], positions, currentSimTime, selectedIndex);
 
-    // Stack zone
-    drawStackZone(ctx, state.ReactionStack, state.Cards, positions, stackCoords, currentActiveTime);
+    // Chain zone
+    drawChainZone(ctx, state.Chain, state.Cards, positions, chainCoords, currentActiveTime);
 
     // Player field
     drawField(ctx, state.Cards, state.Field[userIndex], positions, currentSimTime, selectedIndex);

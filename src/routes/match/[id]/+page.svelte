@@ -39,11 +39,11 @@
     let preselectingIndex: number = -1; // which ability slot on that card (Actives or OnPlay, per its zone)
     let handOrder: number[][] = [];
     let positions: coordinate[] = [];
-    let stackCoords: coordinate[] = [];
+    let chainCoords: coordinate[] = [];
     let drawButtonRect: { x: number; y: number; w: number; h: number } | null = null;
     let autoToggleRect: { x: number; y: number; w: number; h: number } | null = null;
     let readyButtonRect: { x: number; y: number; w: number; h: number } | null = null;
-    let pendingInstantCardIndex: number = -1; // hand card locally submitted as a hidden reaction this window, cleared once the window resolves
+    let pendingInstantCardIndex: number = -1; // hand card locally submitted as a hidden chain this window, cleared once the window resolves
     let pendingInstantWindowStart: number = -1;
 
     let phaseShown = -1;
@@ -58,8 +58,8 @@
         canvasEl.height = Math.max(1, Math.round(height * dpr));
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        const stackItems = (interpolatedState?.ReactionStack ?? []).map(item => ({ cardID: item.CardIndex, isCard: interpolatedState?.Cards[item.CardIndex]?.Zone === Zone.Stack }));
-        ({ positions, stackCoords } = calcBoardLayout(ctx.canvas.clientWidth, ctx.canvas.clientHeight, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], stackItems, interpolatedState?.Continuous ?? [[], []]));
+        const chainItems = (interpolatedState?.Chain ?? []).map(item => ({ cardID: item.CardIndex, isCard: interpolatedState?.Cards[item.CardIndex]?.Zone === Zone.Chain }));
+        ({ positions, chainCoords } = calcBoardLayout(ctx.canvas.clientWidth, ctx.canvas.clientHeight, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], chainItems, interpolatedState?.Continuous ?? [[], []]));
     }
 
     function sendInstant(cardIndex: number) {
@@ -69,7 +69,7 @@
         // a window is already open: this submission is held hidden by the server until the
         // window resolves, so there's no log to react to. track it locally so we can badge it.
         if (interpolatedState.PausePhase === PausePhase.SimPause) {
-            const top = interpolatedState.ReactionStack[interpolatedState.ReactionStack.length - 1];
+            const top = interpolatedState.Chain[interpolatedState.Chain.length - 1];
             if (top) {
                 pendingInstantCardIndex = cardIndex;
                 pendingInstantWindowStart = top.StartAtActiveTime;
@@ -90,12 +90,12 @@
         // update derived states
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
-            const stackItems = interpolatedState.ReactionStack.map(item => ({ cardID: item.CardIndex, isCard: interpolatedState.Cards[item.CardIndex]?.Zone === Zone.Stack }));
-            ({ positions, stackCoords } = calcBoardLayout(ctx.canvas.clientWidth, ctx.canvas.clientHeight, teamIndex, handOrder, interpolatedState.Field, stackItems, interpolatedState.Continuous ?? [[], []]));
+            const chainItems = interpolatedState.Chain.map(item => ({ cardID: item.CardIndex, isCard: interpolatedState.Cards[item.CardIndex]?.Zone === Zone.Chain }));
+            ({ positions, chainCoords } = calcBoardLayout(ctx.canvas.clientWidth, ctx.canvas.clientHeight, teamIndex, handOrder, interpolatedState.Field, chainItems, interpolatedState.Continuous ?? [[], []]));
 
-            // the window this reaction was submitted for has resolved (revealed or not); clear the badge
+            // the window this chain was submitted for has resolved (revealed or not); clear the badge
             if (pendingInstantCardIndex !== -1) {
-                const top = interpolatedState.ReactionStack[interpolatedState.ReactionStack.length - 1];
+                const top = interpolatedState.Chain[interpolatedState.Chain.length - 1];
                 if (!top || top.StartAtActiveTime !== pendingInstantWindowStart) {
                     pendingInstantCardIndex = -1;
                     pendingInstantWindowStart = -1;
@@ -113,7 +113,7 @@
         // draw
         ctx.clearRect(0, 0, canvasEl.clientWidth, canvasEl.clientHeight);
         const currentWallTime = now + performance.timeOrigin + get(serverClockOffset);
-        drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, positions, stackCoords, handOrder, clickedIndex, preselecting, pendingInstantCardIndex);
+        drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, positions, chainCoords, handOrder, clickedIndex, preselecting, pendingInstantCardIndex);
         drawButtonRect = drawStructureDrawButton(ctx, interpolatedState, teamIndex);
         autoToggleRect = drawStructureAutoToggle(ctx, interpolatedState, teamIndex);
         readyButtonRect = drawReadyButton(ctx, interpolatedState, teamIndex);
@@ -171,7 +171,7 @@
                 return;
             }
 
-            const hit = getClickedCard(x, y, positions, interpolatedState?.ReactionStack ?? [], stackCoords);
+            const hit = getClickedCard(x, y, positions, interpolatedState?.Chain ?? [], chainCoords);
 
             const preselectFlags = preselecting >= 0 ? preselectableAbilities(interpolatedState.Cards[preselecting])[preselectingIndex].TargetFlags : 0;
 

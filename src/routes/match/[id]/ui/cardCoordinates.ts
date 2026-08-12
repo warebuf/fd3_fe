@@ -55,23 +55,23 @@ function columnCoords(count: number, canvasHeight: number, x: number): coordinat
 }
 
 // positions: sparse array indexed by card ID — positions[cardID] = screen coordinate
-// stackCoords: parallel to state.ReactionStack — only populated for non-card stack items (abilities, etc.)
+// chainCoords: parallel to state.Chain — only populated for non-card chain items (abilities, etc.)
 export function calcBoardLayout(
     canvasWidth: number,
     canvasHeight: number,
     playerNum: number,
     handOrder: number[][],
     field: number[][],
-    stack: Array<{ cardID: number, isCard: boolean }>,
+    chain: Array<{ cardID: number, isCard: boolean }>,
     continuous: number[][]
-): { positions: coordinate[], stackCoords: coordinate[] } {
+): { positions: coordinate[], chainCoords: coordinate[] } {
     const positions: coordinate[] = [];
-    const stackCoords: coordinate[] = [];
+    const chainCoords: coordinate[] = [];
 
     let y = START_Y;
     const oppHandCardY     = y + (ZONE_H - CARD_H) / 2;  y += ZONE_H + ZONE_GAP;
     const oppFieldCardY    = y + (ZONE_H - CARD_H) / 2;  y += ZONE_H + ZONE_GAP;
-    const stackCardY       = y + (ZONE_H - CARD_H) / 2;  y += ZONE_H + ZONE_GAP;
+    const chainCardY       = y + (ZONE_H - CARD_H) / 2;  y += ZONE_H + ZONE_GAP;
     const playerFieldCardY = y + (ZONE_H - CARD_H) / 2;  y += ZONE_H + ZONE_GAP;
     const playerHandCardY  = y + (ZONE_H - CARD_H) / 2;
 
@@ -94,17 +94,17 @@ export function calcBoardLayout(
         for (let i = 0; i < contCards.length; i++) positions[contCards[i]] = contSlots[i];
     }
 
-    const stackSlots = rowCoords(stack.length, canvasWidth, stackCardY);
-    for (let i = 0; i < stack.length; i++) {
-        const { cardID, isCard } = stack[i];
+    const chainSlots = rowCoords(chain.length, canvasWidth, chainCardY);
+    for (let i = 0; i < chain.length; i++) {
+        const { cardID, isCard } = chain[i];
         if (isCard) {
-            positions[cardID] = stackSlots[i];
+            positions[cardID] = chainSlots[i];
         } else {
-            stackCoords[i] = stackSlots[i];
+            chainCoords[i] = chainSlots[i];
         }
     }
 
-    return { positions, stackCoords };
+    return { positions, chainCoords };
 }
 
 function hitTest(mouseX: number, mouseY: number, x: number, y: number): boolean {
@@ -115,16 +115,16 @@ export function getClickedCard(
     mouseX: number,
     mouseY: number,
     positions: coordinate[],
-    stack: Array<{ CardIndex: number }>,
-    stackCoords: coordinate[]
+    chain: Array<{ CardIndex: number }>,
+    chainCoords: coordinate[]
 ): number {
     for (let cardID = 0; cardID < positions.length; cardID++) {
         const pos = positions[cardID];
         if (pos && hitTest(mouseX, mouseY, pos.x, pos.y)) return cardID;
     }
-    for (let i = 0; i < stackCoords.length; i++) {
-        const pos = stackCoords[i];
-        if (pos && hitTest(mouseX, mouseY, pos.x, pos.y)) return stack[i].CardIndex;
+    for (let i = 0; i < chainCoords.length; i++) {
+        const pos = chainCoords[i];
+        if (pos && hitTest(mouseX, mouseY, pos.x, pos.y)) return chain[i].CardIndex;
     }
     return -1;
 }

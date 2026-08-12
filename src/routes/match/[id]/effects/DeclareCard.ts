@@ -6,8 +6,8 @@ export function declareCard(state: GameState, log: DeclareCardLog) {
     const teamIndex = log.TeamIndex;
     const cardIndex = log.CardIndex;
 
-    // all declared cards go to the stack; units read as Summoning here via getCardStatus
-    state.Cards[cardIndex].Zone = Zone.Stack;
+    // all declared cards go to the chain; units read as Summoning here via getCardStatus
+    state.Cards[cardIndex].Zone = Zone.Chain;
 
     // remove from hand
     const handIdx = state.Hand[teamIndex].indexOf(cardIndex);

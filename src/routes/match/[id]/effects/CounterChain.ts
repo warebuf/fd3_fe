@@ -1,13 +1,13 @@
 import type { GameState } from "../engine/gameState";
 import { Zone } from "../engine/gameState";
-import type { CounterStackLog } from "../engine/logs";
+import type { CounterChainLog } from "../engine/logs";
 
-export function counterStack(state: GameState, log: CounterStackLog) {
+export function counterChain(state: GameState, log: CounterChainLog) {
 
-    state.ReactionStack.pop();
+    state.Chain.pop();
 
     const card = state.Cards[log.TargetCardIndex];
-    if (card && card.Zone === Zone.Stack) {
+    if (card && card.Zone === Zone.Chain) {
         card.Zone = Zone.Graveyard;
         state.Grave[card.Team].push(log.TargetCardIndex);
     }

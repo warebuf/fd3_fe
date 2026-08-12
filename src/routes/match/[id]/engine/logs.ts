@@ -4,8 +4,8 @@ export type PhaseLog              = Timestamp & { Type: 0;  Phase: number; Phase
 export type DrawLog               = Timestamp & { Type: 1;  TeamIndex: number; NumCards: number; }
 export type DeclareCardLog        = Timestamp & { Type: 2;  TeamIndex: number; CardIndex: number; }
 export type SummonResolutionLog   = Timestamp & { Type: 3;  TeamIndex: number; CardIndex: number; }
-export type AddStackLog           = Timestamp & { Type: 4;  StackType: number; CardIndex: number; ActiveIndex: number; TeamIndex: number; StartAtActiveTime: number; PopAtActiveTime: number; ExecuteAtActiveTime: number; Effects: Effect[]; }
-export type RemoveStackLog        = Timestamp & { Type: 5;  CardIndex: number; }
+export type AddChainLog           = Timestamp & { Type: 4;  ChainType: number; CardIndex: number; ActiveIndex: number; TeamIndex: number; StartAtActiveTime: number; PopAtActiveTime: number; ExecuteAtActiveTime: number; Effects: Effect[]; }
+export type RemoveChainLog        = Timestamp & { Type: 5;  CardIndex: number; }
 export type DestroyCardLog        = Timestamp & { Type: 6;  TargetAll: boolean; TargetTeamIndex: number; TargetCardIndex: number; }
 export type GainManaLog           = Timestamp & { Type: 7;  TeamIndex: number; Amount: number; }
 export type SpendManaLog          = Timestamp & { Type: 8;  TeamIndex: number; Amount: number; }
@@ -19,8 +19,8 @@ export type UnpauseLog            = Timestamp & { Type: 15; TimeRemaining: numbe
 export type AddAbilityTimerLog    = Timestamp & { Type: 16; CardIndex: number; AbilityIndex: number; Condition: number; StartAtSimTime: number; ExecuteAtSimTime: number; }
 export type ClearAbilityTimerLog  = Timestamp & { Type: 17; CardIndex: number; AbilityIndex: number; }
 export type GameOverLog           = Timestamp & { Type: 18; Winner: number; }
-export type CounterStackLog       = Timestamp & { Type: 19; SourceCardIndex: number; TargetCardIndex: number; }
-export type RefreshStackLog       = Timestamp & { Type: 20; CardIndex: number; StartAtActiveTime: number; PopAtActiveTime: number; ExecuteAtActiveTime: number; }
+export type CounterChainLog       = Timestamp & { Type: 19; SourceCardIndex: number; TargetCardIndex: number; }
+export type RefreshChainLog       = Timestamp & { Type: 20; CardIndex: number; StartAtActiveTime: number; PopAtActiveTime: number; ExecuteAtActiveTime: number; }
 export type PlayContinuousLog     = Timestamp & { Type: 21; TeamIndex: number; CardIndex: number; }
 export type RemoveContinuousLog   = Timestamp & { Type: 22; TeamIndex: number; CardIndex: number; }
 export type RemoveChargeLog       = Timestamp & { Type: 23; TeamIndex: number; CardIndex: number; ChargesRemaining: number; }
@@ -36,8 +36,8 @@ export type EventLog =
     | DrawLog
     | DeclareCardLog
     | SummonResolutionLog
-    | AddStackLog
-    | RemoveStackLog
+    | AddChainLog
+    | RemoveChainLog
     | DestroyCardLog
     | GainManaLog
     | SpendManaLog
@@ -51,8 +51,8 @@ export type EventLog =
     | AddAbilityTimerLog
     | ClearAbilityTimerLog
     | GameOverLog
-    | CounterStackLog
-    | RefreshStackLog
+    | CounterChainLog
+    | RefreshChainLog
     | PlayContinuousLog
     | RemoveContinuousLog
     | RemoveChargeLog
