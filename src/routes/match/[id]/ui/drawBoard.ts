@@ -284,8 +284,8 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     let cardType = "";
     if (card.Type === CardType.Unit) {
         cardType = "Unit";
-    } else if (card.Type === CardType.Spell) {
-        cardType = "Spell";
+    } else if (card.Type === CardType.Trap) {
+        cardType = card.Zone === Zone.Trap && card.Ready ? "Trap · Ready" : "Trap";
     } else if (card.Type === CardType.Continuous) {
         cardType = "Continuous";
     }
@@ -406,6 +406,18 @@ function drawContinuousZone(ctx: CanvasRenderingContext2D, cards: Card[], contin
         drawChargePips(ctx, pos.x, pos.y, card);
         if (card.Actives[0]?.CanAutoFire) { // spawned tokens arrive with an empty Actives until the next fullState
             drawSwitch(ctx, pos.x, pos.y, card.Actives[0].AutoAbility, "Auto", SWITCH_Y_OFFSET);
+        }
+    }
+}
+
+function drawTrapZone(ctx: CanvasRenderingContext2D, cards: Card[], traps: number[], positions: coordinate[], currentSimTime: number, selectedIndex: number): void {
+    for (const cardID of traps) {
+        const pos = positions[cardID];
+        if (!pos) continue;
+        const card = cards[cardID];
+        drawFieldCard(ctx, pos.x, pos.y, card, 0, false, selectedIndex === cardID);
+        if (!card.Ready) {
+            drawTimerBar(ctx, pos.x, pos.y, card.SetStartAtSimTime, card.ReadyAtSimTime, currentSimTime, "Setting");
         }
     }
 }
@@ -836,6 +848,10 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     // Continuous zones (columns on left/right)
     drawContinuousZone(ctx, state.Cards, state.Continuous?.[userIndex] ?? [], positions, selectedIndex);
     drawContinuousZone(ctx, state.Cards, state.Continuous?.[opponentIndex] ?? [], positions, selectedIndex);
+
+    // Trap zones (columns just inboard of the continuous ones)
+    drawTrapZone(ctx, state.Cards, state.Traps?.[userIndex] ?? [], positions, currentSimTime, selectedIndex);
+    drawTrapZone(ctx, state.Cards, state.Traps?.[opponentIndex] ?? [], positions, currentSimTime, selectedIndex);
 
     drawInfoPanel(ctx, state, currentActiveTime, opponentIndex, userIndex);
     drawPriorityIndicator(ctx, state, userIndex);

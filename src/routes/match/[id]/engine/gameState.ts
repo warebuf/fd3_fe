@@ -25,6 +25,7 @@ export type GameState = {
     Field: number[][];
     Grave: number[][];
     Continuous: number[][];
+    Traps: number[][]; // set but not yet activated
 
     Chain: ChainItem[];
 
@@ -57,6 +58,7 @@ export const Zone = {
     Graveyard: 3,
     Chain: 4,
     Continuous: 5,
+    Trap: 6,
 } as const;
 
 // mirrors engine/state.ChainEntry
@@ -69,7 +71,7 @@ export const ChainEntry = {
 // mirrors engine/state.ChainType
 export const ChainItemType = {
     UnitAbility: 1,
-    Spell: 2,
+    Trap: 2,
     ContinuousAbility: 3,
     Summon: 4,
     ContinuousResolution: 5,
@@ -80,8 +82,7 @@ export const CardType = {
     Structure: 0,
     Unit: 1,
     Trap: 2,
-    Spell: 3,
-    Continuous: 4,
+    Continuous: 3,
 } as const;
 
 // mirrors engine/state.EffectType
@@ -145,6 +146,8 @@ export const TargetFlags = {
     OppHand:  1 << 4,
     OwnCont:  1 << 5,
     OppCont:  1 << 6,
+    OwnTrap:  1 << 7,
+    OppTrap:  1 << 8,
 } as const;
 
 export function isValidTarget(cards: Card[], targetFlags: number, sourceIdx: number, targetIdx: number, teamIndex: number): boolean {
@@ -158,6 +161,8 @@ export function isValidTarget(cards: Card[], targetFlags: number, sourceIdx: num
     if (target.Team !== teamIndex && target.Zone === Zone.Hand)       return (targetFlags & TargetFlags.OppHand) !== 0;
     if (target.Team === teamIndex && target.Zone === Zone.Continuous) return (targetFlags & TargetFlags.OwnCont) !== 0;
     if (target.Team !== teamIndex && target.Zone === Zone.Continuous) return (targetFlags & TargetFlags.OppCont) !== 0;
+    if (target.Team === teamIndex && target.Zone === Zone.Trap)       return (targetFlags & TargetFlags.OwnTrap) !== 0;
+    if (target.Team !== teamIndex && target.Zone === Zone.Trap)       return (targetFlags & TargetFlags.OppTrap) !== 0;
     return false;
 }
 
@@ -172,12 +177,12 @@ export const Archetype = {
 } as const;
 
 export const CardStatus = {
-    Default:           0, // spells, structures, continuous
+    Default:           0, // structures, and anything on the chain that isn't summoning
     Summoning:         1, // unit: on field, summon window not yet resolved
     UnitActive:        2, // unit: fully resolved and active
-    Set:               3, // trap: face-down on field
-    TrapActive:        4, // trap: triggered/active
-    ContinuousActive:  5, // continuous spell: in continuous zone
+    Setting:           3, // trap: in the trap zone, still counting down
+    TrapReady:         4, // trap: done setting, may be activated
+    ContinuousActive:  5, // continuous: in continuous zone
 } as const;
 
 // Status isn't sent by the backend; it's a client-side view derived from Zone/Type.
@@ -186,6 +191,7 @@ export function getCardStatus(card: Card): number {
         if (card.Zone === Zone.Chain) return CardStatus.Summoning;
         if (card.Zone === Zone.Field) return CardStatus.UnitActive;
     }
+    if (card.Zone === Zone.Trap) return card.Ready ? CardStatus.TrapReady : CardStatus.Setting;
     if (card.Zone === Zone.Continuous) return CardStatus.ContinuousActive;
     return CardStatus.Default;
 }
@@ -209,6 +215,11 @@ export interface Card {
     Charges: number;
     MaxCharges: number;
     PendingCharges: number; // activations currently in flight on the chain across all Active slots, not yet resolved
+
+    // trap related, only meaningful while this card sits in Zone.Trap
+    SetStartAtSimTime: number;
+    ReadyAtSimTime: number;
+    Ready: boolean;
 
     AutoSummon: number;
     OnTick: TickAbility[];
@@ -256,6 +267,7 @@ export function initGameState(): GameState {
         Field: [[], []],
         Grave: [[], []],
         Continuous: [[], []],
+        Traps: [[], []],
 
         Chain: [],
 
@@ -295,6 +307,7 @@ export function cloneGameState(src: GameState): GameState {
         Field: src.Field.map(f => [...f]),
         Grave: src.Grave.map(g => [...g]),
         Continuous: src.Continuous.map(c => [...c]),
+        Traps: (src.Traps ?? []).map(t => [...t]),
 
         Chain: src.Chain.map(item => ({ ...item, Effects: [...item.Effects] })),
 

@@ -32,6 +32,8 @@ import { toggleAutoAbility } from "./ToggleAutoAbility";
 import { consume } from "./Consume";
 import { spawnToken } from "./SpawnToken";
 import { toggleStructureAutoAbility } from "./ToggleStructureAutoAbility";
+import { setTrap } from "./SetTrap";
+import { trapReady } from "./TrapReady";
 
 export function applyEffect(state: GameState, log: EventLog) {
 
@@ -67,6 +69,8 @@ export function applyEffect(state: GameState, log: EventLog) {
         case 27: consume(state, log); break;
         case 28: spawnToken(state, log); break;
         case 29: toggleStructureAutoAbility(state, log); break;
+        case 30: setTrap(state, log); break;
+        case 31: trapReady(state, log); break;
 
         default: console.log("could not apply log", log); applied = false; break;
     }

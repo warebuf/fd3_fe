@@ -42,6 +42,7 @@ function rowCoords(count: number, canvasWidth: number, cardY: number): coordinat
 }
 
 const CONT_COL_X_LEFT  = 6;
+const TRAP_COL_GAP     = CARD_W + CARD_GAP; // trap column sits just inboard of the continuous column
 
 function columnCoords(count: number, canvasHeight: number, x: number): coordinate[] {
     if (count === 0) return [];
@@ -63,7 +64,8 @@ export function calcBoardLayout(
     handOrder: number[][],
     field: number[][],
     chain: Array<{ cardID: number, isCard: boolean }>,
-    continuous: number[][]
+    continuous: number[][],
+    traps: number[][]
 ): { positions: coordinate[], chainCoords: coordinate[] } {
     const positions: coordinate[] = [];
     const chainCoords: coordinate[] = [];
@@ -92,6 +94,11 @@ export function calcBoardLayout(
         const colX       = isPlayer ? CONT_COL_X_LEFT : canvasWidth - CARD_W - 6;
         const contSlots  = columnCoords(contCards.length, canvasHeight, colX);
         for (let i = 0; i < contCards.length; i++) positions[contCards[i]] = contSlots[i];
+
+        const trapCards  = traps[t] ?? [];
+        const trapColX   = isPlayer ? colX + TRAP_COL_GAP : colX - TRAP_COL_GAP;
+        const trapSlots  = columnCoords(trapCards.length, canvasHeight, trapColX);
+        for (let i = 0; i < trapCards.length; i++) positions[trapCards[i]] = trapSlots[i];
     }
 
     const chainSlots = rowCoords(chain.length, canvasWidth, chainCardY);

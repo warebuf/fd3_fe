@@ -5,13 +5,22 @@ import { Zone, type GameState } from "../engine/gameState"
 export function declareCard(state: GameState, log: DeclareCardLog) {
     const teamIndex = log.TeamIndex;
     const cardIndex = log.CardIndex;
+    const card = state.Cards[cardIndex];
+
+    // a trap declares out of the trap zone, everything else out of hand
+    if (card.Zone === Zone.Trap) {
+        const trapIdx = state.Traps[teamIndex].indexOf(cardIndex);
+        if (trapIdx !== -1) state.Traps[teamIndex].splice(trapIdx, 1);
+        card.SetStartAtSimTime = 0;
+        card.ReadyAtSimTime = 0;
+        card.Ready = false;
+    } else {
+        const handIdx = state.Hand[teamIndex].indexOf(cardIndex);
+        if (handIdx !== -1) state.Hand[teamIndex].splice(handIdx, 1);
+    }
 
     // all declared cards go to the chain; units read as Summoning here via getCardStatus
-    state.Cards[cardIndex].Zone = Zone.Chain;
+    card.Zone = Zone.Chain;
 
-    // remove from hand
-    const handIdx = state.Hand[teamIndex].indexOf(cardIndex);
-    if (handIdx !== -1) state.Hand[teamIndex].splice(handIdx, 1);
-
-    state.Cards[cardIndex].AutoSummon = 0;
+    card.AutoSummon = 0;
 }

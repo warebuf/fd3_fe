@@ -8,7 +8,7 @@
     import { stopPing, serverClockOffset } from "./networking/ping";
 
     import { StateManager } from "./engine/stateManager"
-    import { initGameState, cloneGameState, type GameState, Phase, Zone } from './engine/gameState';
+    import { initGameState, cloneGameState, type GameState, Phase, Zone, CardType } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
     import { drawBoard, drawPhaseAnnouncement, drawStructureDrawButton, drawStructureAutoToggle, drawReadyButton } from './ui/drawBoard';
@@ -59,12 +59,15 @@
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
         const chainItems = (interpolatedState?.Chain ?? []).map(item => ({ cardID: item.CardIndex, isCard: interpolatedState?.Cards[item.CardIndex]?.Zone === Zone.Chain }));
-        ({ positions, chainCoords } = calcBoardLayout(ctx.canvas.clientWidth, ctx.canvas.clientHeight, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], chainItems, interpolatedState?.Continuous ?? [[], []]));
+        ({ positions, chainCoords } = calcBoardLayout(ctx.canvas.clientWidth, ctx.canvas.clientHeight, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], chainItems, interpolatedState?.Continuous ?? [[], []], interpolatedState?.Traps ?? [[], []]));
     }
 
     function sendInstant(cardIndex: number) {
         if (!interpolatedState) return;
         ws?.send(JSON.stringify({ type: "instant", CardIndex: cardIndex }));
+
+        // setting a trap never enters the chain, and the server refuses it outright while a window is open
+        if (interpolatedState.Cards[cardIndex]?.Type === CardType.Trap) return;
 
         // a window is already open: this submission is held hidden by the server until the
         // window resolves, so there's no log to react to. track it locally so we can badge it.
@@ -91,7 +94,7 @@
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
             const chainItems = interpolatedState.Chain.map(item => ({ cardID: item.CardIndex, isCard: interpolatedState.Cards[item.CardIndex]?.Zone === Zone.Chain }));
-            ({ positions, chainCoords } = calcBoardLayout(ctx.canvas.clientWidth, ctx.canvas.clientHeight, teamIndex, handOrder, interpolatedState.Field, chainItems, interpolatedState.Continuous ?? [[], []]));
+            ({ positions, chainCoords } = calcBoardLayout(ctx.canvas.clientWidth, ctx.canvas.clientHeight, teamIndex, handOrder, interpolatedState.Field, chainItems, interpolatedState.Continuous ?? [[], []], interpolatedState.Traps ?? [[], []]));
 
             // the window this chain was submitted for has resolved (revealed or not); clear the badge
             if (pendingInstantCardIndex !== -1) {
@@ -239,7 +242,7 @@
                 if (clickedIndex === -1) return;
                 const card = interpolatedState?.Cards[clickedIndex];
                 if (card?.Team !== teamIndex) return;
-                if (card.Zone !== Zone.Field && card.Zone !== Zone.Hand) return;
+                if (card.Zone !== Zone.Field && card.Zone !== Zone.Hand && card.Zone !== Zone.Trap) return;
 
                 const abilities = preselectableAbilities(card);
                 const startAt = preselecting === clickedIndex ? preselectingIndex + 1 : 0;
@@ -260,7 +263,17 @@
                 if (interpolatedState?.Phase !== Phase.Play) return;
 
                 const card = interpolatedState.Cards[clickedIndex];
-                if (card?.Zone !== 2 || card.Team !== teamIndex) return; // ZoneField
+                if (card?.Team !== teamIndex) return;
+
+                if (card.Zone === Zone.Trap) {
+                    if (!card.Ready) return; // still setting
+                    // -1 lets the server pick, which it can do whenever the trap has a single Active slot
+                    ws?.send(JSON.stringify({ type: "trapAbility", CardIndex: clickedIndex, AbilityIndex: -1 }));
+                    clickedIndex = -1;
+                    return;
+                }
+
+                if (card.Zone !== Zone.Field) return;
                 // TODO: hardcoded duplicate of the backend's charge-gating rule (handleUnitAbility in InputHandlerAbility.go) for responsive UI; keep in sync
                 if (!card.Actives[0].Unlimited && card.Charges <= 0) return;
 

@@ -1,6 +1,6 @@
 
 import type { DestroyCardLog } from "../engine/logs";
-import type { GameState } from "../engine/gameState"
+import { Zone, type GameState } from "../engine/gameState"
 
 export function destroyCard(state: GameState, log: DestroyCardLog) {
 
@@ -20,13 +20,14 @@ export function destroyCard(state: GameState, log: DestroyCardLog) {
             state.Field[i] = [];
         }
     } else {
+        // a set trap is destroyed out of the trap zone, everything else off the field
+        const zoneArr = state.Cards[targetCard].Zone === Zone.Trap ? state.Traps[targetTeam] : state.Field[targetTeam];
+
         state.Cards[targetCard].Zone = 3;
 
-        // remove from field arr
-        const fieldArr = state.Field[targetTeam];
-        for (let i = 0; i < fieldArr.length; i++) {
-            if (fieldArr[i] === targetCard) {
-                fieldArr.splice(i, 1);
+        for (let i = 0; i < zoneArr.length; i++) {
+            if (zoneArr[i] === targetCard) {
+                zoneArr.splice(i, 1);
                 break;
             }
         }

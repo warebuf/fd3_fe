@@ -21,6 +21,10 @@ export function spawnToken(state: GameState, log: SpawnTokenLog) {
         MaxCharges: 0,
         PendingCharges: 0,
 
+        SetStartAtSimTime: 0,
+        ReadyAtSimTime: 0,
+        Ready: false,
+
         AutoSummon: 0,
         OnTick: [],
         Actives: [],
