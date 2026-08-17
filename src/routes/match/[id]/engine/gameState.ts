@@ -307,7 +307,7 @@ export function cloneGameState(src: GameState): GameState {
         Field: src.Field.map(f => [...f]),
         Grave: src.Grave.map(g => [...g]),
         Continuous: src.Continuous.map(c => [...c]),
-        Traps: (src.Traps ?? []).map(t => [...t]),
+        Traps: (src.Traps ?? [[], []]).map(t => [...t]),
 
         Chain: src.Chain.map(item => ({ ...item, Effects: [...item.Effects] })),
 

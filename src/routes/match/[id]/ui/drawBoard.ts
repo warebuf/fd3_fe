@@ -410,12 +410,13 @@ function drawContinuousZone(ctx: CanvasRenderingContext2D, cards: Card[], contin
     }
 }
 
-function drawTrapZone(ctx: CanvasRenderingContext2D, cards: Card[], traps: number[], positions: coordinate[], currentSimTime: number, selectedIndex: number): void {
+function drawTrapZone(ctx: CanvasRenderingContext2D, cards: Card[], traps: number[], positions: coordinate[], currentSimTime: number, selectedIndex: number, faceDown: boolean = false): void {
     for (const cardID of traps) {
         const pos = positions[cardID];
         if (!pos) continue;
         const card = cards[cardID];
-        drawFieldCard(ctx, pos.x, pos.y, card, 0, false, selectedIndex === cardID);
+        // a set trap's only meaningful countdown is its setting bar, so the OnTick bar stays off
+        drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, faceDown, selectedIndex === cardID, false);
         if (!card.Ready) {
             drawTimerBar(ctx, pos.x, pos.y, card.SetStartAtSimTime, card.ReadyAtSimTime, currentSimTime, "Setting");
         }
@@ -849,9 +850,9 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     drawContinuousZone(ctx, state.Cards, state.Continuous?.[userIndex] ?? [], positions, selectedIndex);
     drawContinuousZone(ctx, state.Cards, state.Continuous?.[opponentIndex] ?? [], positions, selectedIndex);
 
-    // Trap zones (columns just inboard of the continuous ones)
+    // Trap zones (columns just inboard of the continuous ones); the opponent's stay face down
     drawTrapZone(ctx, state.Cards, state.Traps?.[userIndex] ?? [], positions, currentSimTime, selectedIndex);
-    drawTrapZone(ctx, state.Cards, state.Traps?.[opponentIndex] ?? [], positions, currentSimTime, selectedIndex);
+    drawTrapZone(ctx, state.Cards, state.Traps?.[opponentIndex] ?? [], positions, currentSimTime, selectedIndex, true);
 
     drawInfoPanel(ctx, state, currentActiveTime, opponentIndex, userIndex);
     drawPriorityIndicator(ctx, state, userIndex);

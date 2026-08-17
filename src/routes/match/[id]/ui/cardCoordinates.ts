@@ -30,19 +30,24 @@ export function mirrorUIWithHand(order: number[][], hand: number[][]): number[][
     return result;
 }
 
+const CONT_COL_X_LEFT  = 6;
+const TRAP_COL_GAP     = CARD_W + CARD_GAP; // trap column sits just inboard of the continuous column
+// the columns span the full canvas height, so rows have to stay clear of them on both edges
+const SIDE_GUTTER      = CONT_COL_X_LEFT + TRAP_COL_GAP + CARD_W + CARD_GAP;
+
+// rows center between the gutters, tightening their spacing rather than running under the columns
 function rowCoords(count: number, canvasWidth: number, cardY: number): coordinate[] {
     if (count === 0) return [];
-    const totalW = count * CARD_W + (count - 1) * CARD_GAP;
-    const startX = (canvasWidth - totalW) / 2;
+    const available = Math.max(canvasWidth - SIDE_GUTTER * 2, CARD_W);
+    const step = count > 1 ? Math.min(CARD_W + CARD_GAP, (available - CARD_W) / (count - 1)) : 0;
+    const totalW = CARD_W + (count - 1) * step;
+    const startX = SIDE_GUTTER + (available - totalW) / 2;
     const coords: coordinate[] = [];
     for (let j = 0; j < count; j++) {
-        coords.push({ x: startX + j * (CARD_W + CARD_GAP), y: cardY });
+        coords.push({ x: startX + j * step, y: cardY });
     }
     return coords;
 }
-
-const CONT_COL_X_LEFT  = 6;
-const TRAP_COL_GAP     = CARD_W + CARD_GAP; // trap column sits just inboard of the continuous column
 
 function columnCoords(count: number, canvasHeight: number, x: number): coordinate[] {
     if (count === 0) return [];
