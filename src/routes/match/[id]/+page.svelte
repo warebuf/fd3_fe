@@ -8,7 +8,7 @@
     import { stopPing, serverClockOffset } from "./networking/ping";
 
     import { StateManager } from "./engine/stateManager"
-    import { initGameState, cloneGameState, type GameState, Phase, Zone, CardType } from './engine/gameState';
+    import { initGameState, cloneGameState, type GameState, Phase, Zone } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
     import { drawBoard, drawPhaseAnnouncement, drawStructureDrawButton, drawStructureAutoToggle, drawReadyButton } from './ui/drawBoard';
@@ -43,8 +43,6 @@
     let drawButtonRect: { x: number; y: number; w: number; h: number } | null = null;
     let autoToggleRect: { x: number; y: number; w: number; h: number } | null = null;
     let readyButtonRect: { x: number; y: number; w: number; h: number } | null = null;
-    let pendingInstantCardIndex: number = -1; // hand card locally submitted as a hidden chain this window, cleared once the window resolves
-    let pendingInstantWindowStart: number = -1;
 
     let phaseShown = -1;
     let phaseMessageStart = -Infinity;
@@ -65,19 +63,6 @@
     function sendInstant(cardIndex: number) {
         if (!interpolatedState) return;
         ws?.send(JSON.stringify({ type: "instant", CardIndex: cardIndex }));
-
-        // setting a trap never enters the chain, and the server refuses it outright while a window is open
-        if (interpolatedState.Cards[cardIndex]?.Type === CardType.Trap) return;
-
-        // a window is already open: this submission is held hidden by the server until the
-        // window resolves, so there's no log to react to. track it locally so we can badge it.
-        if (interpolatedState.PausePhase === PausePhase.SimPause) {
-            const top = interpolatedState.Chain[interpolatedState.Chain.length - 1];
-            if (top) {
-                pendingInstantCardIndex = cardIndex;
-                pendingInstantWindowStart = top.StartAtActiveTime;
-            }
-        }
     }
 
     function loop(now: number) { // now is current time relative to page load
@@ -96,15 +81,6 @@
             const chainItems = interpolatedState.Chain.map(item => ({ cardID: item.CardIndex, isCard: interpolatedState.Cards[item.CardIndex]?.Zone === Zone.Chain }));
             ({ positions, chainCoords } = calcBoardLayout(ctx.canvas.clientWidth, ctx.canvas.clientHeight, teamIndex, handOrder, interpolatedState.Field, chainItems, interpolatedState.Continuous ?? [[], []], interpolatedState.Traps ?? [[], []]));
 
-            // the window this chain was submitted for has resolved (revealed or not); clear the badge
-            if (pendingInstantCardIndex !== -1) {
-                const top = interpolatedState.Chain[interpolatedState.Chain.length - 1];
-                if (!top || top.StartAtActiveTime !== pendingInstantWindowStart) {
-                    pendingInstantCardIndex = -1;
-                    pendingInstantWindowStart = -1;
-                }
-            }
-
             if (authoritativeState.Phase !== phaseShown) {
                 if (phaseShown !== -1) {
                     phaseMessageStart = now;
@@ -116,7 +92,7 @@
         // draw
         ctx.clearRect(0, 0, canvasEl.clientWidth, canvasEl.clientHeight);
         const currentWallTime = now + performance.timeOrigin + get(serverClockOffset);
-        drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, positions, chainCoords, handOrder, clickedIndex, preselecting, pendingInstantCardIndex);
+        drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, positions, chainCoords, handOrder, clickedIndex, preselecting);
         drawButtonRect = drawStructureDrawButton(ctx, interpolatedState, teamIndex);
         autoToggleRect = drawStructureAutoToggle(ctx, interpolatedState, teamIndex);
         readyButtonRect = drawReadyButton(ctx, interpolatedState, teamIndex);

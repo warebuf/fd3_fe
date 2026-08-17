@@ -232,7 +232,7 @@ function drawWrappedText(ctx: CanvasRenderingContext2D, text: string, x: number,
     return currentY;
 }
 
-function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, currentSimTime: number, faceDown?: boolean, selected?: boolean, showAbilityTimer: boolean = true, pendingInstant?: boolean ) {
+function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, currentSimTime: number, faceDown?: boolean, selected?: boolean, showAbilityTimer: boolean = true, pendingSubmission?: boolean ) {
     ctx.save();
 
     // adjust for blurry half pixel borders
@@ -344,8 +344,8 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
         ctx.fillText(String(badgeNum), badgeX, badgeY);
     }
 
-    // hidden chain item submitted this window, awaiting reveal (client-local; not confirmed by the server)
-    if (!faceDown && pendingInstant) {
+    // chain item submitted this window, held by the server until the window's timer reveals it
+    if (!faceDown && pendingSubmission) {
         const boxW = 42;
         const boxH = 12;
         const boxX = x + CARD_W - boxW - 2;
@@ -361,7 +361,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
         ctx.font = "bold 7px sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("Instant", boxX + boxW / 2, boxY + boxH / 2);
+        ctx.fillText("Held", boxX + boxW / 2, boxY + boxH / 2);
     }
 
     ctx.restore();
@@ -397,12 +397,12 @@ function drawChargePips(ctx: CanvasRenderingContext2D, x: number, y: number, car
     }
 }
 
-function drawContinuousZone(ctx: CanvasRenderingContext2D, cards: Card[], continuous: number[], positions: coordinate[], selectedIndex: number): void {
+function drawContinuousZone(ctx: CanvasRenderingContext2D, cards: Card[], continuous: number[], positions: coordinate[], selectedIndex: number, pendingCardIndex: number = -1): void {
     for (const cardID of continuous) {
         const pos = positions[cardID];
         if (!pos) continue;
         const card = cards[cardID];
-        drawFieldCard(ctx, pos.x, pos.y, card, 0, false, selectedIndex === cardID);
+        drawFieldCard(ctx, pos.x, pos.y, card, 0, false, selectedIndex === cardID, true, cardID === pendingCardIndex);
         drawChargePips(ctx, pos.x, pos.y, card);
         if (card.Actives[0]?.CanAutoFire) { // spawned tokens arrive with an empty Actives until the next fullState
             drawSwitch(ctx, pos.x, pos.y, card.Actives[0].AutoAbility, "Auto", SWITCH_Y_OFFSET);
@@ -410,25 +410,25 @@ function drawContinuousZone(ctx: CanvasRenderingContext2D, cards: Card[], contin
     }
 }
 
-function drawTrapZone(ctx: CanvasRenderingContext2D, cards: Card[], traps: number[], positions: coordinate[], currentSimTime: number, selectedIndex: number, faceDown: boolean = false): void {
+function drawTrapZone(ctx: CanvasRenderingContext2D, cards: Card[], traps: number[], positions: coordinate[], currentSimTime: number, selectedIndex: number, faceDown: boolean = false, pendingCardIndex: number = -1): void {
     for (const cardID of traps) {
         const pos = positions[cardID];
         if (!pos) continue;
         const card = cards[cardID];
         // a set trap's only meaningful countdown is its setting bar, so the OnTick bar stays off
-        drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, faceDown, selectedIndex === cardID, false);
+        drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, faceDown, selectedIndex === cardID, false, cardID === pendingCardIndex);
         if (!card.Ready) {
             drawTimerBar(ctx, pos.x, pos.y, card.SetStartAtSimTime, card.ReadyAtSimTime, currentSimTime, "Setting");
         }
     }
 }
 
-function drawField(ctx: CanvasRenderingContext2D, cards: Card[], field: number[], positions: coordinate[], currentSimTime: number, selectedIndex: number): void {
+function drawField(ctx: CanvasRenderingContext2D, cards: Card[], field: number[], positions: coordinate[], currentSimTime: number, selectedIndex: number, pendingCardIndex: number = -1): void {
     for (const cardID of field) {
         const pos = positions[cardID];
         if (!pos) continue;
         const card = cards[cardID];
-        drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, false, selectedIndex === cardID);
+        drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, false, selectedIndex === cardID, true, cardID === pendingCardIndex);
         drawChargePips(ctx, pos.x, pos.y, card);
         if (card.Actives[0]?.CanAutoFire) { // spawned tokens arrive with an empty Actives until the next fullState
             drawSwitch(ctx, pos.x, pos.y, card.Actives[0].AutoAbility, "Auto", SWITCH_Y_OFFSET);
@@ -544,12 +544,12 @@ function drawSwitch(ctx: CanvasRenderingContext2D, x: number, y: number, on: boo
     ctx.restore();
 }
 
-function drawHand(ctx: CanvasRenderingContext2D, handOrder: number[], cards: Card[], positions: coordinate[], faceDown: boolean, selectedIndex: number, currentSimTime: number, pendingInstantCardIndex: number = -1): void {
+function drawHand(ctx: CanvasRenderingContext2D, handOrder: number[], cards: Card[], positions: coordinate[], faceDown: boolean, selectedIndex: number, currentSimTime: number, pendingCardIndex: number = -1): void {
     for (const cardID of handOrder) {
         const pos = positions[cardID];
         if (!pos) continue;
         const card = cards[cardID];
-        drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, faceDown, selectedIndex === cardID, true, cardID === pendingInstantCardIndex);
+        drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, faceDown, selectedIndex === cardID, true, cardID === pendingCardIndex);
     }
 }
 
@@ -824,9 +824,12 @@ function drawPreselectArrow(ctx: CanvasRenderingContext2D, sx: number, sy: numbe
     ctx.restore();
 }
 
-export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, positions: coordinate[], chainCoords: coordinate[], handOrder: number[][], selectedIndex: number, preselecting: number, pendingInstantCardIndex: number = -1) {
+export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, positions: coordinate[], chainCoords: coordinate[], handOrder: number[][], selectedIndex: number, preselecting: number) {
     const opponentIndex = userIndex === 0 ? 1 : 0;
     if (state.Phase === Phase.GameEnd) currentWallTime = state.WallTimestamp;
+
+    // the opponent's held submission is deliberately not drawn, even though it's in the state
+    const pendingCardIndex = state.PendingSubmissions?.[userIndex] ?? -1;
 
     const currentSimTime = computeCurrentSimTime(currentWallTime, state);
     const currentActiveTime = computeCurrentActiveTime(currentWallTime, state);
@@ -841,17 +844,17 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     drawChainZone(ctx, state.Chain, state.Cards, positions, chainCoords, currentActiveTime);
 
     // Player field
-    drawField(ctx, state.Cards, state.Field[userIndex], positions, currentSimTime, selectedIndex);
+    drawField(ctx, state.Cards, state.Field[userIndex], positions, currentSimTime, selectedIndex, pendingCardIndex);
 
     // Player hand
-    drawHand(ctx, handOrder[userIndex] ?? [], state.Cards, positions, false, selectedIndex, currentSimTime, pendingInstantCardIndex);
+    drawHand(ctx, handOrder[userIndex] ?? [], state.Cards, positions, false, selectedIndex, currentSimTime, pendingCardIndex);
 
     // Continuous zones (columns on left/right)
-    drawContinuousZone(ctx, state.Cards, state.Continuous?.[userIndex] ?? [], positions, selectedIndex);
+    drawContinuousZone(ctx, state.Cards, state.Continuous?.[userIndex] ?? [], positions, selectedIndex, pendingCardIndex);
     drawContinuousZone(ctx, state.Cards, state.Continuous?.[opponentIndex] ?? [], positions, selectedIndex);
 
     // Trap zones (columns just inboard of the continuous ones); the opponent's stay face down
-    drawTrapZone(ctx, state.Cards, state.Traps?.[userIndex] ?? [], positions, currentSimTime, selectedIndex);
+    drawTrapZone(ctx, state.Cards, state.Traps?.[userIndex] ?? [], positions, currentSimTime, selectedIndex, false, pendingCardIndex);
     drawTrapZone(ctx, state.Cards, state.Traps?.[opponentIndex] ?? [], positions, currentSimTime, selectedIndex, true);
 
     drawInfoPanel(ctx, state, currentActiveTime, opponentIndex, userIndex);

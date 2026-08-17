@@ -28,6 +28,7 @@ export type GameState = {
     Traps: number[][]; // set but not yet activated
 
     Chain: ChainItem[];
+    PendingSubmissions: number[]; // per team, card index held for this window; -1 for none or a structure draw
 
     Priority: number; // team index with priority to react during an open window
 
@@ -270,6 +271,7 @@ export function initGameState(): GameState {
         Traps: [[], []],
 
         Chain: [],
+        PendingSubmissions: [-1, -1],
 
         Priority: 0,
 
@@ -310,6 +312,7 @@ export function cloneGameState(src: GameState): GameState {
         Traps: (src.Traps ?? [[], []]).map(t => [...t]),
 
         Chain: src.Chain.map(item => ({ ...item, Effects: [...item.Effects] })),
+        PendingSubmissions: [...(src.PendingSubmissions ?? [-1, -1])],
 
         Priority: src.Priority,
 
