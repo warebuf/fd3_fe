@@ -444,7 +444,7 @@ function drawChainZone(ctx: CanvasRenderingContext2D, chain: ChainItem[], cards:
 
         let pos: coordinate | undefined;
         if (card) {
-            pos = card.Zone === Zone.Chain ? positions[item.CardIndex] : chainCoords[i];
+            pos = card.Zone === Zone.Pending ? positions[item.CardIndex] : chainCoords[i];
             if (!pos) continue;
             drawFieldCard(ctx, pos.x, pos.y, card, 0, false, false, false);
         } else {

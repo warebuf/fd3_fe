@@ -16,8 +16,7 @@ export function declareCard(state: GameState, log: DeclareCardLog) {
     } else {
         const handIdx = state.Hand[teamIndex].indexOf(cardIndex);
         if (handIdx !== -1) state.Hand[teamIndex].splice(handIdx, 1);
-        // units/continuous have nowhere else to sit yet; they read as Summoning here via getCardStatus
-        card.Zone = Zone.Chain;
+        card.Zone = Zone.Pending;
     }
 
     card.AutoSummon = 0;

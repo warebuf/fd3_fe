@@ -57,7 +57,7 @@ export const Zone = {
     Hand: 1,
     Field: 2,
     Graveyard: 3,
-    Chain: 4,
+    Pending: 4,
     Continuous: 5,
     Trap: 6,
 } as const;
@@ -177,25 +177,6 @@ export const Archetype = {
     Tree: 1,
 } as const;
 
-export const CardStatus = {
-    Default:           0, // structures, and anything on the chain that isn't summoning
-    Summoning:         1, // unit: on field, summon window not yet resolved
-    UnitActive:        2, // unit: fully resolved and active
-    Setting:           3, // trap: in the trap zone, still counting down
-    TrapReady:         4, // trap: done setting, may be activated
-    ContinuousActive:  5, // continuous: in continuous zone
-} as const;
-
-// Status isn't sent by the backend; it's a client-side view derived from Zone/Type.
-export function getCardStatus(card: Card): number {
-    if (card.Type === CardType.Unit) {
-        if (card.Zone === Zone.Chain) return CardStatus.Summoning;
-        if (card.Zone === Zone.Field) return CardStatus.UnitActive;
-    }
-    if (card.Zone === Zone.Trap) return card.Ready ? CardStatus.TrapReady : CardStatus.Setting;
-    if (card.Zone === Zone.Continuous) return CardStatus.ContinuousActive;
-    return CardStatus.Default;
-}
 
 export interface Card {
     DefNo: number;

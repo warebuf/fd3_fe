@@ -56,7 +56,7 @@
         canvasEl.height = Math.max(1, Math.round(height * dpr));
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        const chainItems = (interpolatedState?.Chain ?? []).map(item => ({ cardID: item.CardIndex, isCard: interpolatedState?.Cards[item.CardIndex]?.Zone === Zone.Chain }));
+        const chainItems = (interpolatedState?.Chain ?? []).map(item => ({ cardID: item.CardIndex, isCard: interpolatedState?.Cards[item.CardIndex]?.Zone === Zone.Pending }));
         ({ positions, chainCoords } = calcBoardLayout(ctx.canvas.clientWidth, ctx.canvas.clientHeight, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], chainItems, interpolatedState?.Continuous ?? [[], []], interpolatedState?.Traps ?? [[], []]));
     }
 
@@ -78,7 +78,7 @@
         // update derived states
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
-            const chainItems = interpolatedState.Chain.map(item => ({ cardID: item.CardIndex, isCard: interpolatedState.Cards[item.CardIndex]?.Zone === Zone.Chain }));
+            const chainItems = interpolatedState.Chain.map(item => ({ cardID: item.CardIndex, isCard: interpolatedState.Cards[item.CardIndex]?.Zone === Zone.Pending }));
             ({ positions, chainCoords } = calcBoardLayout(ctx.canvas.clientWidth, ctx.canvas.clientHeight, teamIndex, handOrder, interpolatedState.Field, chainItems, interpolatedState.Continuous ?? [[], []], interpolatedState.Traps ?? [[], []]));
 
             if (authoritativeState.Phase !== phaseShown) {
