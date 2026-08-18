@@ -243,8 +243,7 @@
 
                 if (card.Zone === Zone.Trap) {
                     if (!card.Ready) return; // still setting
-                    // -1 lets the server pick, which it can do whenever the trap has a single Active slot
-                    ws?.send(JSON.stringify({ type: "trapAbility", CardIndex: clickedIndex, AbilityIndex: -1 }));
+                    ws?.send(JSON.stringify({ type: "trapAbility", CardIndex: clickedIndex, AbilityIndex: 0 })); // default 0, hardcoded
                     clickedIndex = -1;
                     return;
                 }
