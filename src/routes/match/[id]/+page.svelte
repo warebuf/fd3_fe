@@ -267,6 +267,9 @@
                 if (interpolatedState?.Phase !== Phase.Play) return;
                 if ((interpolatedState?.Mana[teamIndex] ?? 0) < 100) return;
                 ws?.send(JSON.stringify({ type: "structureDraw" }));
+            } else if (e.key === 'r' || e.key === 'R') {
+                if (interpolatedState?.Phase !== Phase.Draw) return;
+                ws?.send(JSON.stringify({ type: interpolatedState?.Ready[teamIndex] ? "unready" : "ready" }));
             }
         };
 
