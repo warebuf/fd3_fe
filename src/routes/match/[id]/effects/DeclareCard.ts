@@ -14,13 +14,13 @@ export function declareCard(state: GameState, log: DeclareCardLog) {
         card.SetStartAtSimTime = 0;
         card.ReadyAtSimTime = 0;
         card.Ready = false;
+        // a trap stays in the trap zone while its ability resolves on the chain
     } else {
         const handIdx = state.Hand[teamIndex].indexOf(cardIndex);
         if (handIdx !== -1) state.Hand[teamIndex].splice(handIdx, 1);
+        // units/continuous have nowhere else to sit yet; they read as Summoning here via getCardStatus
+        card.Zone = Zone.Chain;
     }
-
-    // all declared cards go to the chain; units read as Summoning here via getCardStatus
-    card.Zone = Zone.Chain;
 
     card.AutoSummon = 0;
 }
