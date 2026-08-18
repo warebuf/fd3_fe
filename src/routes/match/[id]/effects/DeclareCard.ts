@@ -9,8 +9,6 @@ export function declareCard(state: GameState, log: DeclareCardLog) {
 
     // a trap declares out of the trap zone, everything else out of hand
     if (card.Zone === Zone.Trap) {
-        const trapIdx = state.Traps[teamIndex].indexOf(cardIndex);
-        if (trapIdx !== -1) state.Traps[teamIndex].splice(trapIdx, 1);
         card.SetStartAtSimTime = 0;
         card.ReadyAtSimTime = 0;
         card.Ready = false;
