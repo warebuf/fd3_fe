@@ -6,8 +6,8 @@ import type { coordinate } from "./cardCoordinates"
 import { ping, serverClockOffset } from "../networking/ping";
 import { debugDump } from "../debuggers/debug";
 
-export const CARD_W = 150;
-export const CARD_H = 125;
+export const CARD_W = 120;
+export const CARD_H = 100;
 const CARD_RADIUS = 6;
 export const CARD_GAP = 8;
 export const ZONE_H = 96;
@@ -129,6 +129,42 @@ export function drawStructureAutoToggle(ctx: CanvasRenderingContext2D, state: Ga
     return { x, y, w, h };
 }
 
+export function drawPauseButton(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number): { x: number; y: number; w: number; h: number } | null {
+    const paused = state.PausePhase === PausePhase.FullPause && state.TeamPaused === userIndex;
+    const canPause = (state.PausePhase === PausePhase.Simulating || state.PausePhase === PausePhase.SimPause)
+        && (state.TimeBank[userIndex] ?? 0) > 0;
+    const active = state.Phase >= Phase.Draw && state.Phase !== Phase.GameEnd && (paused || canPause);
+
+    const w = 96;
+    const h = 18;
+    const playerHandCardY = START_Y + (ZONE_H + ZONE_GAP) * 4 + (ZONE_H - CARD_H) / 2;
+    const drawButtonY = playerHandCardY - 18 - 6;
+    const autoToggleY = drawButtonY - h - 4;
+
+    // vertically centered beside the draw-button/auto-toggle stack, to its left
+    const y = autoToggleY + (drawButtonY + h - autoToggleY) / 2 - h / 2;
+    const stackX = (ctx.canvas.clientWidth - w) / 2;
+    const GAP = 8;
+    const x = stackX - w - GAP;
+
+    roundRect(ctx, x, y, w, h, 4);
+    ctx.fillStyle = paused ? "#24361F" : active ? "#2C2C2A" : "#222220";
+    ctx.fill();
+    ctx.strokeStyle = paused ? "#3A8F5A" : active ? CARD_BORDER : "#3a3a38";
+    ctx.lineWidth = 0.5;
+    roundRect(ctx, x, y, w, h, 4);
+    ctx.stroke();
+
+    ctx.font = "10px sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = paused ? "#6abf6a" : active ? TEXT_COLOR : "#555";
+    ctx.fillText(paused ? "Unpause [P]" : "Pause [P]", x + 6, y + h / 2);
+    ctx.textBaseline = "top";
+
+    return active ? { x, y, w, h } : null;
+}
+
 export function drawReadyButton(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number): { x: number; y: number; w: number; h: number } | null {
     if (state.Phase !== Phase.Draw) return null;
 
@@ -161,7 +197,7 @@ export function drawReadyButton(ctx: CanvasRenderingContext2D, state: GameState,
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     ctx.fillStyle = ready ? "#6abf6a" : TEXT_COLOR;
-    ctx.fillText(`Ready: ${ready ? "YES" : "NO"}`, x + 6, y + h / 2);
+    ctx.fillText(`Ready: ${ready ? "YES" : "NO"} [R]`, x + 6, y + h / 2);
     ctx.textBaseline = "top";
 
     return { x, y, w, h };
@@ -275,7 +311,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.font = "11px sans-serif";
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
-    ctx.fillText(card.Name, tx, ty);
+    ctx.fillText(card.Name, tx, ty, CARD_W - P_PAD_W - 4 - STAT_BOX_W);
 
     // draw card type
     ty += 12;
