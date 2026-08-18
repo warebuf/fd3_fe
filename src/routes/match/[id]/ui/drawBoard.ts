@@ -10,9 +10,21 @@ export const CARD_W = 120;
 export const CARD_H = 100;
 const CARD_RADIUS = 6;
 export const CARD_GAP = 8;
-export const ZONE_H = 96;
-export const ZONE_GAP = 64;
-export const START_Y = 32;
+export const START_Y = 8;
+// clearance between rows; the ability timer bar draws ~26px above its card, so don't go below that
+export const ROW_GAP = 28;
+// zones are horizontal rows, indexed top to bottom from the player's point of view
+export function rowY(index: number): number {
+    return START_Y + index * (CARD_H + ROW_GAP);
+}
+
+const BUTTON_W = 96;
+const BUTTON_H = 18;
+// the button cluster stacks downward just below the player's hand row
+function buttonRowY(index: number): number {
+    return rowY(6) + CARD_H + 10 + index * (BUTTON_H + 4);
+}
+
 const CARD_COLOR = "#2C2C2A";
 const CARD_BORDER = "#6E6D69";
 const TEXT_COLOR = "#D3D1C7";
@@ -77,11 +89,10 @@ function roundRect( ctx: CanvasRenderingContext2D, x: number, y: number, w: numb
 export function drawStructureDrawButton(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number): { x: number; y: number; w: number; h: number } | null {
     const canDraw = state.Phase === Phase.Play && (state.Mana[userIndex] ?? 0) >= 100;
 
-    const w = 96;
-    const h = 18;
+    const w = BUTTON_W;
+    const h = BUTTON_H;
     const x = (ctx.canvas.clientWidth - w) / 2;
-    const playerHandCardY = START_Y + (ZONE_H + ZONE_GAP) * 4 + (ZONE_H - CARD_H) / 2;
-    const y = playerHandCardY - h - 6;
+    const y = buttonRowY(0);
 
     roundRect(ctx, x, y, w, h, 4);
     ctx.fillStyle = canDraw ? "#2C2C2A" : "#222220";
@@ -104,12 +115,10 @@ export function drawStructureDrawButton(ctx: CanvasRenderingContext2D, state: Ga
 export function drawStructureAutoToggle(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number): { x: number; y: number; w: number; h: number } {
     const on = state.Structures[userIndex]?.AutoAbility ?? false;
 
-    const w = 96;
-    const h = 18;
+    const w = BUTTON_W;
+    const h = BUTTON_H;
     const x = (ctx.canvas.clientWidth - w) / 2;
-    const playerHandCardY = START_Y + (ZONE_H + ZONE_GAP) * 4 + (ZONE_H - CARD_H) / 2;
-    const drawButtonY = playerHandCardY - 18 - 6;
-    const y = drawButtonY - h - 4;
+    const y = buttonRowY(1);
 
     roundRect(ctx, x, y, w, h, 4);
     ctx.fillStyle = on ? "#24361F" : "#2C2C2A";
@@ -135,14 +144,11 @@ export function drawPauseButton(ctx: CanvasRenderingContext2D, state: GameState,
         && (state.TimeBank[userIndex] ?? 0) > 0;
     const active = state.Phase >= Phase.Draw && state.Phase !== Phase.GameEnd && (paused || canPause);
 
-    const w = 96;
-    const h = 18;
-    const playerHandCardY = START_Y + (ZONE_H + ZONE_GAP) * 4 + (ZONE_H - CARD_H) / 2;
-    const drawButtonY = playerHandCardY - 18 - 6;
-    const autoToggleY = drawButtonY - h - 4;
+    const w = BUTTON_W;
+    const h = BUTTON_H;
 
     // vertically centered beside the draw-button/auto-toggle stack, to its left
-    const y = autoToggleY + (drawButtonY + h - autoToggleY) / 2 - h / 2;
+    const y = (buttonRowY(0) + buttonRowY(1)) / 2;
     const stackX = (ctx.canvas.clientWidth - w) / 2;
     const GAP = 8;
     const x = stackX - w - GAP;
@@ -170,16 +176,11 @@ export function drawReadyButton(ctx: CanvasRenderingContext2D, state: GameState,
 
     const ready = state.Ready[userIndex] ?? false;
 
-    const w = 96;
-    const h = 18;
-    const playerHandCardY = START_Y + (ZONE_H + ZONE_GAP) * 4 + (ZONE_H - CARD_H) / 2;
-    const drawButtonY = playerHandCardY - 18 - 6;
-    const autoToggleY = drawButtonY - h - 4;
+    const w = BUTTON_W;
+    const h = BUTTON_H;
 
     // vertically centered beside the draw-button/auto-toggle stack, to its right
-    const stackTop = autoToggleY;
-    const stackBottom = drawButtonY + h;
-    const y = stackTop + (stackBottom - stackTop) / 2 - h / 2;
+    const y = (buttonRowY(0) + buttonRowY(1)) / 2;
 
     const stackX = (ctx.canvas.clientWidth - w) / 2;
     const GAP = 8;
@@ -664,8 +665,8 @@ function drawPriorityIndicator(ctx: CanvasRenderingContext2D, state: GameState, 
     const canvasW = ctx.canvas.clientWidth;
 
     const isYou = state.Priority === userIndex;
-    const oppHandCardY    = START_Y + (ZONE_H - CARD_H) / 2;
-    const playerHandCardY = START_Y + (ZONE_H + ZONE_GAP) * 4 + (ZONE_H - CARD_H) / 2;
+    const oppHandCardY    = rowY(0);
+    const playerHandCardY = rowY(6);
 
     const x = canvasW / 2 + 2.5 * CARD_W;
     const w = 26;
@@ -704,7 +705,7 @@ function drawPriorityIndicator(ctx: CanvasRenderingContext2D, state: GameState, 
     ctx.restore();
 }
 
-function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, currentActiveTime: number, opponentIndex: number, userIndex: number) {
+function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, currentActiveTime: number) {
     const x = 6;
     let y = 6;
     const LINE_H = 14;
@@ -724,40 +725,39 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, currentA
     ctx.fillText(`Pause ${state.PausePhase}`, x, y);
     y += LINE_H;
     ctx.fillText(`${get(ping)} ms`, x, y);
-    y += LINE_H * 2;
+}
 
-    ctx.fillStyle = SUBTEXT_COLOR;
-    ctx.fillText("Opponent:", x, y);
-    y += LINE_H;
-    ctx.fillStyle = "#D46B6B";
-    ctx.fillText(`HP ${state.Structures[opponentIndex]?.HP ?? 0}`, x, y);
-    y += LINE_H;
-    ctx.fillStyle = "#7AADDF";
-    ctx.fillText(`Mana ${state.Mana[opponentIndex] ?? 0}`, x, y);
-    y += LINE_H;
-    ctx.fillStyle = SUBTEXT_COLOR;
-    ctx.fillText(`Reserves ${state.Deck[opponentIndex].length}`, x, y);
-    y += LINE_H;
-    ctx.fillText(`Graveyard ${state.Grave[opponentIndex].length}`, x, y);
-    y += LINE_H;
-    ctx.fillText(`Time Bank ${Math.floor((state.TimeBank[opponentIndex] ?? 0) / 1000)}`, x, y);
-    y += LINE_H * 2;
+// occupies the centered card slot of a team's trap/continuous row
+function drawTeamInfoBox(ctx: CanvasRenderingContext2D, state: GameState, teamIndex: number, isPlayer: boolean) {
+    const x = Math.round((ctx.canvas.clientWidth - CARD_W) / 2) + 0.5;
+    const y = Math.round(rowY(isPlayer ? 5 : 1)) + 0.5;
 
-    ctx.fillStyle = SUBTEXT_COLOR;
-    ctx.fillText("You:", x, y);
-    y += LINE_H;
-    ctx.fillStyle = "#D46B6B";
-    ctx.fillText(`HP ${state.Structures[userIndex]?.HP ?? 0}`, x, y);
-    y += LINE_H;
-    ctx.fillStyle = "#7AADDF";
-    ctx.fillText(`Mana ${state.Mana[userIndex] ?? 0}`, x, y);
-    y += LINE_H;
-    ctx.fillStyle = SUBTEXT_COLOR;
-    ctx.fillText(`Reserves ${state.Deck[userIndex].length}`, x, y);
-    y += LINE_H;
-    ctx.fillText(`Graveyard ${state.Grave[userIndex].length}`, x, y);
-    y += LINE_H;
-    ctx.fillText(`Time Bank ${Math.floor((state.TimeBank[userIndex] ?? 0) / 1000)}`, x, y);
+    roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
+    ctx.fillStyle = CARD_COLOR;
+    ctx.fill();
+    ctx.strokeStyle = CARD_BORDER;
+    ctx.lineWidth = 0.5;
+    roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
+    ctx.stroke();
+
+    const LINE_H = 15;
+    let ty = y + P_PAD_H + 2;
+    const label = (text: string, color: string) => {
+        ctx.fillStyle = color;
+        ctx.fillText(text, x + P_PAD_W, ty);
+        ty += LINE_H;
+    };
+
+    ctx.font = "10px sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+
+    label(isPlayer ? "You" : "Opponent", TEXT_COLOR);
+    label(`HP ${state.Structures[teamIndex]?.HP ?? 0}`, "#D46B6B");
+    label(`Mana ${state.Mana[teamIndex] ?? 0}`, "#7AADDF");
+    label(`Reserves ${state.Deck[teamIndex].length}`, SUBTEXT_COLOR);
+    label(`Graveyard ${state.Grave[teamIndex].length}`, SUBTEXT_COLOR);
+    label(`Bank ${Math.floor((state.TimeBank[teamIndex] ?? 0) / 1000)}s`, SUBTEXT_COLOR);
 }
 
 const phaseLabels: Record<number, string> = {
@@ -870,30 +870,23 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     const currentSimTime = computeCurrentSimTime(currentWallTime, state);
     const currentActiveTime = computeCurrentActiveTime(currentWallTime, state);
 
-    // Opponent hand
+    // rows, top to bottom; the opponent's traps stay face down
     drawHand(ctx, handOrder[opponentIndex] ?? [], state.Cards, positions, true, selectedIndex, currentSimTime);
-
-    // Opponent field
+    drawContinuousZone(ctx, state.Cards, state.Continuous?.[opponentIndex] ?? [], positions, selectedIndex);
+    drawTrapZone(ctx, state.Cards, state.Traps?.[opponentIndex] ?? [], positions, currentSimTime, selectedIndex, true);
     drawField(ctx, state.Cards, state.Field[opponentIndex], positions, currentSimTime, selectedIndex);
 
-    // Chain zone
     drawChainZone(ctx, state.Chain, state.Cards, positions, chainCoords, currentActiveTime);
 
-    // Player field
     drawField(ctx, state.Cards, state.Field[userIndex], positions, currentSimTime, selectedIndex, pendingCardIndex);
-
-    // Player hand
+    drawTrapZone(ctx, state.Cards, state.Traps?.[userIndex] ?? [], positions, currentSimTime, selectedIndex, false, pendingCardIndex);
+    drawContinuousZone(ctx, state.Cards, state.Continuous?.[userIndex] ?? [], positions, selectedIndex, pendingCardIndex);
     drawHand(ctx, handOrder[userIndex] ?? [], state.Cards, positions, false, selectedIndex, currentSimTime, pendingCardIndex);
 
-    // Continuous zones (columns on left/right)
-    drawContinuousZone(ctx, state.Cards, state.Continuous?.[userIndex] ?? [], positions, selectedIndex, pendingCardIndex);
-    drawContinuousZone(ctx, state.Cards, state.Continuous?.[opponentIndex] ?? [], positions, selectedIndex);
+    drawTeamInfoBox(ctx, state, opponentIndex, false);
+    drawTeamInfoBox(ctx, state, userIndex, true);
 
-    // Trap zones (columns just inboard of the continuous ones); the opponent's stay face down
-    drawTrapZone(ctx, state.Cards, state.Traps?.[userIndex] ?? [], positions, currentSimTime, selectedIndex, false, pendingCardIndex);
-    drawTrapZone(ctx, state.Cards, state.Traps?.[opponentIndex] ?? [], positions, currentSimTime, selectedIndex, true);
-
-    drawInfoPanel(ctx, state, currentActiveTime, opponentIndex, userIndex);
+    drawInfoPanel(ctx, state, currentActiveTime);
     drawPriorityIndicator(ctx, state, userIndex);
 
     if (state.Phase === Phase.GameEnd) drawGameOver(ctx, state, userIndex);

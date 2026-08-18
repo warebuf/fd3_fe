@@ -1,5 +1,5 @@
 
-import { CARD_GAP, ZONE_H, CARD_W, CARD_H, ZONE_GAP, START_Y, SWITCH_H, SWITCH_Y_OFFSET, SWITCH_HIT_W } from "./drawBoard"
+import { CARD_GAP, CARD_W, CARD_H, rowY, SWITCH_H, SWITCH_Y_OFFSET, SWITCH_HIT_W } from "./drawBoard"
 
 export type coordinate = {
     x: number
@@ -30,17 +30,11 @@ export function mirrorUIWithHand(order: number[][], hand: number[][]): number[][
     return result;
 }
 
-const CONT_COL_X_LEFT  = 6;
-const TRAP_COL_GAP     = CARD_W + CARD_GAP; // trap column sits just inboard of the continuous column
-// the columns span the full canvas height, so rows have to stay clear of them on both edges
-const SIDE_GUTTER      = CONT_COL_X_LEFT + TRAP_COL_GAP + CARD_W + CARD_GAP;
-
 function rowCoords(count: number, canvasWidth: number, cardY: number): coordinate[] {
     if (count === 0) return [];
     const step = CARD_W + CARD_GAP;
     const totalW = CARD_W + (count - 1) * step;
-    const available = canvasWidth - SIDE_GUTTER * 2;
-    const startX = totalW <= available ? SIDE_GUTTER + (available - totalW) / 2 : (canvasWidth - totalW) / 2;
+    const startX = (canvasWidth - totalW) / 2;
     const coords: coordinate[] = [];
     for (let j = 0; j < count; j++) {
         coords.push({ x: startX + j * step, y: cardY });
@@ -48,22 +42,31 @@ function rowCoords(count: number, canvasWidth: number, cardY: number): coordinat
     return coords;
 }
 
-function columnCoords(count: number, canvasHeight: number, x: number): coordinate[] {
-    if (count === 0) return [];
-    const totalH = count * CARD_H + (count - 1) * CARD_GAP;
-    const startY = (canvasHeight - totalH) / 2;
-    const coords: coordinate[] = [];
-    for (let i = 0; i < count; i++) {
-        coords.push({ x, y: startY + i * (CARD_H + CARD_GAP) });
+function placeRow(positions: coordinate[], cards: number[], canvasWidth: number, cardY: number) {
+    const slots = rowCoords(cards.length, canvasWidth, cardY);
+    for (let i = 0; i < cards.length; i++) positions[cards[i]] = slots[i];
+}
+
+// left-aligned just right of the centered info slot, growing right
+function placeRowRightward(positions: coordinate[], cards: number[], canvasWidth: number, cardY: number) {
+    const startX = (canvasWidth + CARD_W) / 2 + CARD_GAP;
+    for (let i = 0; i < cards.length; i++) {
+        positions[cards[i]] = { x: startX + i * (CARD_W + CARD_GAP), y: cardY };
     }
-    return coords;
+}
+
+// right-aligned just left of the centered info slot, growing left
+function placeRowLeftward(positions: coordinate[], cards: number[], canvasWidth: number, cardY: number) {
+    const startX = (canvasWidth - CARD_W) / 2 - CARD_GAP - CARD_W;
+    for (let i = 0; i < cards.length; i++) {
+        positions[cards[i]] = { x: startX - i * (CARD_W + CARD_GAP), y: cardY };
+    }
 }
 
 // positions: sparse array indexed by card ID — positions[cardID] = screen coordinate
 // chainCoords: parallel to state.Chain — only populated for non-card chain items (abilities, etc.)
 export function calcBoardLayout(
     canvasWidth: number,
-    canvasHeight: number,
     playerNum: number,
     handOrder: number[][],
     field: number[][],
@@ -74,38 +77,16 @@ export function calcBoardLayout(
     const positions: coordinate[] = [];
     const chainCoords: coordinate[] = [];
 
-    let y = START_Y;
-    const oppHandCardY     = y + (ZONE_H - CARD_H) / 2;  y += ZONE_H + ZONE_GAP;
-    const oppFieldCardY    = y + (ZONE_H - CARD_H) / 2;  y += ZONE_H + ZONE_GAP;
-    const chainCardY       = y + (ZONE_H - CARD_H) / 2;  y += ZONE_H + ZONE_GAP;
-    const playerFieldCardY = y + (ZONE_H - CARD_H) / 2;  y += ZONE_H + ZONE_GAP;
-    const playerHandCardY  = y + (ZONE_H - CARD_H) / 2;
-
+    // rows mirror around the chain at row 3: units, then traps/continuous, then hand outward
     for (let t = 0; t < 2; t++) {
-        const isPlayer = t === playerNum;
-        const handY  = isPlayer ? playerHandCardY  : oppHandCardY;
-        const fieldY = isPlayer ? playerFieldCardY : oppFieldCardY;
-
-        const handCards  = handOrder[t] ?? [];
-        const handSlots  = rowCoords(handCards.length, canvasWidth, handY);
-        for (let i = 0; i < handCards.length; i++) positions[handCards[i]] = handSlots[i];
-
-        const fieldCards  = field[t] ?? [];
-        const fieldSlots  = rowCoords(fieldCards.length, canvasWidth, fieldY);
-        for (let i = 0; i < fieldCards.length; i++) positions[fieldCards[i]] = fieldSlots[i];
-
-        const contCards  = continuous[t] ?? [];
-        const colX       = isPlayer ? CONT_COL_X_LEFT : canvasWidth - CARD_W - 6;
-        const contSlots  = columnCoords(contCards.length, canvasHeight, colX);
-        for (let i = 0; i < contCards.length; i++) positions[contCards[i]] = contSlots[i];
-
-        const trapCards  = traps[t] ?? [];
-        const trapColX   = isPlayer ? colX + TRAP_COL_GAP : colX - TRAP_COL_GAP;
-        const trapSlots  = columnCoords(trapCards.length, canvasHeight, trapColX);
-        for (let i = 0; i < trapCards.length; i++) positions[trapCards[i]] = trapSlots[i];
+        const dir = t === playerNum ? 1 : -1;
+        placeRow(positions, field[t] ?? [], canvasWidth, rowY(3 + dir * 1));
+        placeRowRightward(positions, traps[t] ?? [], canvasWidth, rowY(3 + dir * 2));
+        placeRowLeftward(positions, continuous[t] ?? [], canvasWidth, rowY(3 + dir * 2));
+        placeRow(positions, handOrder[t] ?? [], canvasWidth, rowY(3 + dir * 3));
     }
 
-    const chainSlots = rowCoords(chain.length, canvasWidth, chainCardY);
+    const chainSlots = rowCoords(chain.length, canvasWidth, rowY(3));
     for (let i = 0; i < chain.length; i++) {
         const { cardID, isCard } = chain[i];
         if (isCard) {

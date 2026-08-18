@@ -58,7 +58,7 @@
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
         const chainItems = (interpolatedState?.Chain ?? []).map(item => ({ cardID: item.CardIndex, isCard: interpolatedState?.Cards[item.CardIndex]?.Zone === Zone.Pending }));
-        ({ positions, chainCoords } = calcBoardLayout(ctx.canvas.clientWidth, ctx.canvas.clientHeight, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], chainItems, interpolatedState?.Continuous ?? [[], []], interpolatedState?.Traps ?? [[], []]));
+        ({ positions, chainCoords } = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], chainItems, interpolatedState?.Continuous ?? [[], []], interpolatedState?.Traps ?? [[], []]));
     }
 
     function sendInstant(cardIndex: number) {
@@ -80,7 +80,7 @@
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
             const chainItems = interpolatedState.Chain.map(item => ({ cardID: item.CardIndex, isCard: interpolatedState.Cards[item.CardIndex]?.Zone === Zone.Pending }));
-            ({ positions, chainCoords } = calcBoardLayout(ctx.canvas.clientWidth, ctx.canvas.clientHeight, teamIndex, handOrder, interpolatedState.Field, chainItems, interpolatedState.Continuous ?? [[], []], interpolatedState.Traps ?? [[], []]));
+            ({ positions, chainCoords } = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState.Field, chainItems, interpolatedState.Continuous ?? [[], []], interpolatedState.Traps ?? [[], []]));
 
             if (authoritativeState.Phase !== phaseShown) {
                 if (phaseShown !== -1) {
