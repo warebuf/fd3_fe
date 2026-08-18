@@ -6,13 +6,14 @@ import type { coordinate } from "./cardCoordinates"
 import { ping, serverClockOffset } from "../networking/ping";
 import { debugDump } from "../debuggers/debug";
 
-export const CARD_W = 120;
-export const CARD_H = 100;
+export const CARD_W = 135;
+export const CARD_H = 115;
 const CARD_RADIUS = 6;
+const STAT_BOX_W = 22;
+const STAT_BOX_H = 14;
 export const CARD_GAP = 8;
 export const START_Y = 8;
-// clearance between rows; the ability timer bar draws ~26px above its card, so don't go below that
-export const ROW_GAP = 28;
+export const ROW_GAP = 8;
 // zones are horizontal rows, indexed top to bottom from the player's point of view
 export function rowY(index: number): number {
     return START_Y + index * (CARD_H + ROW_GAP);
@@ -35,6 +36,9 @@ const CROSSHAIR_BORDER = "rgba(211,209,199,0.5)";
 const CROSSHAIR_BG = "rgba(211,209,199,0.06)";
 const P_PAD_W = 8;
 const P_PAD_H = 6;
+// charge/chain progress bar, inset from the card's bottom edge by the same padding as everything else
+const BAR_H = 5;
+const BAR_COUNTDOWN_W = 26;
 
 function drawCenteredOverlay(ctx: CanvasRenderingContext2D, lines: { text: string; color: string; font: string }[], bgColor: string) {
     const W = ctx.canvas.clientWidth;
@@ -312,7 +316,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.font = "11px sans-serif";
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
-    ctx.fillText(card.Name, tx, ty, CARD_W - P_PAD_W - 4 - STAT_BOX_W);
+    ctx.fillText(card.Name, tx, ty, CARD_W - P_PAD_W - 4 - STAT_BOX_W * 2 - 2);
 
     // draw card type
     ty += 12;
@@ -341,7 +345,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
         ctx.fillText("Use · " + chainEntryLabel(active.ChainEntry), tx, ty);
     }
 
-    const contentBot = y + CARD_H - P_PAD_H - 12 - P_PAD_H; // top of the footer band the Auto switch sits in
+    const contentBot = y + CARD_H - P_PAD_H - BAR_H - 6; // top of the progress bar band
 
     // draw description
     const divY = ty + 8;
@@ -355,12 +359,12 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     // draw ability timer above card
     const abilityTimer = showAbilityTimer ? card.OnTick?.find(t => t.Active) : undefined;
     if (abilityTimer) {
-        drawTimerBar(ctx, x, y, abilityTimer.StartAtSimTime, abilityTimer.ExecuteAtSimTime, currentSimTime, "Ability");
+        drawTimerBar(ctx, x, y, abilityTimer.StartAtSimTime, abilityTimer.ExecuteAtSimTime, currentSimTime);
     }
 
     drawStatBox(ctx, x + CARD_W - 4 - STAT_BOX_W, y + 4, card.Cost, "#0E1E30", "#7AADDF");
     if (card.Type === CardType.Unit) {
-        drawStatBox(ctx, x + CARD_W - 4 - STAT_BOX_W, y + CARD_H - 4 - STAT_BOX_H, card.HP, "#2E0E0E", "#D46B6B");
+        drawStatBox(ctx, x + CARD_W - 4 - STAT_BOX_W * 2 - 2, y + 4, card.HP, "#2E0E0E", "#D46B6B");
     }
 
     if (selected) drawCrosshair(ctx, x, y);
@@ -442,7 +446,7 @@ function drawContinuousZone(ctx: CanvasRenderingContext2D, cards: Card[], contin
         drawFieldCard(ctx, pos.x, pos.y, card, 0, false, selectedIndex === cardID, true, cardID === pendingCardIndex);
         drawChargePips(ctx, pos.x, pos.y, card);
         if (card.Actives[0]?.CanAutoFire) { // spawned tokens arrive with an empty Actives until the next fullState
-            drawSwitch(ctx, pos.x, pos.y, card.Actives[0].AutoAbility, "Auto", SWITCH_Y_OFFSET);
+            drawSwitch(ctx, pos.x, pos.y, card.Actives[0].AutoAbility, "Auto");
         }
     }
 }
@@ -455,7 +459,7 @@ function drawTrapZone(ctx: CanvasRenderingContext2D, cards: Card[], traps: numbe
         // a set trap's only meaningful countdown is its setting bar, so the OnTick bar stays off
         drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, faceDown, selectedIndex === cardID, false, cardID === pendingCardIndex);
         if (!card.Ready) {
-            drawTimerBar(ctx, pos.x, pos.y, card.SetStartAtSimTime, card.ReadyAtSimTime, currentSimTime, "Setting");
+            drawTimerBar(ctx, pos.x, pos.y, card.SetStartAtSimTime, card.ReadyAtSimTime, currentSimTime);
         }
     }
 }
@@ -468,7 +472,7 @@ function drawField(ctx: CanvasRenderingContext2D, cards: Card[], field: number[]
         drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, false, selectedIndex === cardID, true, cardID === pendingCardIndex);
         drawChargePips(ctx, pos.x, pos.y, card);
         if (card.Actives[0]?.CanAutoFire) { // spawned tokens arrive with an empty Actives until the next fullState
-            drawSwitch(ctx, pos.x, pos.y, card.Actives[0].AutoAbility, "Auto", SWITCH_Y_OFFSET);
+            drawSwitch(ctx, pos.x, pos.y, card.Actives[0].AutoAbility, "Auto");
         }
     }
 }
@@ -504,7 +508,7 @@ function drawChainZone(ctx: CanvasRenderingContext2D, chain: ChainItem[], cards:
         }
 
         if (i === topIndex) {
-            drawTimerBar(ctx, pos.x, pos.y, item.StartAtActiveTime, item.ExecuteAtActiveTime, currentActiveTime, "Chain");
+            drawTimerBar(ctx, pos.x, pos.y, item.StartAtActiveTime, item.ExecuteAtActiveTime, currentActiveTime);
         } else {
             drawChainPositionBadge(ctx, pos.x, pos.y, i + 1);
         }
@@ -537,46 +541,37 @@ function drawChainPositionBadge(ctx: CanvasRenderingContext2D, x: number, y: num
     ctx.fillText(`Chain ${position}`, badgeX + BADGE_W / 2, badgeY + BADGE_H / 2);
 }
 
-const SWITCH_W = 28;
 export const SWITCH_H = 12;
-const SWITCH_R = 6;
+export const SWITCH_HIT_W = 32;
 
-// the Auto switch sits in the card's footer band, where the status text used to be.
-// negative offset because drawSwitch measures from the card's bottom edge.
-export const SWITCH_Y_OFFSET = -(P_PAD_H + SWITCH_H);
-// the control is ~50px wide centred on the card; keep the hit box clear of the HP stat box
-export const SWITCH_HIT_W = 76;
+// sits under the mana badge, right-aligned to the card edge
+export function autoButtonRect(cardX: number, cardY: number) {
+    return {
+        x: cardX + CARD_W - 4 - SWITCH_HIT_W,
+        y: cardY + 4 + STAT_BOX_H + 4,
+        w: SWITCH_HIT_W,
+        h: SWITCH_H,
+    };
+}
 
-function drawSwitch(ctx: CanvasRenderingContext2D, x: number, y: number, on: boolean, label: string, yOffset: number = 10): void {
+function drawSwitch(ctx: CanvasRenderingContext2D, x: number, y: number, on: boolean, label: string): void {
     ctx.save();
 
-    ctx.font = "8px sans-serif";
-    const labelW = ctx.measureText(label).width;
-    const LABEL_GAP = 5;
-    const totalW = labelW + LABEL_GAP + SWITCH_W;
-    const startX = x + (CARD_W - totalW) / 2;
-    const sy = y + CARD_H + yOffset;
+    const { x: bx, y: by } = autoButtonRect(x, y);
 
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = on ? SUBTEXT_COLOR : "#444";
-    ctx.fillText(label, startX, sy + SWITCH_H / 2);
-
-    const tx = startX + labelW + LABEL_GAP;
-    roundRect(ctx, tx, sy, SWITCH_W, SWITCH_H, SWITCH_R);
-    ctx.fillStyle = on ? "#3A8F5A" : "#222220";
+    roundRect(ctx, bx, by, SWITCH_HIT_W, SWITCH_H, 3);
+    ctx.fillStyle = on ? "#24361F" : "#1C1C1A";
     ctx.fill();
-    ctx.strokeStyle = on ? "#3A8F5A" : "#3a3a38";
-    ctx.lineWidth = 0.5;
-    roundRect(ctx, tx, sy, SWITCH_W, SWITCH_H, SWITCH_R);
+    ctx.strokeStyle = on ? "#3A8F5A" : CARD_BORDER;
+    ctx.lineWidth = 1;
+    roundRect(ctx, bx, by, SWITCH_HIT_W, SWITCH_H, 3);
     ctx.stroke();
 
-    const knobR = SWITCH_H / 2 - 2;
-    const knobX = on ? tx + SWITCH_W - SWITCH_R : tx + SWITCH_R;
-    ctx.beginPath();
-    ctx.arc(knobX, sy + SWITCH_H / 2, knobR, 0, Math.PI * 2);
-    ctx.fillStyle = on ? "#D3D1C7" : "#555";
-    ctx.fill();
+    ctx.font = "8px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = on ? "#6abf6a" : TEXT_COLOR;
+    ctx.fillText(label, bx + SWITCH_HIT_W / 2, by + SWITCH_H / 2);
 
     ctx.restore();
 }
@@ -590,8 +585,6 @@ function drawHand(ctx: CanvasRenderingContext2D, handOrder: number[], cards: Car
     }
 }
 
-const STAT_BOX_W = 22;
-const STAT_BOX_H = 14;
 const STAT_BOX_R = 3;
 
 function drawStatBox(ctx: CanvasRenderingContext2D, x: number, y: number, value: number, bgColor: string, textColor: string) {
@@ -629,36 +622,35 @@ function computeCurrentSimTime(currentWallTime: number, state: GameState): numbe
     return state.FullPauseStartedAt - state.SimPauseOffset;
 }
 
-function drawTimerBar( ctx: CanvasRenderingContext2D, x: number, y: number, startMs: number, endMs: number, currentSimTime: number, label: string ) {
-    const GAP = 12;
-    const BAR_H = 4;
-    const BAR_W = CARD_W - 20;
-    const barX = x + 10;
+// runs flush inside the card's bottom edge, below the Auto switch band
+function drawTimerBar( ctx: CanvasRenderingContext2D, x: number, y: number, startMs: number, endMs: number, currentSimTime: number ) {
     const progress = Math.min(Math.max((currentSimTime - startMs) / (endMs - startMs), 0), 1);
     const remainingMs = Math.max(endMs - currentSimTime, 0);
     const countdown = (remainingMs / 1000).toFixed(1);
-    //debugDump(`drawTimerBar: label=${label} start=${startMs%1e7} end=${endMs%1e7} currentSimTime=${currentSimTime%1e7} progress=${progress.toFixed(3)} remainingMs=${remainingMs.toFixed(1)}`);
 
-    const barY = y - GAP - BAR_H;
+    const barY = y + CARD_H - P_PAD_H - BAR_H;
+    const barX = x + P_PAD_W;
+    const barW = CARD_W - P_PAD_W * 2 - BAR_COUNTDOWN_W;
 
     ctx.font = "8px sans-serif";
-    ctx.textBaseline = "alphabetic";
-    ctx.fillStyle = SUMMON_COLOR;
-    ctx.textAlign = "left";
-    ctx.fillText(label, barX, barY - 5);
+    ctx.textBaseline = "middle";
     ctx.textAlign = "right";
-    ctx.fillText(countdown, barX + BAR_W, barY - 5);
+    ctx.fillStyle = SUMMON_COLOR;
+    ctx.fillText(countdown, x + CARD_W - P_PAD_W, barY + BAR_H / 2);
 
     // gray track
     ctx.fillStyle = "#444444";
-    ctx.fillRect(Math.round(barX), Math.round(barY), BAR_W, BAR_H);
+    ctx.fillRect(Math.round(barX), Math.round(barY), barW, BAR_H);
     // white fill
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(Math.round(barX), Math.round(barY), Math.round(BAR_W * progress), BAR_H);
+    ctx.fillRect(Math.round(barX), Math.round(barY), Math.round(barW * progress), BAR_H);
     // white border
     ctx.strokeStyle = "#ffffff";
     ctx.lineWidth = 1;
-    ctx.strokeRect(Math.round(barX) + 0.5, Math.round(barY) + 0.5, BAR_W, BAR_H);
+    ctx.strokeRect(Math.round(barX) + 0.5, Math.round(barY) + 0.5, barW, BAR_H);
+
+    ctx.textBaseline = "top";
+    ctx.textAlign = "left";
 }
 
 function drawPriorityIndicator(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number) {

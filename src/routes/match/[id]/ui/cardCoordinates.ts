@@ -1,5 +1,5 @@
 
-import { CARD_GAP, CARD_W, CARD_H, rowY, SWITCH_H, SWITCH_Y_OFFSET, SWITCH_HIT_W } from "./drawBoard"
+import { CARD_GAP, CARD_W, CARD_H, rowY, autoButtonRect } from "./drawBoard"
 
 export type coordinate = {
     x: number
@@ -131,14 +131,12 @@ export function getClickedSwitch(
     positions: coordinate[],
     cardIDs: number[]
 ): number {
-    const xMin = (CARD_W - SWITCH_HIT_W) / 2;
-    const yMin = CARD_H + SWITCH_Y_OFFSET - SWITCH_HIT_PAD;
-    const yMax = CARD_H + SWITCH_Y_OFFSET + SWITCH_H + SWITCH_HIT_PAD;
     for (const cardID of cardIDs) {
         const pos = positions[cardID];
         if (!pos) continue;
-        if (mouseX >= pos.x + xMin && mouseX <= pos.x + xMin + SWITCH_HIT_W &&
-            mouseY >= pos.y + yMin && mouseY <= pos.y + yMax) {
+        const r = autoButtonRect(pos.x, pos.y);
+        if (mouseX >= r.x - SWITCH_HIT_PAD && mouseX <= r.x + r.w + SWITCH_HIT_PAD &&
+            mouseY >= r.y - SWITCH_HIT_PAD && mouseY <= r.y + r.h + SWITCH_HIT_PAD) {
             return cardID;
         }
     }
