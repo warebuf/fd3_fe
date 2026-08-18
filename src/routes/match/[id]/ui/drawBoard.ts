@@ -36,9 +36,9 @@ const CROSSHAIR_BORDER = "rgba(211,209,199,0.5)";
 const CROSSHAIR_BG = "rgba(211,209,199,0.06)";
 const P_PAD_W = 8;
 const P_PAD_H = 6;
-// charge/chain progress bar, inset from the card's bottom edge by the same padding as everything else
-const BAR_H = 5;
-const BAR_COUNTDOWN_W = 26;
+// charge/chain progress ring, inset into the card's bottom-right corner
+const RING_R = 11;
+const RING_LW = 3;
 
 function drawCenteredOverlay(ctx: CanvasRenderingContext2D, lines: { text: string; color: string; font: string }[], bgColor: string) {
     const W = ctx.canvas.clientWidth;
@@ -345,7 +345,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
         ctx.fillText("Use · " + chainEntryLabel(active.ChainEntry), tx, ty);
     }
 
-    const contentBot = y + CARD_H - P_PAD_H - BAR_H - 6; // top of the progress bar band
+    const contentBot = y + CARD_H - P_PAD_H; // description runs to the card's bottom padding
 
     // draw description
     const divY = ty + 8;
@@ -418,12 +418,12 @@ function drawChargePips(ctx: CanvasRenderingContext2D, x: number, y: number, car
     const unlimited = card.MaxCharges > 20;
     const pipCount = unlimited ? card.Charges : card.MaxCharges;
     if (pipCount <= 0) return;
-    const pipRX = 4;
-    const pipRY = 7;
-    const pipGap = 4;
+    const pipRX = 2;
+    const pipRY = 3.5;
+    const pipGap = 3;
     const totalW = pipCount * pipRX * 2 + (pipCount - 1) * pipGap;
     const pipStartX = x + (CARD_W - totalW) / 2 + pipRX;
-    const pipY = y + CARD_H / 2;
+    const pipY = y + CARD_H - P_PAD_H - pipRY;
     for (let p = 0; p < pipCount; p++) {
         const cx = pipStartX + p * (pipRX * 2 + pipGap);
         ctx.beginPath();
@@ -633,26 +633,29 @@ function drawTimerBar( ctx: CanvasRenderingContext2D, x: number, y: number, star
     const remainingMs = Math.max(endMs - currentSimTime, 0);
     const countdown = (remainingMs / 1000).toFixed(1);
 
-    const barY = y + CARD_H - P_PAD_H - BAR_H;
-    const barX = x + P_PAD_W;
-    const barW = CARD_W - P_PAD_W * 2 - BAR_COUNTDOWN_W;
-
-    ctx.font = "8px sans-serif";
-    ctx.textBaseline = "middle";
-    ctx.textAlign = "right";
-    ctx.fillStyle = SUMMON_COLOR;
-    ctx.fillText(countdown, x + CARD_W - P_PAD_W, barY + BAR_H / 2);
+    const cx = x + CARD_W - P_PAD_W - RING_R;
+    const cy = y + CARD_H - P_PAD_H - RING_R;
+    const r = RING_R - RING_LW / 2;
 
     // gray track
-    ctx.fillStyle = "#444444";
-    ctx.fillRect(Math.round(barX), Math.round(barY), barW, BAR_H);
-    // white fill
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(Math.round(barX), Math.round(barY), Math.round(barW * progress), BAR_H);
-    // white border
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = "#444444";
+    ctx.lineWidth = RING_LW;
+    ctx.stroke();
+
+    // white fill, sweeping clockwise from the top
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + progress * Math.PI * 2);
     ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(Math.round(barX) + 0.5, Math.round(barY) + 0.5, barW, BAR_H);
+    ctx.lineWidth = RING_LW;
+    ctx.stroke();
+
+    ctx.font = "8px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = SUMMON_COLOR;
+    ctx.fillText(countdown, cx, cy);
 
     ctx.textBaseline = "top";
     ctx.textAlign = "left";
