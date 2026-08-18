@@ -418,15 +418,20 @@ function drawChargePips(ctx: CanvasRenderingContext2D, x: number, y: number, car
     const unlimited = card.MaxCharges > 20;
     const pipCount = unlimited ? card.Charges : card.MaxCharges;
     if (pipCount <= 0) return;
-    const pipR = 4;
+    const pipRX = 4;
+    const pipRY = 7;
     const pipGap = 4;
-    const totalW = pipCount * pipR * 2 + (pipCount - 1) * pipGap;
-    const pipStartX = x + (CARD_W - totalW) / 2 + pipR;
+    const totalW = pipCount * pipRX * 2 + (pipCount - 1) * pipGap;
+    const pipStartX = x + (CARD_W - totalW) / 2 + pipRX;
     const pipY = y + CARD_H / 2;
     for (let p = 0; p < pipCount; p++) {
-        const cx = pipStartX + p * (pipR * 2 + pipGap);
+        const cx = pipStartX + p * (pipRX * 2 + pipGap);
         ctx.beginPath();
-        ctx.arc(cx, pipY, pipR, 0, Math.PI * 2);
+        ctx.moveTo(cx, pipY - pipRY);
+        ctx.lineTo(cx + pipRX, pipY);
+        ctx.lineTo(cx, pipY + pipRY);
+        ctx.lineTo(cx - pipRX, pipY);
+        ctx.closePath();
         if (unlimited || p < card.Charges) {
             ctx.fillStyle = "#7AADDF";
             ctx.fill();
