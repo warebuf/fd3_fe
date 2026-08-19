@@ -34,6 +34,7 @@ export type SetTrapLog            = Timestamp & { Type: 30; TeamIndex: number; C
 export type TrapReadyLog          = Timestamp & { Type: 31; TeamIndex: number; CardIndex: number; }
 export type SubmitChainLog        = Timestamp & { Type: 32; TeamIndex: number; CardIndex: number; PendingType: number; }
 export type ClearPendingChainsLog = Timestamp & { Type: 33; }
+export type PurgeChainLog         = Timestamp & { Type: 34; CardIndex: number; }
 
 export type EventLog =
     | PhaseLog
@@ -69,4 +70,5 @@ export type EventLog =
     | SetTrapLog
     | TrapReadyLog
     | SubmitChainLog
-    | ClearPendingChainsLog;
+    | ClearPendingChainsLog
+    | PurgeChainLog;
