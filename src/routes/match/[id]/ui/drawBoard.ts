@@ -661,50 +661,6 @@ function drawTimerBar( ctx: CanvasRenderingContext2D, x: number, y: number, star
     ctx.textAlign = "left";
 }
 
-function drawPriorityIndicator(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number) {
-    const canvasW = ctx.canvas.clientWidth;
-
-    const isYou = state.Priority === userIndex;
-    const oppHandCardY    = rowY(0);
-    const playerHandCardY = rowY(6);
-
-    const x = canvasW / 2 + 2.5 * CARD_W;
-    const w = 26;
-    const h = 16;
-    const GAP = 10; // clearance between the triangle's point and the hand cards it points at
-
-    // sit toward the board's center relative to whichever hand row holds priority: above the
-    // player's hand (bottom of screen, pointing down into it), below the opponent's hand
-    // (top of screen, pointing up into it)
-    let apexY: number, baseY: number;
-    if (isYou) {
-        apexY = playerHandCardY - GAP;
-        baseY = apexY - h;
-    } else {
-        apexY = oppHandCardY + CARD_H + GAP;
-        baseY = apexY + h;
-    }
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(x, apexY);
-    ctx.lineTo(x - w / 2, baseY);
-    ctx.lineTo(x + w / 2, baseY);
-    ctx.closePath();
-    ctx.fillStyle = "#2C2C2A";
-    ctx.fill();
-    ctx.strokeStyle = TEXT_COLOR;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    ctx.fillStyle = TEXT_COLOR;
-    ctx.font = "bold 7px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("PRIO", x, baseY + (isYou ? 6 : -6));
-    ctx.restore();
-}
-
 function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, currentActiveTime: number) {
     const x = 6;
     let y = 6;
@@ -731,6 +687,7 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, currentA
 function drawTeamInfoBox(ctx: CanvasRenderingContext2D, state: GameState, teamIndex: number, isPlayer: boolean) {
     const x = Math.round((ctx.canvas.clientWidth - CARD_W) / 2) + 0.5;
     const y = Math.round(rowY(isPlayer ? 5 : 1)) + 0.5;
+    const hasPriority = state.Priority === teamIndex;
 
     roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
     ctx.fillStyle = CARD_COLOR;
@@ -752,7 +709,12 @@ function drawTeamInfoBox(ctx: CanvasRenderingContext2D, state: GameState, teamIn
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
 
-    label(isPlayer ? "You" : "Opponent", TEXT_COLOR);
+    const nameText = isPlayer ? "You" : "Opponent";
+    label(nameText, TEXT_COLOR);
+    if (hasPriority) {
+        ctx.fillStyle = "#F5A623";
+        ctx.fillText(" ★ Priority", x + P_PAD_W + ctx.measureText(nameText).width, ty - LINE_H);
+    }
     label(`HP ${state.Structures[teamIndex]?.HP ?? 0}`, "#D46B6B");
     label(`Mana ${state.Mana[teamIndex] ?? 0}`, "#7AADDF");
     label(`Reserves ${state.Deck[teamIndex].length}`, SUBTEXT_COLOR);
@@ -887,7 +849,6 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     drawTeamInfoBox(ctx, state, userIndex, true);
 
     drawInfoPanel(ctx, state, currentActiveTime);
-    drawPriorityIndicator(ctx, state, userIndex);
 
     if (state.Phase === Phase.GameEnd) drawGameOver(ctx, state, userIndex);
     if (state.PausePhase === PausePhase.FullPause) drawPause(ctx, state, userIndex);
