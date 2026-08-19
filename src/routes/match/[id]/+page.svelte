@@ -14,6 +14,7 @@
     import { drawBoard, drawPhaseAnnouncement, drawStructureDrawButton, drawStructureAutoToggle, drawReadyButton, drawPauseButton } from './ui/drawBoard';
     import { calcBoardLayout, getClickedCard, getClickedSwitch, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
     import { PausePhase, isValidTarget, preselectableAbilities } from './engine/gameState';
+    import { Icon, drawIcon, preloadIcons } from './ui/icons';
 
     // drawing related
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
@@ -100,6 +101,9 @@
         pauseButtonRect = drawPauseButton(ctx, interpolatedState, teamIndex);
         drawPhaseAnnouncement(ctx, authoritativeState.Phase, phaseMessageStart, now);
 
+        // TEMP: icon smoke test
+        drawIcon(ctx, Icon.Charge, 100, 100, 64, 64);
+
         // schedule next frame
         animationID = requestAnimationFrame(loop);
     }
@@ -108,8 +112,9 @@
             
         // canvas setup
         ctx = canvasEl.getContext("2d")!;
-        resizeCanvas();                       
+        resizeCanvas();
         window.addEventListener("resize", resizeCanvas);
+        preloadIcons();
 
         const onMove = (e: MouseEvent) => {
             const r = canvasEl.getBoundingClientRect();
