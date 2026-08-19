@@ -463,7 +463,7 @@ function drawTrapZone(ctx: CanvasRenderingContext2D, cards: Card[], traps: numbe
         const card = cards[cardID];
         // a set trap's only meaningful countdown is its setting bar, so the OnTick bar stays off
         drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, faceDown, selectedIndex === cardID, false, cardID === pendingCardIndex);
-        if (!card.Ready) {
+        if (!card.Ready && card.ReadyAtSimTime > 0) {
             drawTimerBar(ctx, pos.x, pos.y, card.SetStartAtSimTime, card.ReadyAtSimTime, currentSimTime);
         }
     }
