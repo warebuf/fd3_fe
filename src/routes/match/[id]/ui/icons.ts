@@ -6,7 +6,7 @@ export enum Icon {
 
 // indexed by Icon
 const PATHS = [
-    "/sprites/puzzle_red.png",
+    "/sprites/puzzle_red_2.png",
 ];
 
 const images: HTMLImageElement[] = [];
