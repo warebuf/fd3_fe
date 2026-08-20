@@ -102,7 +102,7 @@
         drawPhaseAnnouncement(ctx, authoritativeState.Phase, phaseMessageStart, now);
 
         // TEMP: icon smoke test
-        drawIcon(ctx, Icon.Charge, 100, 100, 64, 64);
+        drawIcon(ctx, Icon.PuzzleRed, 100, 100);
 
         // schedule next frame
         animationID = requestAnimationFrame(loop);

@@ -1,12 +1,12 @@
 // simple icon cache: load once, draw many. sources live in static/sprites.
 
 export enum Icon {
-    Charge,
+    PuzzleRed,
 }
 
-// indexed by Icon
+// 1:1 with Icon enum
 const PATHS = [
-    "/sprites/puzzle_red_2.png",
+    "/sprites/puzzle_red-12.png",
 ];
 
 const images: HTMLImageElement[] = [];
@@ -21,16 +21,15 @@ function get(icon: Icon): HTMLImageElement {
     return img;
 }
 
-// call once from onMount, before the first frame. never awaited on the render path.
 export function preloadIcons(): Promise<unknown> {
     return Promise.all(PATHS.map((_, icon) => get(icon).decode().catch(() => {})));
 }
 
-// draws centered on (x, y) at w x h css px. returns false if the image isn't loaded yet,
-// so callers keep their vector fallback and the board never renders blank.
-export function drawIcon(ctx: CanvasRenderingContext2D, icon: Icon, x: number, y: number, w: number, h: number): boolean {
+export function drawIcon(ctx: CanvasRenderingContext2D, icon: Icon, x: number, y: number, w?: number, h?: number): boolean {
     const img = get(icon);
     if (!img.complete) return false;
-    ctx.drawImage(img, Math.round(x - w / 2), Math.round(y - h / 2), w, h);
+    const dw = w ?? img.naturalWidth;
+    const dh = h ?? img.naturalHeight;
+    ctx.drawImage(img, Math.round(x - dw / 2), Math.round(y - dh / 2), dw, dh);
     return true;
 }

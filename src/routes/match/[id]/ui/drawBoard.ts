@@ -5,6 +5,7 @@ import { Phase, PausePhase, CardType, Archetype, Zone, ChainEntry } from "../eng
 import type { coordinate } from "./cardCoordinates"
 import { ping, serverClockOffset } from "../networking/ping";
 import { debugDump } from "../debuggers/debug";
+import { Icon, drawIcon } from "./icons";
 
 export const CARD_W = 135;
 export const CARD_H = 115;
@@ -333,16 +334,13 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     if (card.Archetype === Archetype.Tree) {
         cardType += " · Tree";
     }
-    if (card.ChainEntry !== ChainEntry.Dual) {
-        cardType += " · " + chainEntryLabel(card.ChainEntry);
-    }
-    ctx.fillText(cardType, tx, ty);
+    drawChainEntryIcon(ctx, cardType, card.ChainEntry, tx, ty);
 
     // the card's Active carries its own entry label, only real ability slots have Target set
     const active = card.Actives?.find(a => a.Target === -1 && a.ChainEntry !== ChainEntry.Dual);
     if (active) {
         ty += 11;
-        ctx.fillText("Use · " + chainEntryLabel(active.ChainEntry), tx, ty);
+        drawChainEntryIcon(ctx, "Use", active.ChainEntry, tx, ty);
     }
 
     const contentBot = y + CARD_H - P_PAD_H; // description runs to the card's bottom padding
@@ -406,6 +404,23 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     }
 
     ctx.restore();
+}
+
+// "<prefix> · <entry>", where an Action entry draws as the red puzzle piece
+// instead of its word. Dual has no marker, so the line is just the prefix.
+function drawChainEntryIcon(ctx: CanvasRenderingContext2D, prefix: string, entry: number, x: number, y: number): void {
+    if (entry === ChainEntry.Dual) {
+        ctx.fillText(prefix, x, y);
+        return;
+    }
+    const text = prefix + " · ";
+    ctx.fillText(text, x, y);
+    const entryX = x + ctx.measureText(text).width;
+    if (entry === ChainEntry.Action) {
+        drawIcon(ctx, Icon.PuzzleRed, entryX + 8, y - 4);
+    } else {
+        ctx.fillText(chainEntryLabel(entry), entryX, y);
+    }
 }
 
 function chainEntryLabel(entry: number): string {
