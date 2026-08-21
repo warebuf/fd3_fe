@@ -2,11 +2,15 @@
 
 export enum Icon {
     PuzzleRed,
+    PuzzleBlue,
+    PuzzleBoth,
 }
 
 // 1:1 with Icon enum
 const PATHS = [
     "/sprites/puzzle_red-12.png",
+    "/sprites/puzzle_blue-12.png",
+    "/sprites/puzzle_both-16.png",
 ];
 
 const images: HTMLImageElement[] = [];

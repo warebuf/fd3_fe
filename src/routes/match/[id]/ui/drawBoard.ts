@@ -406,27 +406,25 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.restore();
 }
 
-// "<prefix> · <entry>", where an Action entry draws as the red puzzle piece
-// instead of its word. Dual has no marker, so the line is just the prefix.
+// "<prefix> · <piece>", the entry drawn as its puzzle piece: red for Action,
+// blue for Reaction, both for Dual.
 function drawChainEntryIcon(ctx: CanvasRenderingContext2D, prefix: string, entry: number, x: number, y: number): void {
-    if (entry === ChainEntry.Dual) {
-        ctx.fillText(prefix, x, y);
-        return;
-    }
     const text = prefix + " · ";
     ctx.fillText(text, x, y);
     const entryX = x + ctx.measureText(text).width;
-    if (entry === ChainEntry.Action) {
-        drawIcon(ctx, Icon.PuzzleRed, entryX, y - 9); // y is the text baseline, the piece sits above it
-    } else {
-        ctx.fillText(chainEntryLabel(entry), entryX, y);
-    }
-}
 
-function chainEntryLabel(entry: number): string {
-    if (entry === ChainEntry.Action) return "Action";
-    if (entry === ChainEntry.Reaction) return "Reaction";
-    return "Dual";
+    // y is the text baseline, the piece sits above it. the rise is per icon,
+    // the dual piece is 16px against the other two at 12px
+    let icon = Icon.PuzzleBoth;
+    let rise = 11;
+    if (entry === ChainEntry.Action) {
+        icon = Icon.PuzzleRed;
+        rise = 9;
+    } else if (entry === ChainEntry.Reaction) {
+        icon = Icon.PuzzleBlue;
+        rise = 9;
+    }
+    drawIcon(ctx, icon, entryX, y - rise);
 }
 
 function drawChargePips(ctx: CanvasRenderingContext2D, x: number, y: number, card: Card): void {
