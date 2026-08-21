@@ -25,11 +25,10 @@ export function preloadIcons(): Promise<unknown> {
     return Promise.all(PATHS.map((_, icon) => get(icon).decode().catch(() => {})));
 }
 
-export function drawIcon(ctx: CanvasRenderingContext2D, icon: Icon, x: number, y: number, w?: number, h?: number): boolean {
+// draws at the image's natural size, from x, y as the top left corner
+export function drawIcon(ctx: CanvasRenderingContext2D, icon: Icon, x: number, y: number): boolean {
     const img = get(icon);
     if (!img.complete) return false;
-    const dw = w ?? img.naturalWidth;
-    const dh = h ?? img.naturalHeight;
-    ctx.drawImage(img, Math.round(x - dw / 2), Math.round(y - dh / 2), dw, dh);
+    ctx.drawImage(img, Math.round(x), Math.round(y));
     return true;
 }

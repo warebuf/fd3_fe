@@ -417,7 +417,7 @@ function drawChainEntryIcon(ctx: CanvasRenderingContext2D, prefix: string, entry
     ctx.fillText(text, x, y);
     const entryX = x + ctx.measureText(text).width;
     if (entry === ChainEntry.Action) {
-        drawIcon(ctx, Icon.PuzzleRed, entryX + 8, y - 4);
+        drawIcon(ctx, Icon.PuzzleRed, entryX, y - 9); // y is the text baseline, the piece sits above it
     } else {
         ctx.fillText(chainEntryLabel(entry), entryX, y);
     }
