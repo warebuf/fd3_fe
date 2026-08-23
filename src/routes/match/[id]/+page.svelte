@@ -8,7 +8,7 @@
     import { stopPing, serverClockOffset } from "./networking/ping";
 
     import { StateManager } from "./engine/stateManager"
-    import { initGameState, cloneGameState, type GameState, Phase, Zone } from './engine/gameState';
+    import { initGameState, cloneGameState, type GameState, Phase, Zone, CardType, TargetFlags } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
     import { drawBoard, drawPhaseAnnouncement, drawStructureDrawButton, drawStructureAutoToggle, drawReadyButton, drawPauseButton } from './ui/drawBoard';
@@ -38,6 +38,7 @@
     let clickedIndex: number = -1;
     let preselecting: number = -1; // card index awaiting a target click (field unit's Active, or hand card's OnPlay)
     let preselectingIndex: number = -1; // which ability slot on that card (Actives or OnPlay, per its zone)
+    let equipTargeting: number = -1; // hand equip card awaiting a host click; plays immediately on a valid click
     let handOrder: number[][] = [];
     let positions: coordinate[] = [];
     let chainCoords: coordinate[] = [];
@@ -94,7 +95,7 @@
         // draw
         ctx.clearRect(0, 0, canvasEl.clientWidth, canvasEl.clientHeight);
         const currentWallTime = now + performance.timeOrigin + get(serverClockOffset);
-        drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, positions, chainCoords, handOrder, clickedIndex, preselecting);
+        drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, positions, chainCoords, handOrder, clickedIndex, preselecting >= 0 ? preselecting : equipTargeting);
         drawButtonRect = drawStructureDrawButton(ctx, interpolatedState, teamIndex);
         autoToggleRect = drawStructureAutoToggle(ctx, interpolatedState, teamIndex);
         readyButtonRect = drawReadyButton(ctx, interpolatedState, teamIndex);
@@ -162,6 +163,15 @@
 
             const hit = getClickedCard(x, y, positions, interpolatedState?.Chain ?? [], chainCoords);
 
+            const equipFlags = TargetFlags.OwnField | TargetFlags.OppField;
+
+            if (equipTargeting >= 0 && hit >= 0 && isValidTarget(interpolatedState.Cards, equipFlags, equipTargeting, hit, teamIndex)) {
+                ws?.send(JSON.stringify({ type: "instant", CardIndex: equipTargeting, TargetCardIndex: hit }));
+                equipTargeting = -1;
+                clickedIndex = -1;
+                return;
+            }
+
             const preselectFlags = preselecting >= 0 ? preselectableAbilities(interpolatedState.Cards[preselecting])[preselectingIndex].TargetFlags : 0;
 
             if (preselecting >= 0 && hit >= 0 && isValidTarget(interpolatedState.Cards, preselectFlags, preselecting, hit, teamIndex)) {
@@ -228,6 +238,13 @@
                 if (clickedIndex === -1) return;
                 const card = interpolatedState?.Cards[clickedIndex];
                 if (card?.Team !== teamIndex) return;
+
+                if (card.Zone === Zone.Hand && card.Type === CardType.Equip) {
+                    equipTargeting = clickedIndex;
+                    clickedIndex = -1;
+                    return;
+                }
+
                 if (card.Zone !== Zone.Field && card.Zone !== Zone.Hand && card.Zone !== Zone.Trap) return;
 
                 const abilities = preselectableAbilities(card);

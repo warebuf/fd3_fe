@@ -17,7 +17,7 @@ export function removeChain(state: GameState, log: RemoveChainLog) {
             card.Zone = Zone.Graveyard;
             state.Grave[card.Team].push(log.CardIndex);
         }
-    } else if (type === ChainItemType.Summon || type === ChainItemType.ContinuousResolution) {
+    } else if (type === ChainItemType.Summon || type === ChainItemType.ContinuousResolution || type === ChainItemType.Equip) {
         card.Zone = Zone.Graveyard;
         state.Grave[card.Team].push(log.CardIndex);
     }

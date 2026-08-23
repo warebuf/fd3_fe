@@ -797,6 +797,37 @@ function drawPause(ctx: CanvasRenderingContext2D, state: GameState, userIndex: n
     ctx.restore();
 }
 
+const EQUIP_BADGE_R = 8;
+const EQUIP_BADGE_COLOR = "#F5A623";
+
+function drawEquipBadges(ctx: CanvasRenderingContext2D, cards: Card[], equip: number[][], positions: coordinate[]) {
+    for (const team of equip) {
+        for (const equipID of team) {
+            const hostID = cards[equipID]?.EquipHostIndex ?? -1;
+            const pos = positions[hostID];
+            if (hostID < 0 || !pos) continue;
+
+            const cx = pos.x + CARD_W - EQUIP_BADGE_R - 2;
+            const cy = pos.y + EQUIP_BADGE_R + 2;
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(cx, cy, EQUIP_BADGE_R, 0, Math.PI * 2);
+            ctx.fillStyle = CARD_COLOR;
+            ctx.fill();
+            ctx.strokeStyle = EQUIP_BADGE_COLOR;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.fillStyle = EQUIP_BADGE_COLOR;
+            ctx.font = "bold 10px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("E", cx, cy + 0.5);
+            ctx.restore();
+        }
+    }
+}
+
 function drawPreselectHighlight(ctx: CanvasRenderingContext2D, x: number, y: number) {
     ctx.save();
     ctx.strokeStyle = "#F5A623";
@@ -857,6 +888,8 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     drawTrapZone(ctx, state.Cards, state.Traps?.[userIndex] ?? [], positions, currentSimTime, selectedIndex, false, pendingCardIndex);
     drawContinuousZone(ctx, state.Cards, state.Continuous?.[userIndex] ?? [], positions, selectedIndex, pendingCardIndex);
     drawHand(ctx, handOrder[userIndex] ?? [], state.Cards, positions, false, selectedIndex, currentSimTime, pendingCardIndex);
+
+    drawEquipBadges(ctx, state.Cards, state.Equip ?? [[], []], positions);
 
     drawTeamInfoBox(ctx, state, opponentIndex, false);
     drawTeamInfoBox(ctx, state, userIndex, true);

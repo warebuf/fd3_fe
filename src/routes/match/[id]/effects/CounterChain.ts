@@ -17,7 +17,7 @@ export function counterChain(state: GameState, log: CounterChainLog) {
             card.Zone = Zone.Graveyard;
             state.Grave[card.Team].push(log.TargetCardIndex);
         }
-    } else if (type === ChainItemType.Summon || type === ChainItemType.ContinuousResolution) {
+    } else if (type === ChainItemType.Summon || type === ChainItemType.ContinuousResolution || type === ChainItemType.Equip) {
         card.Zone = Zone.Graveyard;
         state.Grave[card.Team].push(log.TargetCardIndex);
     }

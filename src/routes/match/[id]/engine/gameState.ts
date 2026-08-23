@@ -26,6 +26,7 @@ export type GameState = {
     Grave: number[][];
     Continuous: number[][];
     Traps: number[][]; // set but not yet activated
+    Equip: number[][];
 
     Chain: ChainItem[];
     PendingSubmissions: number[]; // per team, card index held for this window; -1 for none or a structure draw
@@ -60,6 +61,7 @@ export const Zone = {
     Pending: 4,
     Continuous: 5,
     Trap: 6,
+    Equip: 7,
 } as const;
 
 // mirrors engine/state.ChainEntry
@@ -77,6 +79,7 @@ export const ChainItemType = {
     Summon: 4,
     ContinuousResolution: 5,
     StructureAbility: 6,
+    Equip: 7,
 } as const;
 
 export const CardType = {
@@ -84,6 +87,7 @@ export const CardType = {
     Unit: 1,
     Trap: 2,
     Continuous: 3,
+    Equip: 4,
 } as const;
 
 // mirrors engine/state.EffectType
@@ -100,6 +104,7 @@ export const EffectType = {
     SelfDestruct: 10,
     ConvertToTokens: 11,
     ChargeTarget: 12,
+    AbsorbDestruction: 13,
 } as const;
 
 export interface Structure {
@@ -207,6 +212,8 @@ export interface Card {
     OnTick: TickAbility[];
     Actives: ActiveAbility[];
     OnPlay: OnPlayAbility[];
+
+    EquipHostIndex: number; // -1 is no host
 }
 
 export interface Effect {
@@ -250,6 +257,7 @@ export function initGameState(): GameState {
         Grave: [[], []],
         Continuous: [[], []],
         Traps: [[], []],
+        Equip: [[], []],
 
         Chain: [],
         PendingSubmissions: [-1, -1],
@@ -291,6 +299,7 @@ export function cloneGameState(src: GameState): GameState {
         Grave: src.Grave.map(g => [...g]),
         Continuous: src.Continuous.map(c => [...c]),
         Traps: (src.Traps ?? [[], []]).map(t => [...t]),
+        Equip: (src.Equip ?? [[], []]).map(e => [...e]),
 
         Chain: src.Chain.map(item => ({ ...item, Effects: [...item.Effects] })),
         PendingSubmissions: [...(src.PendingSubmissions ?? [-1, -1])],

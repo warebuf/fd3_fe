@@ -37,6 +37,7 @@ import { trapReady } from "./TrapReady";
 import { submitChain } from "./SubmitChain";
 import { clearPendingChains } from "./ClearPendingChains";
 import { purgeChain } from "./PurgeChain";
+import { equipResolution } from "./EquipResolution";
 
 export function applyEffect(state: GameState, log: EventLog) {
 
@@ -77,6 +78,7 @@ export function applyEffect(state: GameState, log: EventLog) {
         case 32: submitChain(state, log); break;
         case 33: clearPendingChains(state, log); break;
         case 34: purgeChain(state, log); break;
+        case 35: equipResolution(state, log); break;
 
         default: console.log("could not apply log", log); applied = false; break;
     }

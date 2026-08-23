@@ -9,33 +9,30 @@ export function destroyCard(state: GameState, log: DestroyCardLog) {
     let targetCard = log.TargetCardIndex;
 
     if(targetAll) {
-        for(let i = 0; i < state.Field.length; i++) {
-            for(let j = 0; j < state.Field[i].length; j++) {
-                const idx = state.Field[i][j];
-                state.Cards[idx].Zone = 3;
-                if (!state.Cards[idx].IsToken) {
-                    state.Grave[i].push(idx);
-                }
-            }
-            state.Field[i] = [];
-        }
+        // every card actually destroyed already arrived as its own individual DestroyCardLog
+        return;
+    }
+
+    let zoneArr: number[];
+    if (state.Cards[targetCard].Zone === Zone.Trap) {
+        zoneArr = state.Traps[targetTeam];
+    } else if (state.Cards[targetCard].Zone === Zone.Equip) {
+        zoneArr = state.Equip[targetTeam];
     } else {
-        // a set trap is destroyed out of the trap zone, everything else off the field
-        const zoneArr = state.Cards[targetCard].Zone === Zone.Trap ? state.Traps[targetTeam] : state.Field[targetTeam];
+        zoneArr = state.Field[targetTeam];
+    }
 
-        state.Cards[targetCard].Zone = 3;
+    state.Cards[targetCard].Zone = Zone.Graveyard;
 
-        for (let i = 0; i < zoneArr.length; i++) {
-            if (zoneArr[i] === targetCard) {
-                zoneArr.splice(i, 1);
-                break;
-            }
+    for (let i = 0; i < zoneArr.length; i++) {
+        if (zoneArr[i] === targetCard) {
+            zoneArr.splice(i, 1);
+            break;
         }
+    }
 
-        // add to grave
-        if (!state.Cards[targetCard].IsToken) {
-            state.Grave[targetTeam].push(targetCard);
-        }
+    if (!state.Cards[targetCard].IsToken) {
+        state.Grave[targetTeam].push(targetCard);
     }
 
 }
