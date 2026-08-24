@@ -49,7 +49,6 @@
 
     let phaseShown = -1;
     let phaseMessageStart = -Infinity;
-    let pauseEnd = 0; // absolute wall time when the current pause expires
 
 
     function resizeCanvas() {
@@ -129,30 +128,35 @@
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
 
+            // clicked the structure ability
             if (drawButtonRect && x >= drawButtonRect.x && x <= drawButtonRect.x + drawButtonRect.w
                 && y >= drawButtonRect.y && y <= drawButtonRect.y + drawButtonRect.h) {
                 ws?.send(JSON.stringify({ type: "structureDraw" }));
                 return;
             }
 
+            // clicked the structure auto ability toggle
             if (autoToggleRect && x >= autoToggleRect.x && x <= autoToggleRect.x + autoToggleRect.w
                 && y >= autoToggleRect.y && y <= autoToggleRect.y + autoToggleRect.h) {
                 ws?.send(JSON.stringify({ type: "toggleStructureAutoAbility" }));
                 return;
             }
 
+            // clicked the ready button
             if (readyButtonRect && x >= readyButtonRect.x && x <= readyButtonRect.x + readyButtonRect.w
                 && y >= readyButtonRect.y && y <= readyButtonRect.y + readyButtonRect.h) {
                 ws?.send(JSON.stringify({ type: interpolatedState?.Ready[teamIndex] ? "unready" : "ready" }));
                 return;
             }
 
+            // clicked the pause button
             if (pauseButtonRect && x >= pauseButtonRect.x && x <= pauseButtonRect.x + pauseButtonRect.w
                 && y >= pauseButtonRect.y && y <= pauseButtonRect.y + pauseButtonRect.h) {
                 ws?.send(JSON.stringify({ type: "fullPause" }));
                 return;
             }
 
+            // clicked auto ability toggle
             const fieldCardIDs = [...(interpolatedState?.Field[teamIndex] ?? []), ...(interpolatedState?.Continuous[teamIndex] ?? [])]
                 .filter(id => interpolatedState!.Cards[id].Actives[0]?.CanAutoFire);
             const fieldSwitchHit = getClickedSwitch(x, y, positions, fieldCardIDs);
@@ -161,16 +165,22 @@
                 return;
             }
 
-            const hit = getClickedCard(x, y, positions, interpolatedState?.Chain ?? [], chainCoords);
+            console.log("A6")
 
+            const hit = getClickedCard(x, y, positions, interpolatedState?.Chain ?? [], chainCoords); // returns index of clicked card
             const equipFlags = TargetFlags.OwnField | TargetFlags.OppField;
 
+            console.log( "hit", hit, "equipF", equipFlags, "isV", isValidTarget(interpolatedState.Cards, equipFlags, equipTargeting, hit, teamIndex) )
+
             if (equipTargeting >= 0 && hit >= 0 && isValidTarget(interpolatedState.Cards, equipFlags, equipTargeting, hit, teamIndex)) {
+                console.log("MADEIT")
                 ws?.send(JSON.stringify({ type: "instant", CardIndex: equipTargeting, TargetCardIndex: hit }));
                 equipTargeting = -1;
                 clickedIndex = -1;
                 return;
             }
+
+            console.log("A7")
 
             const preselectFlags = preselecting >= 0 ? preselectableAbilities(interpolatedState.Cards[preselecting])[preselectingIndex].TargetFlags : 0;
 
@@ -182,6 +192,9 @@
             } else {
                 clickedIndex = hit;
             }
+
+            console.log("A8 \n\n")
+
         };
 
         const onKeyDown = (e: KeyboardEvent) => {
@@ -239,11 +252,16 @@
                 const card = interpolatedState?.Cards[clickedIndex];
                 if (card?.Team !== teamIndex) return;
 
+                console.log("B")
+
+                // early return, setting up equip target
                 if (card.Zone === Zone.Hand && card.Type === CardType.Equip) {
                     equipTargeting = clickedIndex;
                     clickedIndex = -1;
                     return;
                 }
+
+                console.log("C")
 
                 if (card.Zone !== Zone.Field && card.Zone !== Zone.Hand && card.Zone !== Zone.Trap) return;
 
