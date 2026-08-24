@@ -159,6 +159,7 @@ export const TargetFlags = {
 export function isValidTarget(cards: Card[], targetFlags: number, sourceIdx: number, targetIdx: number, teamIndex: number): boolean {
     if (targetFlags === 0 || targetIdx < 0 || targetIdx >= cards.length) return false;
     const target = cards[targetIdx];
+    console.log("target",target);
     if (!target) return false;
     if (targetIdx === sourceIdx) return (targetFlags & TargetFlags.Self) !== 0;
     if (target.Team === teamIndex && target.Zone === Zone.Field)      return (targetFlags & TargetFlags.OwnField) !== 0;

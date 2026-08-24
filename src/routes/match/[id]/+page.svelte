@@ -171,6 +171,7 @@
             const equipFlags = TargetFlags.OwnField | TargetFlags.OppField;
 
             console.log( "hit", hit, "equipF", equipFlags, "isV", isValidTarget(interpolatedState.Cards, equipFlags, equipTargeting, hit, teamIndex) )
+            
 
             if (equipTargeting >= 0 && hit >= 0 && isValidTarget(interpolatedState.Cards, equipFlags, equipTargeting, hit, teamIndex)) {
                 console.log("MADEIT")
@@ -252,16 +253,12 @@
                 const card = interpolatedState?.Cards[clickedIndex];
                 if (card?.Team !== teamIndex) return;
 
-                console.log("B")
-
                 // early return, setting up equip target
                 if (card.Zone === Zone.Hand && card.Type === CardType.Equip) {
                     equipTargeting = clickedIndex;
                     clickedIndex = -1;
                     return;
                 }
-
-                console.log("C")
 
                 if (card.Zone !== Zone.Field && card.Zone !== Zone.Hand && card.Zone !== Zone.Trap) return;
 

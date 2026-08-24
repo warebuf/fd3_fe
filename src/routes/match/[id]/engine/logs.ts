@@ -36,6 +36,7 @@ export type SubmitChainLog        = Timestamp & { Type: 32; TeamIndex: number; C
 export type ClearPendingChainsLog = Timestamp & { Type: 33; }
 export type PurgeChainLog         = Timestamp & { Type: 34; CardIndex: number; }
 export type EquipResolutionLog    = Timestamp & { Type: 35; TeamIndex: number; CardIndex: number; HostIndex: number; }
+export type TrapResolutionLog     = Timestamp & { Type: 36; TeamIndex: number; CardIndex: number; }
 
 export type EventLog =
     | PhaseLog
@@ -73,4 +74,5 @@ export type EventLog =
     | SubmitChainLog
     | ClearPendingChainsLog
     | PurgeChainLog
-    | EquipResolutionLog;
+    | EquipResolutionLog
+    | TrapResolutionLog;
