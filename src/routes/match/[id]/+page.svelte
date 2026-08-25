@@ -165,23 +165,15 @@
                 return;
             }
 
-            console.log("A6")
-
             const hit = getClickedCard(x, y, positions, interpolatedState?.Chain ?? [], chainCoords); // returns index of clicked card
-            const equipFlags = TargetFlags.OwnField | TargetFlags.OppField;
-
-            console.log( "hit", hit, "equipF", equipFlags, "isV", isValidTarget(interpolatedState.Cards, equipFlags, equipTargeting, hit, teamIndex) )
-            
+            const equipFlags = TargetFlags.OwnField | TargetFlags.OppField;            
 
             if (equipTargeting >= 0 && hit >= 0 && isValidTarget(interpolatedState.Cards, equipFlags, equipTargeting, hit, teamIndex)) {
-                console.log("MADEIT")
                 ws?.send(JSON.stringify({ type: "instant", CardIndex: equipTargeting, TargetCardIndex: hit }));
                 equipTargeting = -1;
                 clickedIndex = -1;
                 return;
             }
-
-            console.log("A7")
 
             const preselectFlags = preselecting >= 0 ? preselectableAbilities(interpolatedState.Cards[preselecting])[preselectingIndex].TargetFlags : 0;
 
@@ -193,8 +185,6 @@
             } else {
                 clickedIndex = hit;
             }
-
-            console.log("A8 \n\n")
 
         };
 
