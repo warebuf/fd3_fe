@@ -34,8 +34,6 @@ import { spawnToken } from "./SpawnToken";
 import { toggleStructureAutoAbility } from "./ToggleStructureAutoAbility";
 import { setTrap } from "./SetTrap";
 import { trapReady } from "./TrapReady";
-import { submitChain } from "./SubmitChain";
-import { clearPendingChains } from "./ClearPendingChains";
 import { purgeChain } from "./PurgeChain";
 import { equipResolution } from "./EquipResolution";
 import { trapResolution } from "./TrapResolution";
@@ -76,11 +74,9 @@ export function applyEffect(state: GameState, log: EventLog) {
         case 29: toggleStructureAutoAbility(state, log); break;
         case 30: setTrap(state, log); break;
         case 31: trapReady(state, log); break;
-        case 32: submitChain(state, log); break;
-        case 33: clearPendingChains(state, log); break;
-        case 34: purgeChain(state, log); break;
-        case 35: equipResolution(state, log); break;
-        case 36: trapResolution(state, log); break;
+        case 32: purgeChain(state, log); break;
+        case 33: equipResolution(state, log); break;
+        case 34: trapResolution(state, log); break;
 
         default: console.log("could not apply log", log); applied = false; break;
     }

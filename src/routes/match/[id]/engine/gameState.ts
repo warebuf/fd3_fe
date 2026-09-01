@@ -29,9 +29,6 @@ export type GameState = {
     Equip: number[][];
 
     Chain: ChainItem[];
-    PendingSubmissions: number[]; // per team, card index held for this window; -1 for none or a structure draw
-
-    Priority: number; // team index with priority to react during an open window
 
     Mana: number[];
     Structures: Structure[];
@@ -260,9 +257,6 @@ export function initGameState(): GameState {
         Equip: [[], []],
 
         Chain: [],
-        PendingSubmissions: [-1, -1],
-
-        Priority: 0,
 
         Mana: [],
         Structures: [],
@@ -302,9 +296,6 @@ export function cloneGameState(src: GameState): GameState {
         Equip: (src.Equip ?? [[], []]).map(e => [...e]),
 
         Chain: src.Chain.map(item => ({ ...item, Effects: [...item.Effects] })),
-        PendingSubmissions: [...(src.PendingSubmissions ?? [-1, -1])],
-
-        Priority: src.Priority,
 
         Mana: [...src.Mana],
         Structures: src.Structures.map(s => ({ ...s })),

@@ -32,11 +32,9 @@ export type SpawnTokenLog         = Timestamp & { Type: 28; TeamIndex: number; C
 export type ToggleStructureAutoAbilityLog = Timestamp & { Type: 29; TeamIndex: number; On: boolean; }
 export type SetTrapLog            = Timestamp & { Type: 30; TeamIndex: number; CardIndex: number; SetStartAtSimTime: number; ReadyAtSimTime: number; }
 export type TrapReadyLog          = Timestamp & { Type: 31; TeamIndex: number; CardIndex: number; }
-export type SubmitChainLog        = Timestamp & { Type: 32; TeamIndex: number; CardIndex: number; PendingType: number; }
-export type ClearPendingChainsLog = Timestamp & { Type: 33; }
-export type PurgeChainLog         = Timestamp & { Type: 34; CardIndex: number; }
-export type EquipResolutionLog    = Timestamp & { Type: 35; TeamIndex: number; CardIndex: number; HostIndex: number; }
-export type TrapResolutionLog     = Timestamp & { Type: 36; TeamIndex: number; CardIndex: number; }
+export type PurgeChainLog         = Timestamp & { Type: 32; CardIndex: number; }
+export type EquipResolutionLog    = Timestamp & { Type: 33; TeamIndex: number; CardIndex: number; HostIndex: number; }
+export type TrapResolutionLog     = Timestamp & { Type: 34; TeamIndex: number; CardIndex: number; }
 
 export type EventLog =
     | PhaseLog
@@ -71,8 +69,6 @@ export type EventLog =
     | ToggleStructureAutoAbilityLog
     | SetTrapLog
     | TrapReadyLog
-    | SubmitChainLog
-    | ClearPendingChainsLog
     | PurgeChainLog
     | EquipResolutionLog
     | TrapResolutionLog;
