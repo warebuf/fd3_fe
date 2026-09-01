@@ -7,7 +7,7 @@
   let finding = false;
 
   //let deckInput = "10,2,18";
-  let deckInput = "1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13,15,15,16,16,17,17";
+  let deckInput = "1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,16,16,17,17";
   let startingHandInput = "";
   let structNo = 1;
 
