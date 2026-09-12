@@ -317,7 +317,7 @@ function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, car
     ctx.font = "11px sans-serif";
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
-    ctx.fillText(card.Name, tx, ty, CARD_W - P_PAD_W - 4 - STAT_BOX_W * 2 - 2);
+    ctx.fillText(card.Name, tx, ty);
 
     // draw card type
     ty += 12;
