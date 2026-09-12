@@ -11,7 +11,7 @@
     import { initGameState, cloneGameState, type GameState, Phase, Zone, CardType, TargetFlags } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
-    import { drawBoard, drawPhaseAnnouncement, drawStructureDrawButton, drawStructureAutoToggle, drawReadyButton, drawPauseButton } from './ui/drawBoard';
+    import { drawBoard, drawPhaseAnnouncement, drawStructureDrawButton, drawStructureAutoToggle, drawReadyButton, drawPauseButton, drawSkipChainButton } from './ui/drawBoard';
     import { calcBoardLayout, getClickedCard, getClickedSwitch, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
     import { PausePhase, isValidTarget, preselectableAbilities } from './engine/gameState';
     import { Icon, drawIcon, preloadIcons } from './ui/icons';
@@ -45,6 +45,7 @@
     let drawButtonRect: { x: number; y: number; w: number; h: number } | null = null;
     let autoToggleRect: { x: number; y: number; w: number; h: number } | null = null;
     let readyButtonRect: { x: number; y: number; w: number; h: number } | null = null;
+    let skipChainButtonRect: { x: number; y: number; w: number; h: number } | null = null;
     let pauseButtonRect: { x: number; y: number; w: number; h: number } | null = null;
 
     let phaseShown = -1;
@@ -98,6 +99,7 @@
         drawButtonRect = drawStructureDrawButton(ctx, interpolatedState, teamIndex);
         autoToggleRect = drawStructureAutoToggle(ctx, interpolatedState, teamIndex);
         readyButtonRect = drawReadyButton(ctx, interpolatedState, teamIndex);
+        skipChainButtonRect = drawSkipChainButton(ctx, interpolatedState, teamIndex);
         pauseButtonRect = drawPauseButton(ctx, interpolatedState, teamIndex);
         drawPhaseAnnouncement(ctx, authoritativeState.Phase, phaseMessageStart, now);
 
@@ -146,6 +148,13 @@
             if (readyButtonRect && x >= readyButtonRect.x && x <= readyButtonRect.x + readyButtonRect.w
                 && y >= readyButtonRect.y && y <= readyButtonRect.y + readyButtonRect.h) {
                 ws?.send(JSON.stringify({ type: interpolatedState?.Ready[teamIndex] ? "unready" : "ready" }));
+                return;
+            }
+
+            // clicked the skip chain button
+            if (skipChainButtonRect && x >= skipChainButtonRect.x && x <= skipChainButtonRect.x + skipChainButtonRect.w
+                && y >= skipChainButtonRect.y && y <= skipChainButtonRect.y + skipChainButtonRect.h) {
+                ws?.send(JSON.stringify({ type: interpolatedState?.SkipChain[teamIndex] ? "unskipChain" : "skipChain" }));
                 return;
             }
 
@@ -302,6 +311,9 @@
             } else if (e.key === 'r' || e.key === 'R') {
                 if (interpolatedState?.Phase !== Phase.Draw) return;
                 ws?.send(JSON.stringify({ type: interpolatedState?.Ready[teamIndex] ? "unready" : "ready" }));
+            } else if (e.key === 's' || e.key === 'S') {
+                if (!skipChainButtonRect) return; // not shown, or full paused
+                ws?.send(JSON.stringify({ type: interpolatedState?.SkipChain[teamIndex] ? "unskipChain" : "skipChain" }));
             }
         };
 

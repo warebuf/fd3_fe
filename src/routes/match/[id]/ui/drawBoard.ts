@@ -209,6 +209,47 @@ export function drawReadyButton(ctx: CanvasRenderingContext2D, state: GameState,
     return { x, y, w, h };
 }
 
+export function drawSkipChainButton(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number): { x: number; y: number; w: number; h: number } | null {
+    if (state.Phase !== Phase.Play || state.Chain.length === 0) return null;
+
+    const skipping = state.SkipChain[userIndex] ?? false;
+    const active = state.PausePhase !== PausePhase.FullPause;
+
+    const w = BUTTON_W;
+    const h = BUTTON_H;
+
+    // same slot as the ready button, which is only shown during Draw
+    const y = (buttonRowY(0) + buttonRowY(1)) / 2;
+    const stackX = (ctx.canvas.clientWidth - w) / 2;
+    const GAP = 8;
+    const x = stackX + w + GAP;
+
+    roundRect(ctx, x, y, w, h, 4);
+    ctx.fillStyle = skipping ? "#24361F" : active ? "#2C2C2A" : "#222220";
+    ctx.fill();
+    ctx.strokeStyle = skipping ? "#3A8F5A" : active ? CARD_BORDER : "#3a3a38";
+    ctx.lineWidth = 0.5;
+    roundRect(ctx, x, y, w, h, 4);
+    ctx.stroke();
+
+    ctx.font = "10px sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = skipping ? "#6abf6a" : active ? TEXT_COLOR : "#555";
+    ctx.fillText(`Skip: ${skipping ? "YES" : "NO"} [S]`, x + 6, y + h / 2);
+    ctx.textBaseline = "top";
+
+    // the opponent's skip is the cue that yours would resolve the chain right away
+    const opponentSkipped = state.SkipChain.some((skip, team) => skip && team !== userIndex);
+    if (opponentSkipped) {
+        ctx.font = "9px sans-serif";
+        ctx.fillStyle = "#6abf6a";
+        ctx.fillText("Opponent skipped", x + 6, y + h + 3);
+    }
+
+    return active ? { x, y, w, h } : null;
+}
+
 function drawCrosshair(ctx: CanvasRenderingContext2D, x: number, y: number) {
   const w = CARD_W;
   const h = CARD_H;
