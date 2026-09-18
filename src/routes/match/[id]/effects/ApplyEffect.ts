@@ -40,6 +40,9 @@ import { trapResolution } from "./TrapResolution";
 import { skipChain } from "./SkipChain";
 import { unskipChain } from "./UnskipChain";
 import { giveControl } from "./GiveControl";
+import { standoffOpen } from "./StandoffOpen";
+import { standoffBid } from "./StandoffBid";
+import { standoffResolution } from "./StandoffResolution";
 
 export function applyEffect(state: GameState, log: EventLog) {
 
@@ -83,6 +86,9 @@ export function applyEffect(state: GameState, log: EventLog) {
         case 35: skipChain(state, log); break;
         case 36: unskipChain(state, log); break;
         case 37: giveControl(state, log); break;
+        case 38: standoffOpen(state, log); break;
+        case 39: standoffBid(state, log); break;
+        case 40: standoffResolution(state, log); break;
 
         default: console.log("could not apply log", log); applied = false; break;
     }

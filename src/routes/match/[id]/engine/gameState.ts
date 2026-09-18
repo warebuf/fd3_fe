@@ -35,6 +35,12 @@ export type GameState = {
     Ready: boolean[];
     SkipChain: boolean[];
 
+    // Standoff-style blind mana auction. -1/[-1,-1] when none is open. An opponent's still-sealed
+    // bid reads as -1 client-side until StandoffResolutionLog reveals it - never trust it as "0".
+    StandoffCardIndex: number;
+    PendingBidAmount: number[]; // per team; -1 if not yet sealed (or hidden, for the opponent)
+    PendingBidChoice: number[]; // per team; -1 if not yet sealed (or hidden, for the opponent)
+
     Winner: number; // -1: no winner, 0+: winning team index
 };
 
@@ -106,6 +112,13 @@ export const EffectType = {
     GiveControl: 14,
     HealNonDamaging: 15,
     Extort: 16,
+    Repossess: 17,
+    DamageAllAllies: 18,
+    DrainMana: 19,
+    HealSelf: 20,
+    Liquidate: 21,
+    MutualDestruction: 22,
+    GraveyardBarrage: 23,
 } as const;
 
 export interface Structure {
@@ -195,8 +208,10 @@ export interface Card {
     HP: number;
     Archetype: number;
     Taunt: boolean;
+    Bodyguard: boolean;
 
-    Team: number;
+    Team: number; // current controller; changes on control-changing effects
+    OwnerTeam: number; // the team this card started under; never changes once set
     Type: number;
     Zone: number;
     IsToken: boolean;
@@ -270,6 +285,10 @@ export function initGameState(): GameState {
         Ready: [false, false],
         SkipChain: [false, false],
 
+        StandoffCardIndex: -1,
+        PendingBidAmount: [-1, -1],
+        PendingBidChoice: [-1, -1],
+
         Winner: -1,
     };
 }
@@ -309,6 +328,10 @@ export function cloneGameState(src: GameState): GameState {
         Structures: (src.Structures ?? [[], []]).map(team => team.map(s => ({ ...s }))),
         Ready: [...src.Ready],
         SkipChain: [...src.SkipChain],
+
+        StandoffCardIndex: src.StandoffCardIndex ?? -1,
+        PendingBidAmount: [...(src.PendingBidAmount ?? [-1, -1])],
+        PendingBidChoice: [...(src.PendingBidChoice ?? [-1, -1])],
 
         Winner: src.Winner,
     };

@@ -38,6 +38,9 @@ export type TrapResolutionLog     = Timestamp & { Type: 34; TeamIndex: number; C
 export type SkipChainLog          = Timestamp & { Type: 35; TeamIndex: number; }
 export type UnskipChainLog        = Timestamp & { Type: 36; TeamIndex: number; }
 export type GiveControlLog        = Timestamp & { Type: 37; CardIndex: number; FromTeamIndex: number; ToTeamIndex: number; }
+export type StandoffOpenLog       = Timestamp & { Type: 38; TeamIndex: number; CardIndex: number; }
+export type StandoffBidLog        = Timestamp & { Type: 39; TeamIndex: number; }
+export type StandoffResolutionLog = Timestamp & { Type: 40; CardIndex: number; Bids: [number, number]; Choices: [number, number]; WinnerTeam: number; ChosenEffectIndex: number; }
 
 export type EventLog =
     | PhaseLog
@@ -77,4 +80,7 @@ export type EventLog =
     | TrapResolutionLog
     | SkipChainLog
     | UnskipChainLog
-    | GiveControlLog;
+    | GiveControlLog
+    | StandoffOpenLog
+    | StandoffBidLog
+    | StandoffResolutionLog;

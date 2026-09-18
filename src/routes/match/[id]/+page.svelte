@@ -16,6 +16,7 @@
     import { PausePhase, isValidTarget, preselectableAbilities } from './engine/gameState';
     import { Icon, drawIcon, preloadIcons } from './ui/icons';
     import ZoneViewer from './ui/ZoneViewer.svelte';
+    import StandoffModal from './ui/StandoffModal.svelte';
 
     // drawing related
     let canvasEl: HTMLCanvasElement; // saved for window reshapes
@@ -70,6 +71,10 @@
     function sendInstant(cardIndex: number) {
         if (!interpolatedState) return;
         ws?.send(JSON.stringify({ type: "instant", CardIndex: cardIndex }));
+    }
+
+    function sendBid(amount: number, choice: 0 | 1) {
+        ws?.send(JSON.stringify({ type: "bid", Amount: amount, Choice: choice }));
     }
 
     function loop(now: number) { // now is current time relative to page load
@@ -227,6 +232,7 @@
 
         const onKeyDown = (e: KeyboardEvent) => {
             if (viewingZone) return; // ZoneViewer handles its own Escape
+            if (interpolatedState?.StandoffCardIndex !== -1) return; // StandoffModal is up, don't fire game hotkeys underneath it
 
             if (e.code === 'Space') {
                 e.preventDefault(); // prevent page scroll
@@ -443,6 +449,13 @@
             {cardIDs}
             title={`${who} ${zoneName}`}
             onClose={() => viewingZone = null}
+        />
+    {/if}
+    {#if interpolatedState && interpolatedState.StandoffCardIndex !== -1}
+        <StandoffModal
+            myMana={interpolatedState.Mana[teamIndex] ?? 0}
+            alreadySealed={interpolatedState.PendingBidChoice[teamIndex] !== -1}
+            onSubmit={sendBid}
         />
     {/if}
 </div>

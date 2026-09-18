@@ -10,8 +10,10 @@ export function spawnToken(state: GameState, log: SpawnTokenLog) {
         HP: log.HP,
         Archetype: log.Archetype,
         Taunt: false,
+        Bodyguard: false,
 
         Team: log.TeamIndex,
+        OwnerTeam: log.TeamIndex,
         Type: log.CardType,
         Zone: Zone.Field,
         IsToken: log.IsToken,
