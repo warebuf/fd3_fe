@@ -37,6 +37,7 @@ export type EquipResolutionLog    = Timestamp & { Type: 33; TeamIndex: number; C
 export type TrapResolutionLog     = Timestamp & { Type: 34; TeamIndex: number; CardIndex: number; }
 export type SkipChainLog          = Timestamp & { Type: 35; TeamIndex: number; }
 export type UnskipChainLog        = Timestamp & { Type: 36; TeamIndex: number; }
+export type GiveControlLog        = Timestamp & { Type: 37; CardIndex: number; FromTeamIndex: number; ToTeamIndex: number; }
 
 export type EventLog =
     | PhaseLog
@@ -75,4 +76,5 @@ export type EventLog =
     | EquipResolutionLog
     | TrapResolutionLog
     | SkipChainLog
-    | UnskipChainLog;
+    | UnskipChainLog
+    | GiveControlLog;

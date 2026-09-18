@@ -103,6 +103,9 @@ export const EffectType = {
     ConvertToTokens: 11,
     ChargeTarget: 12,
     AbsorbDestruction: 13,
+    GiveControl: 14,
+    HealNonDamaging: 15,
+    Extort: 16,
 } as const;
 
 export interface Structure {

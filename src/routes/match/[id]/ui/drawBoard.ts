@@ -30,6 +30,8 @@ export const STRUCTURE_HOTKEYS = ["d", "f", "g"];
 function buttonRowY(index: number): number {
     return rowY(6) + CARD_H + 10 + index * (BUTTON_H + 4);
 }
+export type StatsRects = { deck: Rect | null; grave: Rect | null };
+
 // team-wide stats sit on their own line under the two button rows
 function teamStatsY(): number {
     return buttonRowY(2) + BUTTON_H / 2;
@@ -341,7 +343,9 @@ function drawWrappedText(ctx: CanvasRenderingContext2D, text: string, x: number,
     return currentY;
 }
 
-function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, currentSimTime: number, faceDown?: boolean, selected?: boolean, showAbilityTimer: boolean = true ) {
+export type Rect = { x: number; y: number; w: number; h: number };
+
+export function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, currentSimTime: number, faceDown?: boolean, selected?: boolean, showAbilityTimer: boolean = true ) {
     ctx.save();
 
     // adjust for blurry half pixel borders
@@ -786,11 +790,12 @@ function drawStructureCards(ctx: CanvasRenderingContext2D, state: GameState, tea
 }
 
 // team-wide stats, sat in the free space beside the button cluster under the hand
-function drawTeamStats(ctx: CanvasRenderingContext2D, state: GameState, teamIndex: number, ty: number) {
-    const parts = [
+// Reserves/Graveyard double as buttons; their hit rects are returned for click handling
+function drawTeamStats(ctx: CanvasRenderingContext2D, state: GameState, teamIndex: number, ty: number): StatsRects {
+    const parts: { text: string; color: string; zone?: 'Deck' | 'Grave' }[] = [
         { text: `Mana ${state.Mana[teamIndex] ?? 0}`, color: "#7AADDF" },
-        { text: `Reserves ${state.Deck[teamIndex].length}`, color: SUBTEXT_COLOR },
-        { text: `Graveyard ${state.Grave[teamIndex].length}`, color: SUBTEXT_COLOR },
+        { text: `Reserves ${state.Deck[teamIndex].length}`, color: SUBTEXT_COLOR, zone: 'Deck' },
+        { text: `Graveyard ${state.Grave[teamIndex].length}`, color: SUBTEXT_COLOR, zone: 'Grave' },
         { text: `Bank ${Math.floor((state.TimeBank[teamIndex] ?? 0) / 1000)}s`, color: SUBTEXT_COLOR },
     ];
 
@@ -799,15 +804,23 @@ function drawTeamStats(ctx: CanvasRenderingContext2D, state: GameState, teamInde
     ctx.textBaseline = "middle";
 
     const GAP = 14;
+    const PAD_Y = 7;
     const totalW = parts.reduce((sum, p) => sum + ctx.measureText(p.text).width, 0) + GAP * (parts.length - 1);
     let tx = (ctx.canvas.clientWidth - totalW) / 2;
 
+    const rects: StatsRects = { deck: null, grave: null };
+
     for (const part of parts) {
+        const w = ctx.measureText(part.text).width;
         ctx.fillStyle = part.color;
         ctx.fillText(part.text, tx, ty);
-        tx += ctx.measureText(part.text).width + GAP;
+        const rect = { x: tx, y: ty - PAD_Y, w, h: PAD_Y * 2 };
+        if (part.zone === 'Deck') rects.deck = rect;
+        if (part.zone === 'Grave') rects.grave = rect;
+        tx += w + GAP;
     }
     ctx.textBaseline = "top";
+    return rects;
 }
 
 const phaseLabels: Record<number, string> = {
@@ -941,7 +954,7 @@ function drawPreselectArrow(ctx: CanvasRenderingContext2D, sx: number, sy: numbe
     ctx.restore();
 }
 
-export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, positions: coordinate[], chainCoords: coordinate[], structureSlots: coordinate[][], handOrder: number[][], selectedIndex: number, preselecting: number) {
+export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, positions: coordinate[], chainCoords: coordinate[], structureSlots: coordinate[][], handOrder: number[][], selectedIndex: number, preselecting: number): { statsRects: StatsRects[] } {
     const opponentIndex = userIndex === 0 ? 1 : 0;
     if (state.Phase === Phase.GameEnd) currentWallTime = state.WallTimestamp;
 
@@ -966,8 +979,9 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     drawStructureCards(ctx, state, opponentIndex, structureSlots[opponentIndex] ?? []);
     drawStructureCards(ctx, state, userIndex, structureSlots[userIndex] ?? []);
 
-    drawTeamStats(ctx, state, opponentIndex, opponentStatsY());
-    drawTeamStats(ctx, state, userIndex, teamStatsY());
+    const statsRects: StatsRects[] = [];
+    statsRects[opponentIndex] = drawTeamStats(ctx, state, opponentIndex, opponentStatsY());
+    statsRects[userIndex] = drawTeamStats(ctx, state, userIndex, teamStatsY());
 
     drawInfoPanel(ctx, state, currentActiveTime);
 
@@ -993,4 +1007,6 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
             drawPreselectArrow(ctx, srcPos.x, srcPos.y, dstPos.x, dstPos.y);
         }
     }
+
+    return { statsRects };
 }
