@@ -22,9 +22,27 @@ export function rowY(index: number): number {
 
 const BUTTON_W = 96;
 const BUTTON_H = 18;
+const BUTTON_GAP = 8;
+export const STRUCTURE_SLOTS = 3;
+export const STRUCTURE_HOTKEYS = ["d", "f", "g"];
 // the button cluster stacks downward just below the player's hand row
 function buttonRowY(index: number): number {
     return rowY(6) + CARD_H + 10 + index * (BUTTON_H + 4);
+}
+// team-wide stats sit on their own line under the two button rows
+function teamStatsY(): number {
+    return buttonRowY(2) + BUTTON_H / 2;
+}
+
+// one draw/auto column per structure, centered as a group; the pause/ready/skip buttons anchor off its edges
+function structureStackW(): number {
+    return STRUCTURE_SLOTS * BUTTON_W + (STRUCTURE_SLOTS - 1) * BUTTON_GAP;
+}
+function structureStackX(ctx: CanvasRenderingContext2D): number {
+    return (ctx.canvas.clientWidth - structureStackW()) / 2;
+}
+function structureSlotX(ctx: CanvasRenderingContext2D, slot: number): number {
+    return structureStackX(ctx) + slot * (BUTTON_W + BUTTON_GAP);
 }
 
 const CARD_COLOR = "#2C2C2A";
@@ -91,56 +109,66 @@ function roundRect( ctx: CanvasRenderingContext2D, x: number, y: number, w: numb
     ctx.closePath();
 }
 
-export function drawStructureDrawButton(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number): { x: number; y: number; w: number; h: number } | null {
-    const canDraw = state.Phase === Phase.Play && (state.Mana[userIndex] ?? 0) >= 100;
-
+// returns one rect per structure slot, null where that structure can't currently draw
+export function drawStructureDrawButtons(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number): ({ x: number; y: number; w: number; h: number } | null)[] {
     const w = BUTTON_W;
     const h = BUTTON_H;
-    const x = (ctx.canvas.clientWidth - w) / 2;
     const y = buttonRowY(0);
 
-    roundRect(ctx, x, y, w, h, 4);
-    ctx.fillStyle = canDraw ? "#2C2C2A" : "#222220";
-    ctx.fill();
-    ctx.strokeStyle = canDraw ? CARD_BORDER : "#3a3a38";
-    ctx.lineWidth = 0.5;
-    roundRect(ctx, x, y, w, h, 4);
-    ctx.stroke();
+    return Array.from({ length: STRUCTURE_SLOTS }, (_, slot) => {
+        const alive = (state.Structures[userIndex]?.[slot]?.HP ?? 0) > 0;
+        const canDraw = alive && state.Phase === Phase.Play && (state.Mana[userIndex] ?? 0) >= 100;
+        const x = structureSlotX(ctx, slot);
 
-    ctx.font = "10px sans-serif";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = canDraw ? TEXT_COLOR : "#555";
-    ctx.fillText("Draw (100) [D]", x + 6, y + h / 2);
-    ctx.textBaseline = "top";
+        roundRect(ctx, x, y, w, h, 4);
+        ctx.fillStyle = canDraw ? "#2C2C2A" : "#222220";
+        ctx.fill();
+        ctx.strokeStyle = canDraw ? CARD_BORDER : "#3a3a38";
+        ctx.lineWidth = 0.5;
+        roundRect(ctx, x, y, w, h, 4);
+        ctx.stroke();
 
-    return canDraw ? { x, y, w, h } : null;
+        ctx.font = "10px sans-serif";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = canDraw ? TEXT_COLOR : "#555";
+        const key = STRUCTURE_HOTKEYS[slot].toUpperCase();
+        ctx.fillText(alive ? `Draw (100) [${key}]` : "Destroyed", x + 6, y + h / 2);
+        ctx.textBaseline = "top";
+
+        return canDraw ? { x, y, w, h } : null;
+    });
 }
 
-export function drawStructureAutoToggle(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number): { x: number; y: number; w: number; h: number } {
-    const on = state.Structures[userIndex]?.AutoAbility ?? false;
-
+// returns one rect per structure slot, null where that structure is destroyed
+export function drawStructureAutoToggles(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number): ({ x: number; y: number; w: number; h: number } | null)[] {
     const w = BUTTON_W;
     const h = BUTTON_H;
-    const x = (ctx.canvas.clientWidth - w) / 2;
     const y = buttonRowY(1);
 
-    roundRect(ctx, x, y, w, h, 4);
-    ctx.fillStyle = on ? "#24361F" : "#2C2C2A";
-    ctx.fill();
-    ctx.strokeStyle = on ? "#3A8F5A" : CARD_BORDER;
-    ctx.lineWidth = 0.5;
-    roundRect(ctx, x, y, w, h, 4);
-    ctx.stroke();
+    return Array.from({ length: STRUCTURE_SLOTS }, (_, slot) => {
+        const structure = state.Structures[userIndex]?.[slot];
+        const alive = (structure?.HP ?? 0) > 0;
+        const on = structure?.AutoAbility ?? false;
+        const x = structureSlotX(ctx, slot);
 
-    ctx.font = "10px sans-serif";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = on ? "#6abf6a" : TEXT_COLOR;
-    ctx.fillText(`Auto Draw: ${on ? "ON" : "OFF"}`, x + 6, y + h / 2);
-    ctx.textBaseline = "top";
+        roundRect(ctx, x, y, w, h, 4);
+        ctx.fillStyle = !alive ? "#222220" : on ? "#24361F" : "#2C2C2A";
+        ctx.fill();
+        ctx.strokeStyle = !alive ? "#3a3a38" : on ? "#3A8F5A" : CARD_BORDER;
+        ctx.lineWidth = 0.5;
+        roundRect(ctx, x, y, w, h, 4);
+        ctx.stroke();
 
-    return { x, y, w, h };
+        ctx.font = "10px sans-serif";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = !alive ? "#555" : on ? "#6abf6a" : TEXT_COLOR;
+        ctx.fillText(`Auto: ${on ? "ON" : "OFF"}`, x + 6, y + h / 2);
+        ctx.textBaseline = "top";
+
+        return alive ? { x, y, w, h } : null;
+    });
 }
 
 export function drawPauseButton(ctx: CanvasRenderingContext2D, state: GameState, userIndex: number): { x: number; y: number; w: number; h: number } | null {
@@ -154,9 +182,7 @@ export function drawPauseButton(ctx: CanvasRenderingContext2D, state: GameState,
 
     // vertically centered beside the draw-button/auto-toggle stack, to its left
     const y = (buttonRowY(0) + buttonRowY(1)) / 2;
-    const stackX = (ctx.canvas.clientWidth - w) / 2;
-    const GAP = 8;
-    const x = stackX - w - GAP;
+    const x = structureStackX(ctx) - w - BUTTON_GAP;
 
     roundRect(ctx, x, y, w, h, 4);
     ctx.fillStyle = paused ? "#24361F" : active ? "#2C2C2A" : "#222220";
@@ -186,10 +212,7 @@ export function drawReadyButton(ctx: CanvasRenderingContext2D, state: GameState,
 
     // vertically centered beside the draw-button/auto-toggle stack, to its right
     const y = (buttonRowY(0) + buttonRowY(1)) / 2;
-
-    const stackX = (ctx.canvas.clientWidth - w) / 2;
-    const GAP = 8;
-    const x = stackX + w + GAP;
+    const x = structureStackX(ctx) + structureStackW() + BUTTON_GAP;
 
     roundRect(ctx, x, y, w, h, 4);
     ctx.fillStyle = ready ? "#24361F" : "#2C2C2A";
@@ -220,9 +243,7 @@ export function drawSkipChainButton(ctx: CanvasRenderingContext2D, state: GameSt
 
     // same slot as the ready button, which is only shown during Draw
     const y = (buttonRowY(0) + buttonRowY(1)) / 2;
-    const stackX = (ctx.canvas.clientWidth - w) / 2;
-    const GAP = 8;
-    const x = stackX + w + GAP;
+    const x = structureStackX(ctx) + structureStackW() + BUTTON_GAP;
 
     roundRect(ctx, x, y, w, h, 4);
     ctx.fillStyle = skipping ? "#24361F" : active ? "#2C2C2A" : "#222220";
@@ -718,37 +739,71 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, currentA
 }
 
 // occupies the centered card slot of a team's trap/continuous row
-function drawTeamInfoBox(ctx: CanvasRenderingContext2D, state: GameState, teamIndex: number, isPlayer: boolean) {
-    const x = Math.round((ctx.canvas.clientWidth - CARD_W) / 2) + 0.5;
-    const y = Math.round(rowY(isPlayer ? 5 : 1)) + 0.5;
+// one card per structure slot, filling the middle of the team's trap/continuous row
+function drawStructureCards(ctx: CanvasRenderingContext2D, state: GameState, teamIndex: number, slots: coordinate[]) {
+    for (let slot = 0; slot < slots.length; slot++) {
+        const structure = state.Structures[teamIndex]?.[slot];
+        const pos = slots[slot];
+        if (!pos) continue;
 
-    roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
-    ctx.fillStyle = CARD_COLOR;
-    ctx.fill();
-    ctx.strokeStyle = CARD_BORDER;
-    ctx.lineWidth = 0.5;
-    roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
-    ctx.stroke();
+        const x = Math.round(pos.x) + 0.5;
+        const y = Math.round(pos.y) + 0.5;
+        const alive = (structure?.HP ?? 0) > 0;
 
-    const LINE_H = 15;
-    let ty = y + P_PAD_H + 2;
-    const label = (text: string, color: string) => {
-        ctx.fillStyle = color;
-        ctx.fillText(text, x + P_PAD_W, ty);
-        ty += LINE_H;
-    };
+        roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
+        ctx.fillStyle = alive ? CARD_COLOR : "#222220";
+        ctx.fill();
+        ctx.strokeStyle = alive ? CARD_BORDER : "#3a3a38";
+        ctx.lineWidth = 0.5;
+        roundRect(ctx, x, y, CARD_W, CARD_H, CARD_RADIUS);
+        ctx.stroke();
+
+        ctx.font = "10px sans-serif";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+
+        let ty = y + P_PAD_H + 2;
+        ctx.fillStyle = alive ? TEXT_COLOR : "#555";
+        ctx.fillText(structure?.Name || "Structure", x + P_PAD_W, ty);
+        ty += 14;
+
+        // HP reads as the structure's own stat, matching the stat box on field cards
+        drawStatBox(ctx, x + CARD_W - 4 - STAT_BOX_W, y + 4, structure?.HP ?? 0, "#2E0E0E", alive ? "#D46B6B" : "#555");
+
+        if (structure?.Description) {
+            ctx.fillStyle = SUBTEXT_COLOR;
+            ctx.font = "italic 9px sans-serif";
+            ctx.textBaseline = "alphabetic";
+            drawWrappedText(ctx, structure.Description, x + P_PAD_W, ty + 10, CARD_W - P_PAD_W * 2, 11, y + CARD_H - P_PAD_H - 4);
+            ctx.textBaseline = "top";
+        }
+    }
+}
+
+// team-wide stats, sat in the free space beside the button cluster under the hand
+function drawTeamStats(ctx: CanvasRenderingContext2D, state: GameState, teamIndex: number) {
+    const parts = [
+        { text: `Mana ${state.Mana[teamIndex] ?? 0}`, color: "#7AADDF" },
+        { text: `Reserves ${state.Deck[teamIndex].length}`, color: SUBTEXT_COLOR },
+        { text: `Graveyard ${state.Grave[teamIndex].length}`, color: SUBTEXT_COLOR },
+        { text: `Bank ${Math.floor((state.TimeBank[teamIndex] ?? 0) / 1000)}s`, color: SUBTEXT_COLOR },
+    ];
 
     ctx.font = "10px sans-serif";
     ctx.textAlign = "left";
-    ctx.textBaseline = "top";
+    ctx.textBaseline = "middle";
 
-    const nameText = isPlayer ? "You" : "Opponent";
-    label(nameText, TEXT_COLOR);
-    label(`HP ${state.Structures[teamIndex]?.HP ?? 0}`, "#D46B6B");
-    label(`Mana ${state.Mana[teamIndex] ?? 0}`, "#7AADDF");
-    label(`Reserves ${state.Deck[teamIndex].length}`, SUBTEXT_COLOR);
-    label(`Graveyard ${state.Grave[teamIndex].length}`, SUBTEXT_COLOR);
-    label(`Bank ${Math.floor((state.TimeBank[teamIndex] ?? 0) / 1000)}s`, SUBTEXT_COLOR);
+    const GAP = 14;
+    const totalW = parts.reduce((sum, p) => sum + ctx.measureText(p.text).width, 0) + GAP * (parts.length - 1);
+    let tx = (ctx.canvas.clientWidth - totalW) / 2;
+    const ty = teamStatsY();
+
+    for (const part of parts) {
+        ctx.fillStyle = part.color;
+        ctx.fillText(part.text, tx, ty);
+        tx += ctx.measureText(part.text).width + GAP;
+    }
+    ctx.textBaseline = "top";
 }
 
 const phaseLabels: Record<number, string> = {
@@ -882,7 +937,7 @@ function drawPreselectArrow(ctx: CanvasRenderingContext2D, sx: number, sy: numbe
     ctx.restore();
 }
 
-export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, positions: coordinate[], chainCoords: coordinate[], handOrder: number[][], selectedIndex: number, preselecting: number) {
+export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, positions: coordinate[], chainCoords: coordinate[], structureSlots: coordinate[][], handOrder: number[][], selectedIndex: number, preselecting: number) {
     const opponentIndex = userIndex === 0 ? 1 : 0;
     if (state.Phase === Phase.GameEnd) currentWallTime = state.WallTimestamp;
 
@@ -904,8 +959,10 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
 
     drawEquipBadges(ctx, state.Cards, state.Equip ?? [[], []], positions);
 
-    drawTeamInfoBox(ctx, state, opponentIndex, false);
-    drawTeamInfoBox(ctx, state, userIndex, true);
+    drawStructureCards(ctx, state, opponentIndex, structureSlots[opponentIndex] ?? []);
+    drawStructureCards(ctx, state, userIndex, structureSlots[userIndex] ?? []);
+
+    drawTeamStats(ctx, state, userIndex);
 
     drawInfoPanel(ctx, state, currentActiveTime);
 

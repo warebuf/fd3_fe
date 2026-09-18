@@ -2,7 +2,7 @@ import type { ToggleStructureAutoAbilityLog } from "../engine/logs";
 import type { GameState } from "../engine/gameState";
 
 export function toggleStructureAutoAbility(state: GameState, log: ToggleStructureAutoAbilityLog) {
-    const structure = state.Structures[log.TeamIndex];
+    const structure = state.Structures[log.TeamIndex]?.[log.StructureIndex];
     if (!structure) return;
     structure.AutoAbility = log.On;
 }

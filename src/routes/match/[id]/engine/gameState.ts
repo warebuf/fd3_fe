@@ -31,7 +31,7 @@ export type GameState = {
     Chain: ChainItem[];
 
     Mana: number[];
-    Structures: Structure[];
+    Structures: Structure[][]; // per team, then per structure slot
     Ready: boolean[];
     SkipChain: boolean[];
 
@@ -107,6 +107,9 @@ export const EffectType = {
 
 export interface Structure {
     DefNo: number;
+    Name: string;
+    Description: string;
+    DrawCost: number;
     HP: number;
     AutoAbility: boolean;
 }
@@ -260,7 +263,7 @@ export function initGameState(): GameState {
         Chain: [],
 
         Mana: [],
-        Structures: [],
+        Structures: [[], []],
         Ready: [false, false],
         SkipChain: [false, false],
 
@@ -300,7 +303,7 @@ export function cloneGameState(src: GameState): GameState {
         Chain: src.Chain.map(item => ({ ...item, Effects: [...item.Effects] })),
 
         Mana: [...src.Mana],
-        Structures: src.Structures.map(s => ({ ...s })),
+        Structures: (src.Structures ?? [[], []]).map(team => team.map(s => ({ ...s }))),
         Ready: [...src.Ready],
         SkipChain: [...src.SkipChain],
 

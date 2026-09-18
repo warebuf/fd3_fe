@@ -11,7 +11,7 @@
     import { initGameState, cloneGameState, type GameState, Phase, Zone, CardType, TargetFlags } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
-    import { drawBoard, drawPhaseAnnouncement, drawStructureDrawButton, drawStructureAutoToggle, drawReadyButton, drawPauseButton, drawSkipChainButton } from './ui/drawBoard';
+    import { drawBoard, drawPhaseAnnouncement, drawStructureDrawButtons, drawStructureAutoToggles, drawReadyButton, drawPauseButton, drawSkipChainButton, STRUCTURE_HOTKEYS } from './ui/drawBoard';
     import { calcBoardLayout, getClickedCard, getClickedSwitch, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
     import { PausePhase, isValidTarget, preselectableAbilities } from './engine/gameState';
     import { Icon, drawIcon, preloadIcons } from './ui/icons';
@@ -42,8 +42,9 @@
     let handOrder: number[][] = [];
     let positions: coordinate[] = [];
     let chainCoords: coordinate[] = [];
-    let drawButtonRect: { x: number; y: number; w: number; h: number } | null = null;
-    let autoToggleRect: { x: number; y: number; w: number; h: number } | null = null;
+    let structureSlots: coordinate[][] = [];
+    let drawButtonRects: ({ x: number; y: number; w: number; h: number } | null)[] = [];
+    let autoToggleRects: ({ x: number; y: number; w: number; h: number } | null)[] = [];
     let readyButtonRect: { x: number; y: number; w: number; h: number } | null = null;
     let skipChainButtonRect: { x: number; y: number; w: number; h: number } | null = null;
     let pauseButtonRect: { x: number; y: number; w: number; h: number } | null = null;
@@ -60,7 +61,7 @@
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
         const chainItems = (interpolatedState?.Chain ?? []).map(item => ({ cardID: item.CardIndex, isCard: interpolatedState?.Cards[item.CardIndex]?.Zone === Zone.Pending }));
-        ({ positions, chainCoords } = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], chainItems, interpolatedState?.Continuous ?? [[], []], interpolatedState?.Traps ?? [[], []]));
+        ({ positions, chainCoords, structureSlots } = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], chainItems, interpolatedState?.Continuous ?? [[], []], interpolatedState?.Traps ?? [[], []]));
     }
 
     function sendInstant(cardIndex: number) {
@@ -82,7 +83,7 @@
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
             const chainItems = interpolatedState.Chain.map(item => ({ cardID: item.CardIndex, isCard: interpolatedState.Cards[item.CardIndex]?.Zone === Zone.Pending }));
-            ({ positions, chainCoords } = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState.Field, chainItems, interpolatedState.Continuous ?? [[], []], interpolatedState.Traps ?? [[], []]));
+            ({ positions, chainCoords, structureSlots } = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState.Field, chainItems, interpolatedState.Continuous ?? [[], []], interpolatedState.Traps ?? [[], []]));
 
             if (authoritativeState.Phase !== phaseShown) {
                 if (phaseShown !== -1) {
@@ -95,9 +96,9 @@
         // draw
         ctx.clearRect(0, 0, canvasEl.clientWidth, canvasEl.clientHeight);
         const currentWallTime = now + performance.timeOrigin + get(serverClockOffset);
-        drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, positions, chainCoords, handOrder, clickedIndex, preselecting >= 0 ? preselecting : equipTargeting);
-        drawButtonRect = drawStructureDrawButton(ctx, interpolatedState, teamIndex);
-        autoToggleRect = drawStructureAutoToggle(ctx, interpolatedState, teamIndex);
+        drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, positions, chainCoords, structureSlots, handOrder, clickedIndex, preselecting >= 0 ? preselecting : equipTargeting);
+        drawButtonRects = drawStructureDrawButtons(ctx, interpolatedState, teamIndex);
+        autoToggleRects = drawStructureAutoToggles(ctx, interpolatedState, teamIndex);
         readyButtonRect = drawReadyButton(ctx, interpolatedState, teamIndex);
         skipChainButtonRect = drawSkipChainButton(ctx, interpolatedState, teamIndex);
         pauseButtonRect = drawPauseButton(ctx, interpolatedState, teamIndex);
@@ -130,17 +131,19 @@
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
 
-            // clicked the structure ability
-            if (drawButtonRect && x >= drawButtonRect.x && x <= drawButtonRect.x + drawButtonRect.w
-                && y >= drawButtonRect.y && y <= drawButtonRect.y + drawButtonRect.h) {
-                ws?.send(JSON.stringify({ type: "structureDraw" }));
+            // clicked one of the structure draw abilities
+            const drawSlot = drawButtonRects.findIndex(rect => rect
+                && x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h);
+            if (drawSlot !== -1) {
+                ws?.send(JSON.stringify({ type: "structureDraw", StructureIndex: drawSlot }));
                 return;
             }
 
-            // clicked the structure auto ability toggle
-            if (autoToggleRect && x >= autoToggleRect.x && x <= autoToggleRect.x + autoToggleRect.w
-                && y >= autoToggleRect.y && y <= autoToggleRect.y + autoToggleRect.h) {
-                ws?.send(JSON.stringify({ type: "toggleStructureAutoAbility" }));
+            // clicked one of the structure auto ability toggles
+            const autoSlot = autoToggleRects.findIndex(rect => rect
+                && x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h);
+            if (autoSlot !== -1) {
+                ws?.send(JSON.stringify({ type: "toggleStructureAutoAbility", StructureIndex: autoSlot }));
                 return;
             }
 
@@ -304,10 +307,12 @@
                 if (canPause || canUnpause) {
                     ws?.send(JSON.stringify({ type: "fullPause" }));
                 }
-            } else if (e.key === 'd' || e.key === 'D') {
+            } else if (STRUCTURE_HOTKEYS.includes(e.key.toLowerCase())) {
                 if (interpolatedState?.Phase !== Phase.Play) return;
                 if ((interpolatedState?.Mana[teamIndex] ?? 0) < 100) return;
-                ws?.send(JSON.stringify({ type: "structureDraw" }));
+                const slot = STRUCTURE_HOTKEYS.indexOf(e.key.toLowerCase());
+                if ((interpolatedState?.Structures[teamIndex]?.[slot]?.HP ?? 0) <= 0) return;
+                ws?.send(JSON.stringify({ type: "structureDraw", StructureIndex: slot }));
             } else if (e.key === 'r' || e.key === 'R') {
                 if (interpolatedState?.Phase !== Phase.Draw) return;
                 ws?.send(JSON.stringify({ type: interpolatedState?.Ready[teamIndex] ? "unready" : "ready" }));

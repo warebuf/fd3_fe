@@ -8,7 +8,9 @@ export function attack(state: GameState, log: AttackLog) {
         const cardIdx = log.TargetCardIndex;
         state.Cards[cardIdx].HP -= log.Damage;
     } else {
-        state.Structures[log.TargetTeamIndex].HP -= log.Damage;
+        const structure = state.Structures[log.TargetTeamIndex]?.[log.TargetStructureIndex];
+        if (!structure) return;
+        structure.HP -= log.Damage;
     }
 
 
