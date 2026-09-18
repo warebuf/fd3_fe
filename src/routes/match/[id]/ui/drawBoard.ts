@@ -13,7 +13,8 @@ const CARD_RADIUS = 6;
 const STAT_BOX_W = 22;
 const STAT_BOX_H = 14;
 export const CARD_GAP = 8;
-export const START_Y = 8;
+// the strip above the first row holds the opponent's team stats line
+export const START_Y = 22;
 export const ROW_GAP = 8;
 // zones are horizontal rows, indexed top to bottom from the player's point of view
 export function rowY(index: number): number {
@@ -32,6 +33,10 @@ function buttonRowY(index: number): number {
 // team-wide stats sit on their own line under the two button rows
 function teamStatsY(): number {
     return buttonRowY(2) + BUTTON_H / 2;
+}
+// the opponent's copy mirrors it, in the strip above their hand row
+function opponentStatsY(): number {
+    return START_Y / 2;
 }
 
 // one draw/auto column per structure, centered as a group; the pause/ready/skip buttons anchor off its edges
@@ -781,7 +786,7 @@ function drawStructureCards(ctx: CanvasRenderingContext2D, state: GameState, tea
 }
 
 // team-wide stats, sat in the free space beside the button cluster under the hand
-function drawTeamStats(ctx: CanvasRenderingContext2D, state: GameState, teamIndex: number) {
+function drawTeamStats(ctx: CanvasRenderingContext2D, state: GameState, teamIndex: number, ty: number) {
     const parts = [
         { text: `Mana ${state.Mana[teamIndex] ?? 0}`, color: "#7AADDF" },
         { text: `Reserves ${state.Deck[teamIndex].length}`, color: SUBTEXT_COLOR },
@@ -796,7 +801,6 @@ function drawTeamStats(ctx: CanvasRenderingContext2D, state: GameState, teamInde
     const GAP = 14;
     const totalW = parts.reduce((sum, p) => sum + ctx.measureText(p.text).width, 0) + GAP * (parts.length - 1);
     let tx = (ctx.canvas.clientWidth - totalW) / 2;
-    const ty = teamStatsY();
 
     for (const part of parts) {
         ctx.fillStyle = part.color;
@@ -962,7 +966,8 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     drawStructureCards(ctx, state, opponentIndex, structureSlots[opponentIndex] ?? []);
     drawStructureCards(ctx, state, userIndex, structureSlots[userIndex] ?? []);
 
-    drawTeamStats(ctx, state, userIndex);
+    drawTeamStats(ctx, state, opponentIndex, opponentStatsY());
+    drawTeamStats(ctx, state, userIndex, teamStatsY());
 
     drawInfoPanel(ctx, state, currentActiveTime);
 
