@@ -119,6 +119,8 @@ export const EffectType = {
     Liquidate: 21,
     MutualDestruction: 22,
     GraveyardBarrage: 23,
+    ScalingSpillover: 24,
+    SpawnTokens: 25,
 } as const;
 
 export interface Structure {

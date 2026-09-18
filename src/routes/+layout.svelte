@@ -12,6 +12,7 @@
 		
 		<nav>
 			<a  class="navLink" href="/play">Play</a>
+			<a  class="navLink" href="/decks">Decks</a>
 		</nav>
 	</header>
   
@@ -46,8 +47,13 @@
 		display: flex;
 	}
 
+	nav {
+		display: flex;
+		gap: 14px;
+	}
+
 	.navLink {
-	  	color: white;              
+	  	color: white;
 	  	text-decoration: none;
 	  	font-size: 12px;
 	}

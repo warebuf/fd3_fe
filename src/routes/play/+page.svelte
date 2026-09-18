@@ -96,6 +96,20 @@
 
   onMount(() => {
     window.addEventListener("keydown", handleKeydown);
+
+    // pick up a deck built on /decks, if there is one
+    try {
+      const savedDeck = localStorage.getItem("fd3-deck");
+      if (savedDeck) {
+        const defNos = JSON.parse(savedDeck) as number[];
+        if (Array.isArray(defNos) && defNos.length > 0) deckInput = defNos.join(",");
+      }
+      const savedStruct = localStorage.getItem("fd3-structNo");
+      if (savedStruct) structNo = Number(savedStruct);
+    } catch {
+      // ignore - private browsing, storage disabled, etc.
+    }
+
     return () => window.removeEventListener("keydown", handleKeydown);
   });
 
@@ -106,6 +120,7 @@
     <label>
       Deck
       <input type="text" bind:value={deckInput} placeholder="e.g. 1,1,2,2,3,3" disabled={finding} />
+      <a class="deckBuilderLink" href="/decks">Build a deck &rarr;</a>
     </label>
     <label>
       Starting Hand
@@ -158,6 +173,17 @@
     padding: 4px 8px;
     font-size: 13px;
     width: 220px;
+  }
+
+  .deckBuilderLink {
+    color: #7AADDF;
+    font-size: 11px;
+    text-decoration: none;
+    align-self: flex-start;
+  }
+
+  .deckBuilderLink:hover {
+    text-decoration: underline;
   }
 
   .fields input:disabled {
