@@ -35,11 +35,10 @@ export type GameState = {
     Ready: boolean[];
     SkipChain: boolean[];
 
-    // Standoff-style blind mana auction. -1/[-1,-1] when none is open. An opponent's still-sealed
-    // bid reads as -1 client-side until StandoffResolutionLog reveals it - never trust it as "0".
+    // Standoff-style blind mana auction. -1/[-1,-1] when none is open. -1: not yet sealed. -2:
+    // sealed by the opponent but still hidden from us. >=0: a real amount (ours, or revealed).
     StandoffCardIndex: number;
-    PendingBidAmount: number[]; // per team; -1 if not yet sealed (or hidden, for the opponent)
-    PendingBidChoice: number[]; // per team; -1 if not yet sealed (or hidden, for the opponent)
+    PendingBidAmount: number[]; // per team
 
     Winner: number; // -1: no winner, 0+: winning team index
 };
@@ -289,7 +288,6 @@ export function initGameState(): GameState {
 
         StandoffCardIndex: -1,
         PendingBidAmount: [-1, -1],
-        PendingBidChoice: [-1, -1],
 
         Winner: -1,
     };
@@ -333,7 +331,6 @@ export function cloneGameState(src: GameState): GameState {
 
         StandoffCardIndex: src.StandoffCardIndex ?? -1,
         PendingBidAmount: [...(src.PendingBidAmount ?? [-1, -1])],
-        PendingBidChoice: [...(src.PendingBidChoice ?? [-1, -1])],
 
         Winner: src.Winner,
     };

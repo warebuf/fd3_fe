@@ -11,7 +11,7 @@
     import { initGameState, cloneGameState, type GameState, Phase, Zone, CardType, TargetFlags } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
-    import { drawBoard, drawPhaseAnnouncement, drawStructureDrawButtons, drawStructureAutoToggles, drawReadyButton, drawPauseButton, drawSkipChainButton, STRUCTURE_HOTKEYS, type StatsRects } from './ui/drawBoard';
+    import { drawBoard, drawPhaseAnnouncement, drawStructureDrawButtons, drawStructureAutoToggles, drawReadyButton, drawPauseButton, drawSkipChainButton, STRUCTURE_HOTKEYS, type StatsRects, type EquipBadgeRect } from './ui/drawBoard';
     import { calcBoardLayout, getClickedCard, getClickedSwitch, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
     import { PausePhase, isValidTarget, preselectableAbilities } from './engine/gameState';
     import { Icon, drawIcon, preloadIcons } from './ui/icons';
@@ -51,7 +51,9 @@
     let skipChainButtonRect: { x: number; y: number; w: number; h: number } | null = null;
     let pauseButtonRect: { x: number; y: number; w: number; h: number } | null = null;
     let statsRects: StatsRects[] = [];
+    let equipBadgeRects: EquipBadgeRect[] = [];
     let viewingZone: { team: number; zone: 'Deck' | 'Grave' } | null = null;
+    let viewingEquipHost: number | null = null;
 
     let phaseShown = -1;
     let phaseMessageStart = -Infinity;
@@ -73,8 +75,8 @@
         ws?.send(JSON.stringify({ type: "instant", CardIndex: cardIndex }));
     }
 
-    function sendBid(amount: number, choice: 0 | 1) {
-        ws?.send(JSON.stringify({ type: "bid", Amount: amount, Choice: choice }));
+    function sendBid(amount: number) {
+        ws?.send(JSON.stringify({ type: "bid", Amount: amount }));
     }
 
     function loop(now: number) { // now is current time relative to page load
@@ -104,7 +106,7 @@
         // draw
         ctx.clearRect(0, 0, canvasEl.clientWidth, canvasEl.clientHeight);
         const currentWallTime = now + performance.timeOrigin + get(serverClockOffset);
-        ({ statsRects } = drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, positions, chainCoords, structureSlots, handOrder, clickedIndex, preselecting >= 0 ? preselecting : equipTargeting));
+        ({ statsRects, equipBadgeRects } = drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, positions, chainCoords, structureSlots, handOrder, clickedIndex, preselecting >= 0 ? preselecting : equipTargeting));
         drawButtonRects = drawStructureDrawButtons(ctx, interpolatedState, teamIndex);
         autoToggleRects = drawStructureAutoToggles(ctx, interpolatedState, teamIndex);
         readyButtonRect = drawReadyButton(ctx, interpolatedState, teamIndex);
@@ -138,11 +140,18 @@
             return null;
         };
 
+        const hitEquipBadge = (x: number, y: number): EquipBadgeRect | null => {
+            for (const badge of equipBadgeRects) {
+                if (x >= badge.x && x <= badge.x + badge.w && y >= badge.y && y <= badge.y + badge.h) return badge;
+            }
+            return null;
+        };
+
         const onMove = (e: MouseEvent) => {
             const r = canvasEl.getBoundingClientRect();
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
-            canvasEl.style.cursor = hitStatsRect(x, y) ? 'pointer' : 'default';
+            canvasEl.style.cursor = (hitStatsRect(x, y) || hitEquipBadge(x, y)) ? 'pointer' : 'default';
         };
 
         const onLeave = () => {
@@ -158,6 +167,13 @@
             const statsHit = hitStatsRect(x, y);
             if (statsHit) {
                 viewingZone = statsHit;
+                return;
+            }
+
+            // clicked an equip badge, open its attached equip card(s) to read
+            const equipHit = hitEquipBadge(x, y);
+            if (equipHit) {
+                viewingEquipHost = equipHit.hostID;
                 return;
             }
 
@@ -232,6 +248,7 @@
 
         const onKeyDown = (e: KeyboardEvent) => {
             if (viewingZone) return; // ZoneViewer handles its own Escape
+            if (viewingEquipHost !== null) return; // equip ZoneViewer handles its own Escape
             if (interpolatedState?.StandoffCardIndex !== -1) return; // StandoffModal is up, don't fire game hotkeys underneath it
 
             if (e.code === 'Space') {
@@ -451,10 +468,20 @@
             onClose={() => viewingZone = null}
         />
     {/if}
+    {#if viewingEquipHost !== null && interpolatedState}
+        {@const equipCardIDs = (interpolatedState.Equip ?? [[], []]).flat().filter(id => interpolatedState.Cards[id]?.EquipHostIndex === viewingEquipHost)}
+        {@const hostName = interpolatedState.Cards[viewingEquipHost]?.Name ?? 'Unit'}
+        <ZoneViewer
+            cards={interpolatedState.Cards}
+            cardIDs={equipCardIDs}
+            title={`Equipped to ${hostName}`}
+            onClose={() => viewingEquipHost = null}
+        />
+    {/if}
     {#if interpolatedState && interpolatedState.StandoffCardIndex !== -1}
         <StandoffModal
             myMana={interpolatedState.Mana[teamIndex] ?? 0}
-            alreadySealed={interpolatedState.PendingBidChoice[teamIndex] !== -1}
+            alreadySealed={interpolatedState.PendingBidAmount[teamIndex] !== -1}
             onSubmit={sendBid}
         />
     {/if}

@@ -888,32 +888,48 @@ function drawPause(ctx: CanvasRenderingContext2D, state: GameState, userIndex: n
 const EQUIP_BADGE_R = 8;
 const EQUIP_BADGE_COLOR = "#F5A623";
 
-function drawEquipBadges(ctx: CanvasRenderingContext2D, cards: Card[], equip: number[][], positions: coordinate[]) {
+export type EquipBadgeRect = { hostID: number; equipIDs: number[]; x: number; y: number; w: number; h: number };
+
+// one badge per host, even if several equips target the same card - clicking it opens all of them.
+// returns a hit rect per badge so the click handler can find "which host was that" and open a
+// ZoneViewer-style popup, since equip cards otherwise have no way for a player to read them
+function drawEquipBadges(ctx: CanvasRenderingContext2D, cards: Card[], equip: number[][], positions: coordinate[]): EquipBadgeRect[] {
+    const byHost = new Map<number, number[]>();
     for (const team of equip) {
         for (const equipID of team) {
             const hostID = cards[equipID]?.EquipHostIndex ?? -1;
-            const pos = positions[hostID];
-            if (hostID < 0 || !pos) continue;
-
-            const cx = pos.x + CARD_W - EQUIP_BADGE_R - 2;
-            const cy = pos.y + EQUIP_BADGE_R + 2;
-
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(cx, cy, EQUIP_BADGE_R, 0, Math.PI * 2);
-            ctx.fillStyle = CARD_COLOR;
-            ctx.fill();
-            ctx.strokeStyle = EQUIP_BADGE_COLOR;
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-            ctx.fillStyle = EQUIP_BADGE_COLOR;
-            ctx.font = "bold 10px sans-serif";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText("E", cx, cy + 0.5);
-            ctx.restore();
+            if (hostID < 0 || !positions[hostID]) continue;
+            if (!byHost.has(hostID)) byHost.set(hostID, []);
+            byHost.get(hostID)!.push(equipID);
         }
     }
+
+    const badgeRects: EquipBadgeRect[] = [];
+
+    for (const [hostID, equipIDs] of byHost) {
+        const pos = positions[hostID];
+        const cx = pos.x + CARD_W - EQUIP_BADGE_R - 2;
+        const cy = pos.y + EQUIP_BADGE_R + 2;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, EQUIP_BADGE_R, 0, Math.PI * 2);
+        ctx.fillStyle = CARD_COLOR;
+        ctx.fill();
+        ctx.strokeStyle = EQUIP_BADGE_COLOR;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.fillStyle = EQUIP_BADGE_COLOR;
+        ctx.font = "bold 10px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(equipIDs.length > 1 ? `E${equipIDs.length}` : "E", cx, cy + 0.5);
+        ctx.restore();
+
+        badgeRects.push({ hostID, equipIDs, x: cx - EQUIP_BADGE_R, y: cy - EQUIP_BADGE_R, w: EQUIP_BADGE_R * 2, h: EQUIP_BADGE_R * 2 });
+    }
+
+    return badgeRects;
 }
 
 function drawPreselectHighlight(ctx: CanvasRenderingContext2D, x: number, y: number) {
@@ -954,7 +970,7 @@ function drawPreselectArrow(ctx: CanvasRenderingContext2D, sx: number, sy: numbe
     ctx.restore();
 }
 
-export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, positions: coordinate[], chainCoords: coordinate[], structureSlots: coordinate[][], handOrder: number[][], selectedIndex: number, preselecting: number): { statsRects: StatsRects[] } {
+export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, positions: coordinate[], chainCoords: coordinate[], structureSlots: coordinate[][], handOrder: number[][], selectedIndex: number, preselecting: number): { statsRects: StatsRects[]; equipBadgeRects: EquipBadgeRect[] } {
     const opponentIndex = userIndex === 0 ? 1 : 0;
     if (state.Phase === Phase.GameEnd) currentWallTime = state.WallTimestamp;
 
@@ -974,7 +990,7 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
     drawContinuousZone(ctx, state.Cards, state.Continuous?.[userIndex] ?? [], positions, selectedIndex);
     drawHand(ctx, handOrder[userIndex] ?? [], state.Cards, positions, false, selectedIndex, currentSimTime);
 
-    drawEquipBadges(ctx, state.Cards, state.Equip ?? [[], []], positions);
+    const equipBadgeRects = drawEquipBadges(ctx, state.Cards, state.Equip ?? [[], []], positions);
 
     drawStructureCards(ctx, state, opponentIndex, structureSlots[opponentIndex] ?? []);
     drawStructureCards(ctx, state, userIndex, structureSlots[userIndex] ?? []);
@@ -1008,5 +1024,5 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
         }
     }
 
-    return { statsRects };
+    return { statsRects, equipBadgeRects };
 }

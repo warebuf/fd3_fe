@@ -43,6 +43,7 @@ import { giveControl } from "./GiveControl";
 import { standoffOpen } from "./StandoffOpen";
 import { standoffBid } from "./StandoffBid";
 import { standoffResolution } from "./StandoffResolution";
+import { discard } from "./Discard";
 
 export function applyEffect(state: GameState, log: EventLog) {
 
@@ -89,6 +90,7 @@ export function applyEffect(state: GameState, log: EventLog) {
         case 38: standoffOpen(state, log); break;
         case 39: standoffBid(state, log); break;
         case 40: standoffResolution(state, log); break;
+        case 41: discard(state, log); break;
 
         default: console.log("could not apply log", log); applied = false; break;
     }

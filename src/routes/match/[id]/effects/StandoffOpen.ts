@@ -15,5 +15,4 @@ export function standoffOpen(state: GameState, log: StandoffOpenLog) {
 
     state.StandoffCardIndex = cardIndex;
     state.PendingBidAmount = [-1, -1];
-    state.PendingBidChoice = [-1, -1];
 }
