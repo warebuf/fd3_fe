@@ -21,27 +21,25 @@ export type ClearTickAbilityLog   = Timestamp & { Type: 17; CardIndex: number; A
 export type GameOverLog           = Timestamp & { Type: 18; Winner: number; }
 export type CounterChainLog       = Timestamp & { Type: 19; SourceCardIndex: number; TargetCardIndex: number; }
 export type RefreshChainLog       = Timestamp & { Type: 20; CardIndex: number; StartAtActiveTime: number; PopAtActiveTime: number; ExecuteAtActiveTime: number; }
-export type PlayContinuousLog     = Timestamp & { Type: 21; TeamIndex: number; CardIndex: number; }
-export type RemoveContinuousLog   = Timestamp & { Type: 22; TeamIndex: number; CardIndex: number; }
-export type RemoveChargeLog       = Timestamp & { Type: 23; TeamIndex: number; CardIndex: number; ChargesRemaining: number; }
-export type AddChargeLog          = Timestamp & { Type: 24; TeamIndex: number; CardIndex: number; Charges: number; }
-export type PreselectLog          = Timestamp & { Type: 25; TeamIndex: number; CardIndex: number; AbilityIndex: number; TargetCardIndex: number; }
-export type ToggleAutoAbilityLog  = Timestamp & { Type: 26; TeamIndex: number; CardIndex: number; AbilityIndex: number; On: boolean; }
-export type ConsumeLog            = Timestamp & { Type: 27; SourceCardIndex: number; TargetCardIndex: number; AbilityIndex: number; Bonus: number; }
-export type SpawnTokenLog         = Timestamp & { Type: 28; TeamIndex: number; CardIndex: number; DefNo: number; Name: string; Description: string; HP: number; Cost: number; Archetype: number; CardType: number; IsToken: boolean; ChainEntry: number; }
-export type ToggleStructureAutoAbilityLog = Timestamp & { Type: 29; TeamIndex: number; StructureIndex: number; On: boolean; }
-export type SetTrapLog            = Timestamp & { Type: 30; TeamIndex: number; CardIndex: number; SetStartAtSimTime: number; ReadyAtSimTime: number; }
-export type TrapReadyLog          = Timestamp & { Type: 31; TeamIndex: number; CardIndex: number; }
-export type PurgeChainLog         = Timestamp & { Type: 32; CardIndex: number; }
-export type EquipResolutionLog    = Timestamp & { Type: 33; TeamIndex: number; CardIndex: number; HostIndex: number; }
-export type TrapResolutionLog     = Timestamp & { Type: 34; TeamIndex: number; CardIndex: number; }
-export type SkipChainLog          = Timestamp & { Type: 35; TeamIndex: number; }
-export type UnskipChainLog        = Timestamp & { Type: 36; TeamIndex: number; }
-export type GiveControlLog        = Timestamp & { Type: 37; CardIndex: number; FromTeamIndex: number; ToTeamIndex: number; }
-export type StandoffOpenLog       = Timestamp & { Type: 38; TeamIndex: number; CardIndex: number; }
-export type StandoffBidLog        = Timestamp & { Type: 39; TeamIndex: number; }
-export type StandoffResolutionLog = Timestamp & { Type: 40; CardIndex: number; Bids: [number, number]; WinnerTeam: number; }
-export type DiscardLog            = Timestamp & { Type: 41; TeamIndex: number; CardIndex: number; }
+export type RemoveChargeLog       = Timestamp & { Type: 21; TeamIndex: number; CardIndex: number; ChargesRemaining: number; }
+export type AddChargeLog          = Timestamp & { Type: 22; TeamIndex: number; CardIndex: number; Charges: number; }
+export type PreselectLog          = Timestamp & { Type: 23; TeamIndex: number; CardIndex: number; AbilityIndex: number; TargetCardIndex: number; }
+export type ToggleAutoAbilityLog  = Timestamp & { Type: 24; TeamIndex: number; CardIndex: number; AbilityIndex: number; On: boolean; }
+export type ConsumeLog            = Timestamp & { Type: 25; SourceCardIndex: number; TargetCardIndex: number; AbilityIndex: number; Bonus: number; }
+export type SpawnTokenLog         = Timestamp & { Type: 26; TeamIndex: number; CardIndex: number; DefNo: number; Name: string; Description: string; HP: number; Cost: number; Archetype: number; CardType: number; IsToken: boolean; ChainEntry: number; }
+export type ToggleStructureAutoAbilityLog = Timestamp & { Type: 27; TeamIndex: number; StructureIndex: number; On: boolean; }
+export type SetTrapLog            = Timestamp & { Type: 28; TeamIndex: number; CardIndex: number; SetStartAtSimTime: number; ReadyAtSimTime: number; }
+export type TrapReadyLog          = Timestamp & { Type: 29; TeamIndex: number; CardIndex: number; }
+export type PurgeChainLog         = Timestamp & { Type: 30; CardIndex: number; }
+export type EquipResolutionLog    = Timestamp & { Type: 31; TeamIndex: number; CardIndex: number; HostIndex: number; }
+export type TrapResolutionLog     = Timestamp & { Type: 32; TeamIndex: number; CardIndex: number; }
+export type SkipChainLog          = Timestamp & { Type: 33; TeamIndex: number; }
+export type UnskipChainLog        = Timestamp & { Type: 34; TeamIndex: number; }
+export type GiveControlLog        = Timestamp & { Type: 35; CardIndex: number; FromTeamIndex: number; ToTeamIndex: number; }
+export type StandoffOpenLog       = Timestamp & { Type: 36; TeamIndex: number; CardIndex: number; }
+export type StandoffBidLog        = Timestamp & { Type: 37; TeamIndex: number; }
+export type StandoffResolutionLog = Timestamp & { Type: 38; CardIndex: number; Bids: [number, number]; WinnerTeam: number; }
+export type DiscardLog            = Timestamp & { Type: 39; TeamIndex: number; CardIndex: number; }
 
 export type EventLog =
     | PhaseLog
@@ -65,8 +63,6 @@ export type EventLog =
     | GameOverLog
     | CounterChainLog
     | RefreshChainLog
-    | PlayContinuousLog
-    | RemoveContinuousLog
     | RemoveChargeLog
     | AddChargeLog
     | PreselectLog

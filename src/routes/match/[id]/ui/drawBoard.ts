@@ -399,8 +399,6 @@ export function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: numb
         cardType = "Unit";
     } else if (card.Type === CardType.Trap) {
         cardType = card.Zone === Zone.Trap && card.Ready ? "Trap · Ready" : "Trap";
-    } else if (card.Type === CardType.Continuous) {
-        cardType = "Continuous";
     }
     if (card.Archetype === Archetype.Tree) {
         cardType += " · Tree";
@@ -463,7 +461,7 @@ export function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: numb
 
 // an unused Actives slot is zero-valued, and so is a targetless Dual ability, so tell them apart by the fields a real ability sets
 function isRealActive(a: ActiveAbility): boolean {
-    return a.Cost > 0 || a.CanAutoFire || a.Unlimited || a.TargetFlags !== 0 || a.Cons[0] !== 0 || a.ChainEntry !== ChainEntry.Dual;
+    return a.Cost > 0 || a.CanAutoFire || a.TargetFlags !== 0 || a.Cons[0] !== 0 || a.ChainEntry !== ChainEntry.Dual;
 }
 
 // "<prefix> · <piece>", the entry drawn as its puzzle piece: red for Action,
@@ -516,19 +514,6 @@ function drawChargePips(ctx: CanvasRenderingContext2D, x: number, y: number, car
             ctx.strokeStyle = "#7AADDF";
             ctx.lineWidth = 0.5;
             ctx.stroke();
-        }
-    }
-}
-
-function drawContinuousZone(ctx: CanvasRenderingContext2D, cards: Card[], continuous: number[], positions: coordinate[], selectedIndex: number): void {
-    for (const cardID of continuous) {
-        const pos = positions[cardID];
-        if (!pos) continue;
-        const card = cards[cardID];
-        drawFieldCard(ctx, pos.x, pos.y, card, 0, false, selectedIndex === cardID, true);
-        drawChargePips(ctx, pos.x, pos.y, card);
-        if (card.Actives[0]?.CanAutoFire) { // spawned tokens arrive with an empty Actives until the next fullState
-            drawSwitch(ctx, pos.x, pos.y, card.Actives[0].AutoAbility, "Auto");
         }
     }
 }
@@ -760,8 +745,8 @@ function drawInfoPanel(ctx: CanvasRenderingContext2D, state: GameState, currentA
     ctx.fillText(`${get(ping)} ms`, x, y);
 }
 
-// occupies the centered card slot of a team's trap/continuous row
-// one card per structure slot, filling the middle of the team's trap/continuous row
+// occupies the centered card slot of a team's trap row
+// one card per structure slot, filling the middle of the team's trap row
 function drawStructureCards(ctx: CanvasRenderingContext2D, state: GameState, teamIndex: number, slots: coordinate[]) {
     for (let slot = 0; slot < slots.length; slot++) {
         const structure = state.Structures[teamIndex]?.[slot];
@@ -992,7 +977,6 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
 
     // rows, top to bottom; the opponent's traps stay face down
     drawHand(ctx, handOrder[opponentIndex] ?? [], state.Cards, positions, true, selectedIndex, currentSimTime);
-    drawContinuousZone(ctx, state.Cards, state.Continuous?.[opponentIndex] ?? [], positions, selectedIndex);
     drawTrapZone(ctx, state.Cards, state.Traps?.[opponentIndex] ?? [], positions, currentSimTime, selectedIndex, true);
     drawField(ctx, state.Cards, state.Field[opponentIndex], positions, currentSimTime, selectedIndex);
 
@@ -1000,7 +984,6 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
 
     drawField(ctx, state.Cards, state.Field[userIndex], positions, currentSimTime, selectedIndex);
     drawTrapZone(ctx, state.Cards, state.Traps?.[userIndex] ?? [], positions, currentSimTime, selectedIndex, false);
-    drawContinuousZone(ctx, state.Cards, state.Continuous?.[userIndex] ?? [], positions, selectedIndex);
     drawHand(ctx, handOrder[userIndex] ?? [], state.Cards, positions, false, selectedIndex, currentSimTime);
 
     const equipBadgeRects = drawEquipBadges(ctx, state.Cards, state.Equip ?? [[], []], positions);

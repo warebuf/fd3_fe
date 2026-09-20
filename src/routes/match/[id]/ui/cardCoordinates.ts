@@ -1,7 +1,7 @@
 
 import { CARD_GAP, CARD_W, CARD_H, rowY, autoButtonRect, STRUCTURE_SLOTS } from "./drawBoard"
 
-// the structure cards occupy the middle of each player's trap/continuous row; those zones form around them
+// the structure cards occupy the middle of each player's trap row; the traps form to their right
 export function centerBlockW(): number {
     return STRUCTURE_SLOTS * CARD_W + (STRUCTURE_SLOTS - 1) * CARD_GAP;
 }
@@ -61,14 +61,6 @@ function placeRowRightward(positions: coordinate[], cards: number[], canvasWidth
     }
 }
 
-// right-aligned just left of the centered structure block, growing left
-function placeRowLeftward(positions: coordinate[], cards: number[], canvasWidth: number, cardY: number) {
-    const startX = (canvasWidth - centerBlockW()) / 2 - CARD_GAP - CARD_W;
-    for (let i = 0; i < cards.length; i++) {
-        positions[cards[i]] = { x: startX - i * (CARD_W + CARD_GAP), y: cardY };
-    }
-}
-
 // positions: sparse array indexed by card ID — positions[cardID] = screen coordinate
 // chainCoords: parallel to state.Chain — only populated for non-card chain items (abilities, etc.)
 export function calcBoardLayout(
@@ -77,19 +69,17 @@ export function calcBoardLayout(
     handOrder: number[][],
     field: number[][],
     chain: Array<{ cardID: number, isCard: boolean }>,
-    continuous: number[][],
     traps: number[][]
 ): { positions: coordinate[], chainCoords: coordinate[], structureSlots: coordinate[][] } {
     const positions: coordinate[] = [];
     const chainCoords: coordinate[] = [];
     const structureSlots: coordinate[][] = [];
 
-    // rows mirror around the chain at row 3: units, then traps/structures/continuous, then hand outward
+    // rows mirror around the chain at row 3: units, then traps/structures, then hand outward
     for (let t = 0; t < 2; t++) {
         const dir = t === playerNum ? 1 : -1;
         placeRow(positions, field[t] ?? [], canvasWidth, rowY(3 + dir * 1));
         placeRowRightward(positions, traps[t] ?? [], canvasWidth, rowY(3 + dir * 2));
-        placeRowLeftward(positions, continuous[t] ?? [], canvasWidth, rowY(3 + dir * 2));
         structureSlots[t] = rowCoords(STRUCTURE_SLOTS, canvasWidth, rowY(3 + dir * 2));
         placeRow(positions, handOrder[t] ?? [], canvasWidth, rowY(3 + dir * 3));
     }

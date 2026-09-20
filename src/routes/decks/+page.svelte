@@ -41,7 +41,6 @@
         [CardType.Structure]: 'Structure',
         [CardType.Unit]: 'Unit',
         [CardType.Trap]: 'Trap',
-        [CardType.Continuous]: 'Continuous',
         [CardType.Equip]: 'Equip',
     };
 

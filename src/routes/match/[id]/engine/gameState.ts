@@ -24,7 +24,6 @@ export type GameState = {
     Hand: number[][];
     Field: number[][];
     Grave: number[][];
-    Continuous: number[][];
     Traps: number[][]; // set but not yet activated
     Equip: number[][];
 
@@ -62,9 +61,8 @@ export const Zone = {
     Field: 2,
     Graveyard: 3,
     Pending: 4,
-    Continuous: 5,
-    Trap: 6,
-    Equip: 7,
+    Trap: 5,
+    Equip: 6,
 } as const;
 
 // mirrors engine/state.ChainEntry
@@ -78,19 +76,16 @@ export const ChainEntry = {
 export const ChainItemType = {
     UnitAbility: 1,
     Trap: 2,
-    ContinuousAbility: 3,
-    Summon: 4,
-    ContinuousResolution: 5,
-    StructureAbility: 6,
-    Equip: 7,
+    Summon: 3,
+    StructureAbility: 4,
+    Equip: 5,
 } as const;
 
 export const CardType = {
     Structure: 0,
     Unit: 1,
     Trap: 2,
-    Continuous: 3,
-    Equip: 4,
+    Equip: 3,
 } as const;
 
 // mirrors engine/state.EffectType
@@ -143,7 +138,6 @@ export interface TickAbility {
 
 // mirrors engine/state.ActiveAbility: one slot per Card.Actives[3] index
 export interface ActiveAbility {
-    Unlimited: boolean; // if true, this ability ignores the card's Charges entirely and is always available
     Target: number; // preselected target for this ability slot, -1 if none
     TargetFlags: number;
     Cons: [number, number, number];
@@ -165,10 +159,8 @@ export const TargetFlags = {
     OppField: 1 << 2,
     OwnHand:  1 << 3,
     OppHand:  1 << 4,
-    OwnCont:  1 << 5,
-    OppCont:  1 << 6,
-    OwnTrap:  1 << 7,
-    OppTrap:  1 << 8,
+    OwnTrap:  1 << 5,
+    OppTrap:  1 << 6,
 } as const;
 
 export function isValidTarget(cards: Card[], targetFlags: number, sourceIdx: number, targetIdx: number, teamIndex: number): boolean {
@@ -180,8 +172,6 @@ export function isValidTarget(cards: Card[], targetFlags: number, sourceIdx: num
     if (target.Team !== teamIndex && target.Zone === Zone.Field)      return (targetFlags & TargetFlags.OppField) !== 0;
     if (target.Team === teamIndex && target.Zone === Zone.Hand)       return (targetFlags & TargetFlags.OwnHand) !== 0;
     if (target.Team !== teamIndex && target.Zone === Zone.Hand)       return (targetFlags & TargetFlags.OppHand) !== 0;
-    if (target.Team === teamIndex && target.Zone === Zone.Continuous) return (targetFlags & TargetFlags.OwnCont) !== 0;
-    if (target.Team !== teamIndex && target.Zone === Zone.Continuous) return (targetFlags & TargetFlags.OppCont) !== 0;
     if (target.Team === teamIndex && target.Zone === Zone.Trap)       return (targetFlags & TargetFlags.OwnTrap) !== 0;
     if (target.Team !== teamIndex && target.Zone === Zone.Trap)       return (targetFlags & TargetFlags.OppTrap) !== 0;
     return false;
@@ -271,7 +261,6 @@ export function initGameState(): GameState {
         Hand: [[], []],
         Field: [[], []],
         Grave: [[], []],
-        Continuous: [[], []],
         Traps: [[], []],
         Equip: [[], []],
 
@@ -314,7 +303,6 @@ export function cloneGameState(src: GameState): GameState {
         Hand: src.Hand.map(h => [...h]),
         Field: src.Field.map(f => [...f]),
         Grave: src.Grave.map(g => [...g]),
-        Continuous: src.Continuous.map(c => [...c]),
         Traps: (src.Traps ?? [[], []]).map(t => [...t]),
         Equip: (src.Equip ?? [[], []]).map(e => [...e]),
 

@@ -67,7 +67,7 @@
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
         const chainItems = (interpolatedState?.Chain ?? []).map(item => ({ cardID: item.CardIndex, isCard: interpolatedState?.Cards[item.CardIndex]?.Zone === Zone.Pending }));
-        ({ positions, chainCoords, structureSlots } = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], chainItems, interpolatedState?.Continuous ?? [[], []], interpolatedState?.Traps ?? [[], []]));
+        ({ positions, chainCoords, structureSlots } = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState?.Field ?? [[], []], chainItems, interpolatedState?.Traps ?? [[], []]));
     }
 
     function sendInstant(cardIndex: number) {
@@ -93,7 +93,7 @@
         if(significantEvent) {
             handOrder = mirrorUIWithHand(handOrder, interpolatedState.Hand);
             const chainItems = interpolatedState.Chain.map(item => ({ cardID: item.CardIndex, isCard: interpolatedState.Cards[item.CardIndex]?.Zone === Zone.Pending }));
-            ({ positions, chainCoords, structureSlots } = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState.Field, chainItems, interpolatedState.Continuous ?? [[], []], interpolatedState.Traps ?? [[], []]));
+            ({ positions, chainCoords, structureSlots } = calcBoardLayout(ctx.canvas.clientWidth, teamIndex, handOrder, interpolatedState.Field, chainItems, interpolatedState.Traps ?? [[], []]));
 
             if (authoritativeState.Phase !== phaseShown) {
                 if (phaseShown !== -1) {
@@ -215,7 +215,7 @@
             }
 
             // clicked auto ability toggle
-            const fieldCardIDs = [...(interpolatedState?.Field[teamIndex] ?? []), ...(interpolatedState?.Continuous[teamIndex] ?? [])]
+            const fieldCardIDs = (interpolatedState?.Field[teamIndex] ?? [])
                 .filter(id => interpolatedState!.Cards[id].Actives[0]?.CanAutoFire);
             const fieldSwitchHit = getClickedSwitch(x, y, positions, fieldCardIDs);
             if (fieldSwitchHit >= 0 && interpolatedState?.Phase === Phase.Play) {
@@ -255,11 +255,8 @@
                 e.preventDefault(); // prevent page scroll
                 if (clickedIndex !== -1) {
                     const card = interpolatedState?.Cards[clickedIndex];
-                    const isPlay = interpolatedState?.Phase === Phase.Play;
-                    const isStaging = isPlay || interpolatedState?.Phase === Phase.Draw;
-                    if (isPlay && card?.Zone === Zone.Continuous && card.Team === teamIndex) {
-                        ws?.send(JSON.stringify({ type: "active", CardIndex: clickedIndex }));
-                    } else if (isStaging) {
+                    const isStaging = interpolatedState?.Phase === Phase.Play || interpolatedState?.Phase === Phase.Draw;
+                    if (isStaging) {
                         if (card?.AutoSummon > 0) {
                             ws?.send(JSON.stringify({ type: "unautosummon", CardIndex: clickedIndex }));
                         } else {
@@ -281,7 +278,7 @@
 
                 if (card.Zone === Zone.Hand) {
                     ws?.send(JSON.stringify({ type: card.AutoSummon > 0 ? "unautosummon" : "autosummon", CardIndex: clickedIndex }));
-                } else if (isPlay && (card.Zone === Zone.Field || card.Zone === Zone.Continuous) && card.Actives[0]?.CanAutoFire) {
+                } else if (isPlay && card.Zone === Zone.Field && card.Actives[0]?.CanAutoFire) {
                     ws?.send(JSON.stringify({ type: "toggleAutoAbility", CardIndex: clickedIndex }));
                 } else {
                     return;
@@ -344,7 +341,7 @@
 
                 if (card.Zone !== Zone.Field) return;
                 // TODO: hardcoded duplicate of the backend's charge-gating rule (handleUnitAbility in InputHandlerAbility.go) for responsive UI; keep in sync
-                if (!card.Actives[0].Unlimited && card.Charges <= 0) return;
+                if (card.Charges <= 0) return;
 
                 ws?.send(JSON.stringify({ type: "unitAbility", CardIndex: clickedIndex }));
                 clickedIndex = -1;
