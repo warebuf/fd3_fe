@@ -24,6 +24,14 @@
         DrawCost: number;
     };
 
+    type SavedDeck = {
+        id: string;
+        name: string;
+        deck: number[];
+        structNo: number;
+        createdAt: string;
+    };
+
     const MAX_COPIES = 3;
     const MAX_DECK_SIZE = 100;
     const DECK_STORAGE_KEY = 'fd3-deck';
@@ -48,6 +56,12 @@
     let typeFilter: number | 'all' = 'all';
     let saved = false;
     let randomSize = 30;
+
+    let sharedDecks: SavedDeck[] = [];
+    let sharedDecksError = '';
+    let newDeckName = '';
+    let publishing = false;
+    let publishError = '';
 
     $: deckTotal = Object.values(deckCounts).reduce((sum, n) => sum + n, 0);
     $: buildableCards = cardDefs.filter(c => !c.IsToken);
@@ -124,7 +138,58 @@
         saved = false;
     }
 
+    async function loadSharedDecks() {
+        try {
+            const res = await fetch('/backend/savedDecks');
+            if (!res.ok) throw new Error('failed to load shared decks');
+            sharedDecks = (await res.json()) ?? [];
+        } catch (e) {
+            sharedDecksError = 'Could not load the shared deck list.';
+            console.error(e);
+        }
+    }
+
+    async function publishDeck() {
+        if (publishing || deckTotal === 0 || structNo === null) return;
+
+        publishError = '';
+        publishing = true;
+        try {
+            const res = await fetch('/backend/savedDecks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newDeckName, deck: flatDeck(), structNo }),
+            });
+            if (!res.ok) {
+                publishError = await res.text() || 'failed to save deck';
+                return;
+            }
+            const entry = (await res.json()) as SavedDeck;
+            sharedDecks = [...sharedDecks, entry];
+            newDeckName = '';
+        } catch (e) {
+            publishError = 'Could not reach the backend.';
+            console.error(e);
+        } finally {
+            publishing = false;
+        }
+    }
+
+    function loadSharedDeck(entry: SavedDeck) {
+        if (deckTotal > 0 && !confirm(`Replace your current deck with "${entry.name}"?`)) return;
+
+        const counts: Record<number, number> = {};
+        for (const defNo of entry.deck) {
+            counts[defNo] = (counts[defNo] ?? 0) + 1;
+        }
+        deckCounts = counts;
+        structNo = entry.structNo;
+        saved = false;
+    }
+
     onMount(async () => {
+        loadSharedDecks();
+
         try {
             const [cardsRes, structsRes] = await Promise.all([
                 fetch('/backend/cardDefs'),
@@ -176,28 +241,43 @@
         {:else if loadError}
             <p class="status error">{loadError}</p>
         {:else}
-            <div class="grid">
-                {#each filteredCards as card (card.DefNo)}
-                    {@const count = deckCounts[card.DefNo] ?? 0}
-                    <div class="card" class:in-deck={count > 0}>
-                        <div class="card-top">
-                            <span class="card-name">{card.Name}</span>
-                            <span class="card-cost">{card.Cost}</span>
-                        </div>
-                        <div class="card-meta">
-                            {typeLabels[card.Type] ?? 'Card'}
-                            {#if card.Type === CardType.Unit} · {card.BaseHP} HP{/if}
-                            {#if card.Taunt} · Taunt{/if}
-                            {#if card.Bodyguard} · Bodyguard{/if}
-                        </div>
-                        <p class="card-desc">{card.Description}</p>
-                        <div class="card-controls">
-                            <button class="count-btn" on:click={() => removeCard(card.DefNo)} disabled={count === 0}>−</button>
-                            <span class="count">{count} / {MAX_COPIES}</span>
-                            <button class="count-btn" on:click={() => addCard(card.DefNo)} disabled={count >= MAX_COPIES || deckTotal >= MAX_DECK_SIZE}>+</button>
-                        </div>
-                    </div>
-                {/each}
+            <div class="table-wrap">
+                <table class="catalog-table">
+                    <thead>
+                        <tr>
+                            <th class="col-name">Name</th>
+                            <th class="col-type">Type</th>
+                            <th class="col-num">Cost</th>
+                            <th class="col-num">HP</th>
+                            <th class="col-keywords">Keywords</th>
+                            <th class="col-desc">Description</th>
+                            <th class="col-count">In Deck</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {#each filteredCards as card (card.DefNo)}
+                            {@const count = deckCounts[card.DefNo] ?? 0}
+                            <tr class:in-deck={count > 0}>
+                                <td class="col-name">{card.Name}</td>
+                                <td class="col-type">{typeLabels[card.Type] ?? 'Card'}</td>
+                                <td class="col-num mono">{card.Cost}</td>
+                                <td class="col-num mono">{card.Type === CardType.Unit ? card.BaseHP : '—'}</td>
+                                <td class="col-keywords">
+                                    {#if card.Taunt}<span class="keyword">Taunt</span>{/if}
+                                    {#if card.Bodyguard}<span class="keyword">Bodyguard</span>{/if}
+                                </td>
+                                <td class="col-desc">{card.Description}</td>
+                                <td class="col-count">
+                                    <div class="card-controls">
+                                        <button class="count-btn" on:click={() => removeCard(card.DefNo)} disabled={count === 0}>−</button>
+                                        <span class="count">{count} / {MAX_COPIES}</span>
+                                        <button class="count-btn" on:click={() => addCard(card.DefNo)} disabled={count >= MAX_COPIES || deckTotal >= MAX_DECK_SIZE}>+</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {/each}
+                    </tbody>
+                </table>
             </div>
         {/if}
     </div>
@@ -239,7 +319,47 @@
             <button class="save-btn" on:click={saveDeck} disabled={deckTotal === 0}>{saved ? 'Saved ✓' : 'Save Deck'}</button>
             <button class="clear-btn" on:click={clearDeck} disabled={deckTotal === 0}>Clear</button>
         </div>
+
+        <div class="publish-row">
+            <input
+                class="deck-name-input"
+                type="text"
+                placeholder="Name this deck…"
+                maxlength="60"
+                bind:value={newDeckName}
+                disabled={publishing}
+            />
+            <button
+                class="publish-btn"
+                on:click={publishDeck}
+                disabled={publishing || deckTotal === 0 || !newDeckName.trim()}
+            >
+                {publishing ? 'Saving…' : 'Publish'}
+            </button>
+        </div>
+        {#if publishError}<p class="status error">{publishError}</p>{/if}
+
         <a class="play-link" href="/play">Go to Play →</a>
+    </aside>
+
+    <aside class="sidebar shared-sidebar">
+        <h2>Shared Decks</h2>
+        <p class="shared-hint">Published by everyone. Click one to load it into the builder.</p>
+
+        {#if sharedDecksError}
+            <p class="status error">{sharedDecksError}</p>
+        {:else if sharedDecks.length === 0}
+            <p class="status">No decks published yet — be the first.</p>
+        {:else}
+            <div class="shared-deck-list">
+                {#each [...sharedDecks].reverse() as entry (entry.id)}
+                    <button class="shared-deck-row" on:click={() => loadSharedDeck(entry)}>
+                        <span class="shared-deck-name">{entry.name}</span>
+                        <span class="shared-deck-count">{entry.deck.length} cards</span>
+                    </button>
+                {/each}
+            </div>
+        {/if}
     </aside>
 </div>
 
@@ -310,68 +430,106 @@
         color: #D46B6B;
     }
 
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 10px;
-        overflow-y: auto;
-        padding-bottom: 8px;
-    }
-
-    .card {
-        background: #2C2C2A;
-        border: 1px solid #6E6D69;
+    .table-wrap {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        border: 1px solid #3a3a38;
         border-radius: 6px;
-        padding: 10px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
     }
 
-    .card.in-deck {
-        border-color: #3A8F5A;
+    .catalog-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
     }
 
-    .card-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        gap: 8px;
+    .catalog-table thead th {
+        position: sticky;
+        top: 0;
+        background: #1C1C1A;
+        border-bottom: 1px solid #3a3a38;
+        color: #888780;
+        text-align: left;
+        font-weight: normal;
+        font-size: 11px;
+        padding: 8px 10px;
+        white-space: nowrap;
     }
 
-    .card-name {
-        font-size: 13px;
-        font-weight: bold;
+    .catalog-table tbody tr {
+        border-bottom: 1px solid #2a2a28;
+    }
+
+    .catalog-table tbody tr:hover {
+        background: #23231f;
+    }
+
+    .catalog-table tbody tr.in-deck {
+        background: #1c2419;
+    }
+
+    .catalog-table tbody tr.in-deck:hover {
+        background: #223021;
+    }
+
+    .catalog-table td {
+        padding: 7px 10px;
+        vertical-align: middle;
         color: #D3D1C7;
     }
 
-    .card-cost {
-        font-size: 11px;
+    .col-name {
+        font-weight: bold;
+        white-space: nowrap;
+    }
+
+    .col-type {
+        color: #888780;
+        white-space: nowrap;
+    }
+
+    .col-num {
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .mono {
         font-family: monospace;
         color: #7AADDF;
-        flex-shrink: 0;
     }
 
-    .card-meta {
+    .col-keywords {
+        white-space: nowrap;
+    }
+
+    .keyword {
+        display: inline-block;
+        background: #2C2C2A;
+        border: 1px solid #6E6D69;
+        border-radius: 3px;
+        color: #888780;
         font-size: 10px;
-        color: #888780;
+        padding: 1px 6px;
+        margin-right: 4px;
     }
 
-    .card-desc {
-        font-size: 11px;
-        font-style: italic;
+    .col-desc {
         color: #888780;
-        margin: 0;
+        font-style: italic;
+        min-width: 260px;
         line-height: 1.4;
-        flex: 1;
+    }
+
+    .col-count {
+        white-space: nowrap;
     }
 
     .card-controls {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
-        margin-top: 2px;
+        gap: 8px;
     }
 
     .count-btn {
@@ -379,8 +537,8 @@
         border: 1px solid #6E6D69;
         border-radius: 4px;
         color: #D3D1C7;
-        width: 24px;
-        height: 22px;
+        width: 22px;
+        height: 20px;
         font-size: 13px;
         cursor: pointer;
         line-height: 1;
@@ -395,7 +553,7 @@
         font-size: 11px;
         font-family: monospace;
         color: #888780;
-        min-width: 34px;
+        min-width: 32px;
         text-align: center;
     }
 
@@ -558,5 +716,92 @@
 
     .play-link:hover {
         text-decoration: underline;
+    }
+
+    .publish-row {
+        display: flex;
+        gap: 6px;
+    }
+
+    .deck-name-input {
+        flex: 1;
+        min-width: 0;
+        background: #2C2C2A;
+        border: 1px solid #6E6D69;
+        border-radius: 4px;
+        color: #D3D1C7;
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+
+    .deck-name-input:disabled {
+        opacity: 0.5;
+    }
+
+    .publish-btn {
+        background: #24361F;
+        border: 1px solid #3A8F5A;
+        border-radius: 4px;
+        color: #6abf6a;
+        padding: 6px 10px;
+        font-size: 11px;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .publish-btn:disabled {
+        opacity: 0.4;
+        cursor: default;
+    }
+
+    .shared-sidebar {
+        gap: 8px;
+    }
+
+    .shared-hint {
+        font-size: 11px;
+        color: #888780;
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .shared-deck-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        overflow-y: auto;
+    }
+
+    .shared-deck-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        background: #2C2C2A;
+        border: 1px solid #6E6D69;
+        border-radius: 4px;
+        color: #D3D1C7;
+        padding: 7px 10px;
+        font-size: 12px;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .shared-deck-row:hover {
+        border-color: #F5A623;
+        color: #F5A623;
+    }
+
+    .shared-deck-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .shared-deck-count {
+        flex-shrink: 0;
+        font-size: 11px;
+        font-family: monospace;
+        color: #888780;
     }
 </style>
