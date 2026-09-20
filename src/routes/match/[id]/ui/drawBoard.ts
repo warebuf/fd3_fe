@@ -1,6 +1,6 @@
 
 import { get } from "svelte/store";
-import type { GameState, Card, ChainItem } from "../engine/gameState"
+import type { GameState, Card, ChainItem, ActiveAbility } from "../engine/gameState"
 import { Phase, PausePhase, CardType, Archetype, Zone, ChainEntry } from "../engine/gameState"
 import type { coordinate } from "./cardCoordinates"
 import { ping, serverClockOffset } from "../networking/ping";
@@ -407,11 +407,15 @@ export function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: numb
     }
     drawChainEntryIcon(ctx, cardType, card.ChainEntry, tx, ty);
 
-    // the card's Active carries its own entry label, only real ability slots have Target set
-    const active = card.Actives?.find(a => a.Target === -1 && a.ChainEntry !== ChainEntry.Dual);
+    // the card's Active carries its own entry label and mana cost
+    const active = card.Actives?.find(isRealActive);
     if (active) {
         ty += 11;
-        drawChainEntryIcon(ctx, "Use", active.ChainEntry, tx, ty);
+        const afterIcon = drawChainEntryIcon(ctx, "Use", active.ChainEntry, tx, ty);
+        if (active.Cost > 0) {
+            ctx.fillStyle = "#7AADDF";
+            ctx.fillText(` · ${active.Cost} mana`, afterIcon, ty);
+        }
     }
 
     const contentBot = y + CARD_H - P_PAD_H; // description runs to the card's bottom padding
@@ -457,9 +461,14 @@ export function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: numb
     ctx.restore();
 }
 
+// an unused Actives slot is zero-valued, and so is a targetless Dual ability, so tell them apart by the fields a real ability sets
+function isRealActive(a: ActiveAbility): boolean {
+    return a.Cost > 0 || a.CanAutoFire || a.Unlimited || a.TargetFlags !== 0 || a.Cons[0] !== 0 || a.ChainEntry !== ChainEntry.Dual;
+}
+
 // "<prefix> · <piece>", the entry drawn as its puzzle piece: red for Action,
-// blue for Reaction, both for Dual.
-function drawChainEntryIcon(ctx: CanvasRenderingContext2D, prefix: string, entry: number, x: number, y: number): void {
+// blue for Reaction, both for Dual. Returns the x just past the piece
+function drawChainEntryIcon(ctx: CanvasRenderingContext2D, prefix: string, entry: number, x: number, y: number): number {
     const text = prefix + " · ";
     ctx.fillText(text, x, y);
     const entryX = x + ctx.measureText(text).width;
@@ -468,14 +477,18 @@ function drawChainEntryIcon(ctx: CanvasRenderingContext2D, prefix: string, entry
     // the dual piece is 16px against the other two at 12px
     let icon = Icon.PuzzleBoth;
     let rise = 11;
+    let width = 16;
     if (entry === ChainEntry.Action) {
         icon = Icon.PuzzleRed;
         rise = 9;
+        width = 12;
     } else if (entry === ChainEntry.Reaction) {
         icon = Icon.PuzzleBlue;
         rise = 9;
+        width = 12;
     }
     drawIcon(ctx, icon, entryX, y - rise);
+    return entryX + width;
 }
 
 function drawChargePips(ctx: CanvasRenderingContext2D, x: number, y: number, card: Card): void {
