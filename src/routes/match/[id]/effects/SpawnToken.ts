@@ -31,6 +31,7 @@ export function spawnToken(state: GameState, log: SpawnTokenLog) {
         Actives: [],
         OnPlay: [],
         EquipHostIndex: -1,
+        AttackBonusPerSummon: 0,
     };
 
     state.Cards[log.CardIndex] = card;

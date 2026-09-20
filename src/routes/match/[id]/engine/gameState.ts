@@ -219,6 +219,15 @@ export interface Card {
     OnPlay: OnPlayAbility[];
 
     EquipHostIndex: number; // -1 is no host
+    AttackBonusPerSummon: number; // equips only; see equipAttackBonus
+}
+
+// TODO: hardcoded duplicate of the backend's equipAttackBonus (ApplyEffectAttack.go) so the host can show its bonus; keep in sync
+export function equipAttackBonus(state: GameState, equip: Card): number {
+    if (equip.AttackBonusPerSummon <= 0 || equip.EquipHostIndex < 0) return 0;
+    const team = state.Cards[equip.EquipHostIndex].Team;
+    const summoned = [...state.Field[team], ...state.Grave[team]].filter(id => state.Cards[id].Type === CardType.Unit).length;
+    return equip.AttackBonusPerSummon * summoned;
 }
 
 export interface Effect {

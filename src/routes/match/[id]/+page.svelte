@@ -11,7 +11,7 @@
     import { initGameState, cloneGameState, type GameState, Phase, Zone, CardType, TargetFlags } from './engine/gameState';
     import { interpolate } from './engine/interpolate';
 
-    import { drawBoard, drawPhaseAnnouncement, drawStructureDrawButtons, drawStructureAutoToggles, drawReadyButton, drawPauseButton, drawSkipChainButton, STRUCTURE_HOTKEYS, type StatsRects, type EquipBadgeRect } from './ui/drawBoard';
+    import { drawBoard, drawPhaseAnnouncement, drawStructureDrawButtons, drawStructureAutoToggles, drawReadyButton, drawPauseButton, drawSkipChainButton, STRUCTURE_HOTKEYS, type StatsRects, type EquipRect } from './ui/drawBoard';
     import { calcBoardLayout, getClickedCard, getClickedSwitch, mirrorUIWithHand, type coordinate } from './ui/cardCoordinates';
     import { PausePhase, isValidTarget, preselectableAbilities } from './engine/gameState';
     import { Icon, drawIcon, preloadIcons } from './ui/icons';
@@ -51,7 +51,7 @@
     let skipChainButtonRect: { x: number; y: number; w: number; h: number } | null = null;
     let pauseButtonRect: { x: number; y: number; w: number; h: number } | null = null;
     let statsRects: StatsRects[] = [];
-    let equipBadgeRects: EquipBadgeRect[] = [];
+    let equipRects: EquipRect[] = [];
     let viewingZone: { team: number; zone: 'Deck' | 'Grave' } | null = null;
     let viewingEquipHost: number | null = null;
 
@@ -106,7 +106,7 @@
         // draw
         ctx.clearRect(0, 0, canvasEl.clientWidth, canvasEl.clientHeight);
         const currentWallTime = now + performance.timeOrigin + get(serverClockOffset);
-        ({ statsRects, equipBadgeRects } = drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, positions, chainCoords, structureSlots, handOrder, clickedIndex, preselecting >= 0 ? preselecting : equipTargeting));
+        ({ statsRects, equipRects } = drawBoard(ctx, interpolatedState, currentWallTime, teamIndex, positions, chainCoords, structureSlots, handOrder, clickedIndex, preselecting, equipTargeting));
         drawButtonRects = drawStructureDrawButtons(ctx, interpolatedState, teamIndex);
         autoToggleRects = drawStructureAutoToggles(ctx, interpolatedState, teamIndex);
         readyButtonRect = drawReadyButton(ctx, interpolatedState, teamIndex);
@@ -140,8 +140,8 @@
             return null;
         };
 
-        const hitEquipBadge = (x: number, y: number): EquipBadgeRect | null => {
-            for (const badge of equipBadgeRects) {
+        const hitEquipLines = (x: number, y: number): EquipRect | null => {
+            for (const badge of equipRects) {
                 if (x >= badge.x && x <= badge.x + badge.w && y >= badge.y && y <= badge.y + badge.h) return badge;
             }
             return null;
@@ -151,7 +151,7 @@
             const r = canvasEl.getBoundingClientRect();
             const x = e.clientX - r.left;
             const y = e.clientY - r.top;
-            canvasEl.style.cursor = (hitStatsRect(x, y) || hitEquipBadge(x, y)) ? 'pointer' : 'default';
+            canvasEl.style.cursor = (hitStatsRect(x, y) || hitEquipLines(x, y)) ? 'pointer' : 'default';
         };
 
         const onLeave = () => {
@@ -170,8 +170,8 @@
                 return;
             }
 
-            // clicked an equip badge, open its attached equip card(s) to read
-            const equipHit = hitEquipBadge(x, y);
+            // clicked the equip lines on a host, open its attached equip card(s) in full
+            const equipHit = hitEquipLines(x, y);
             if (equipHit) {
                 viewingEquipHost = equipHit.hostID;
                 return;

@@ -1,7 +1,7 @@
 
 import { get } from "svelte/store";
 import type { GameState, Card, ChainItem, ActiveAbility } from "../engine/gameState"
-import { Phase, PausePhase, CardType, Archetype, Zone, ChainEntry } from "../engine/gameState"
+import { Phase, PausePhase, CardType, Archetype, Zone, ChainEntry, equipAttackBonus } from "../engine/gameState"
 import type { coordinate } from "./cardCoordinates"
 import { ping, serverClockOffset } from "../networking/ping";
 import { debugDump } from "../debuggers/debug";
@@ -345,7 +345,9 @@ function drawWrappedText(ctx: CanvasRenderingContext2D, text: string, x: number,
 
 export type Rect = { x: number; y: number; w: number; h: number };
 
-export function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, currentSimTime: number, faceDown?: boolean, selected?: boolean, showAbilityTimer: boolean = true ) {
+// equips: what's attached to this card, listed inside it above its description. Returns the rect those lines occupy, for click handling
+export type EquipLine = { name: string; attackBonus: number };
+export function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: number, card: Card, currentSimTime: number, faceDown?: boolean, selected?: boolean, showAbilityTimer: boolean = true, equips: EquipLine[] = [] ): Rect | null {
     ctx.save();
 
     // adjust for blurry half pixel borders
@@ -367,7 +369,7 @@ export function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: numb
         ctx.fillText("FD", x + CARD_W / 2, y + CARD_H / 2);
         if (selected) drawCrosshair(ctx, x, y);
         ctx.restore();
-        return;
+        return null;
     }
 
     // draw card background
@@ -399,6 +401,8 @@ export function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: numb
         cardType = "Unit";
     } else if (card.Type === CardType.Trap) {
         cardType = card.Zone === Zone.Trap && card.Ready ? "Trap · Ready" : "Trap";
+    } else if (card.Type === CardType.Equip) {
+        cardType = "Equip";
     }
     if (card.Archetype === Archetype.Tree) {
         cardType += " · Tree";
@@ -414,6 +418,29 @@ export function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: numb
             ctx.fillStyle = "#7AADDF";
             ctx.fillText(` · ${active.Cost} mana`, afterIcon, ty);
         }
+    }
+
+    // attached equips, one line each, so what's on a unit is readable without opening anything
+    let equipRect: Rect | null = null;
+    if (equips.length > 0) {
+        const lineH = 11;
+        equipRect = { x: x, y: ty + 4, w: CARD_W, h: equips.length * lineH + 2 };
+        ctx.fillStyle = EQUIP_BG;
+        ctx.fillRect(equipRect.x + 1, equipRect.y, equipRect.w - 2, equipRect.h);
+        ctx.fillStyle = EQUIP_COLOR;
+        ctx.font = "9px sans-serif";
+        for (const eq of equips) {
+            ty += lineH;
+            ctx.fillRect(tx, ty - 7, 2, 8);
+            ctx.textAlign = "left";
+            ctx.fillText(eq.name, tx + 5, ty);
+            if (eq.attackBonus > 0) {
+                ctx.textAlign = "right";
+                ctx.fillText(`+${eq.attackBonus} atk`, x + CARD_W - P_PAD_W, ty);
+            }
+        }
+        ctx.textAlign = "left";
+        ty += 2;
     }
 
     const contentBot = y + CARD_H - P_PAD_H; // description runs to the card's bottom padding
@@ -457,6 +484,7 @@ export function drawFieldCard( ctx: CanvasRenderingContext2D, x: number, y: numb
     }
 
     ctx.restore();
+    return equipRect;
 }
 
 // an unused Actives slot is zero-valued, and so is a targetless Dual ability, so tell them apart by the fields a real ability sets
@@ -531,12 +559,16 @@ function drawTrapZone(ctx: CanvasRenderingContext2D, cards: Card[], traps: numbe
     }
 }
 
-function drawField(ctx: CanvasRenderingContext2D, cards: Card[], field: number[], positions: coordinate[], currentSimTime: number, selectedIndex: number): void {
+function drawField(ctx: CanvasRenderingContext2D, state: GameState, field: number[], positions: coordinate[], currentSimTime: number, selectedIndex: number, equipsByHost: Map<number, number[]>, equipRects: EquipRect[]): void {
+    const cards = state.Cards;
     for (const cardID of field) {
         const pos = positions[cardID];
         if (!pos) continue;
         const card = cards[cardID];
-        drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, false, selectedIndex === cardID, true);
+        const equipIDs = equipsByHost.get(cardID) ?? [];
+        const lines = equipIDs.map(id => ({ name: cards[id].Name, attackBonus: equipAttackBonus(state, cards[id]) }));
+        const rect = drawFieldCard(ctx, pos.x, pos.y, card, currentSimTime, false, selectedIndex === cardID, true, lines);
+        if (rect) equipRects.push({ hostID: cardID, equipIDs, ...rect });
         drawChargePips(ctx, pos.x, pos.y, card);
         if (card.Actives[0]?.CanAutoFire) { // spawned tokens arrive with an empty Actives until the next fullState
             drawSwitch(ctx, pos.x, pos.y, card.Actives[0].AutoAbility, "Auto");
@@ -883,51 +915,34 @@ function drawPause(ctx: CanvasRenderingContext2D, state: GameState, userIndex: n
     ctx.restore();
 }
 
-const EQUIP_BADGE_R = 8;
-const EQUIP_BADGE_COLOR = "#F5A623";
+const EQUIP_COLOR = "#F5A623";
+const EQUIP_BG = "#3A3020";
 
-export type EquipBadgeRect = { hostID: number; equipIDs: number[]; x: number; y: number; w: number; h: number };
+export type EquipRect = { hostID: number; equipIDs: number[]; x: number; y: number; w: number; h: number };
 
-// one badge per host, even if several equips target the same card - clicking it opens all of them.
-// returns a hit rect per badge so the click handler can find "which host was that" and open a
-// ZoneViewer-style popup, since equip cards otherwise have no way for a player to read them
-function drawEquipBadges(ctx: CanvasRenderingContext2D, cards: Card[], equip: number[][], positions: coordinate[]): EquipBadgeRect[] {
+// which equips sit on which host; drawField lists them inside the host card and clicking that opens them in full
+function groupEquipsByHost(cards: Card[], equip: number[][]): Map<number, number[]> {
     const byHost = new Map<number, number[]>();
     for (const team of equip) {
         for (const equipID of team) {
             const hostID = cards[equipID]?.EquipHostIndex ?? -1;
-            if (hostID < 0 || !positions[hostID]) continue;
+            if (hostID < 0) continue;
             if (!byHost.has(hostID)) byHost.set(hostID, []);
             byHost.get(hostID)!.push(equipID);
         }
     }
+    return byHost;
+}
 
-    const badgeRects: EquipBadgeRect[] = [];
-
-    for (const [hostID, equipIDs] of byHost) {
-        const pos = positions[hostID];
-        const cx = pos.x + CARD_W - EQUIP_BADGE_R - 2;
-        const cy = pos.y + EQUIP_BADGE_R + 2;
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(cx, cy, EQUIP_BADGE_R, 0, Math.PI * 2);
-        ctx.fillStyle = CARD_COLOR;
-        ctx.fill();
-        ctx.strokeStyle = EQUIP_BADGE_COLOR;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-        ctx.fillStyle = EQUIP_BADGE_COLOR;
-        ctx.font = "bold 10px sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(equipIDs.length > 1 ? `E${equipIDs.length}` : "E", cx, cy + 0.5);
-        ctx.restore();
-
-        badgeRects.push({ hostID, equipIDs, x: cx - EQUIP_BADGE_R, y: cy - EQUIP_BADGE_R, w: EQUIP_BADGE_R * 2, h: EQUIP_BADGE_R * 2 });
-    }
-
-    return badgeRects;
+// prompt under the equip card awaiting a host click
+function drawEquipTargetPrompt(ctx: CanvasRenderingContext2D, x: number, y: number) {
+    ctx.save();
+    ctx.fillStyle = EQUIP_COLOR;
+    ctx.font = "bold 9px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("click a unit to equip", x + CARD_W / 2, y - 9);
+    ctx.restore();
 }
 
 function drawPreselectHighlight(ctx: CanvasRenderingContext2D, x: number, y: number) {
@@ -968,25 +983,25 @@ function drawPreselectArrow(ctx: CanvasRenderingContext2D, sx: number, sy: numbe
     ctx.restore();
 }
 
-export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, positions: coordinate[], chainCoords: coordinate[], structureSlots: coordinate[][], handOrder: number[][], selectedIndex: number, preselecting: number): { statsRects: StatsRects[]; equipBadgeRects: EquipBadgeRect[] } {
+export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, currentWallTime: number, userIndex: number, positions: coordinate[], chainCoords: coordinate[], structureSlots: coordinate[][], handOrder: number[][], selectedIndex: number, preselecting: number, equipTargeting: number): { statsRects: StatsRects[]; equipRects: EquipRect[] } {
     const opponentIndex = userIndex === 0 ? 1 : 0;
     if (state.Phase === Phase.GameEnd) currentWallTime = state.WallTimestamp;
 
     const currentSimTime = computeCurrentSimTime(currentWallTime, state);
     const currentActiveTime = computeCurrentActiveTime(currentWallTime, state);
+    const equipsByHost = groupEquipsByHost(state.Cards, state.Equip ?? [[], []]);
+    const equipRects: EquipRect[] = [];
 
     // rows, top to bottom; the opponent's traps stay face down
     drawHand(ctx, handOrder[opponentIndex] ?? [], state.Cards, positions, true, selectedIndex, currentSimTime);
     drawTrapZone(ctx, state.Cards, state.Traps?.[opponentIndex] ?? [], positions, currentSimTime, selectedIndex, true);
-    drawField(ctx, state.Cards, state.Field[opponentIndex], positions, currentSimTime, selectedIndex);
+    drawField(ctx, state, state.Field[opponentIndex], positions, currentSimTime, selectedIndex, equipsByHost, equipRects);
 
     drawChainZone(ctx, state.Chain, state.Cards, positions, chainCoords, currentActiveTime);
 
-    drawField(ctx, state.Cards, state.Field[userIndex], positions, currentSimTime, selectedIndex);
+    drawField(ctx, state, state.Field[userIndex], positions, currentSimTime, selectedIndex, equipsByHost, equipRects);
     drawTrapZone(ctx, state.Cards, state.Traps?.[userIndex] ?? [], positions, currentSimTime, selectedIndex, false);
     drawHand(ctx, handOrder[userIndex] ?? [], state.Cards, positions, false, selectedIndex, currentSimTime);
-
-    const equipBadgeRects = drawEquipBadges(ctx, state.Cards, state.Equip ?? [[], []], positions);
 
     drawStructureCards(ctx, state, opponentIndex, structureSlots[opponentIndex] ?? []);
     drawStructureCards(ctx, state, userIndex, structureSlots[userIndex] ?? []);
@@ -1005,6 +1020,13 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
         const pos = positions[preselecting];
         if (pos) drawPreselectHighlight(ctx, pos.x, pos.y);
     }
+    if (equipTargeting >= 0) {
+        const pos = positions[equipTargeting];
+        if (pos) {
+            drawPreselectHighlight(ctx, pos.x, pos.y);
+            drawEquipTargetPrompt(ctx, pos.x, pos.y);
+        }
+    }
 
     // Preselect UI: arrows from source to confirmed target
     for (let cardID = 0; cardID < state.Cards.length; cardID++) {
@@ -1020,5 +1042,5 @@ export function drawBoard(ctx: CanvasRenderingContext2D, state: GameState, curre
         }
     }
 
-    return { statsRects, equipBadgeRects };
+    return { statsRects, equipRects };
 }
