@@ -13,7 +13,6 @@ export function spawnToken(state: GameState, log: SpawnTokenLog) {
         Bodyguard: false,
 
         Team: log.TeamIndex,
-        OwnerTeam: log.TeamIndex,
         Type: log.CardType,
         Zone: Zone.Field,
         IsToken: log.IsToken,

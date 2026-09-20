@@ -109,16 +109,14 @@ export const EffectType = {
     GiveControl:       12,
     HealNonDamaging:   13,
     Extort:            14,
-    Repossess:         15,
-    DamageAllAllies:   16,
-    DrainMana:         17,
-    HealSelf:          18,
-    Liquidate:         19,
-    MutualDestruction: 20,
-    GraveyardBarrage:  21,
-    ScalingSpillover:  22,
-    SpawnTokens:       23,
-    LifeLeech:         24,
+    DamageAllAllies:   15,
+    DrainMana:         16,
+    Liquidate:         17,
+    MutualDestruction: 18,
+    GraveyardBarrage:  19,
+    ScalingSpillover:  20,
+    SpawnTokens:       21,
+    Leech:             22,
 } as const;
 
 export interface Structure {
@@ -211,7 +209,6 @@ export interface Card {
     Bodyguard: boolean;
 
     Team: number; // current controller; changes on control-changing effects
-    OwnerTeam: number; // the team this card started under; never changes once set
     Type: number;
     Zone: number;
     IsToken: boolean;
